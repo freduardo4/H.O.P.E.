@@ -134,36 +134,90 @@ public class OBD2Service : IOBD2Service, IDisposable
         return response.Replace(">", "").Trim();
     }
 
-    public Task<List<string>> GetSupportedPIDsAsync(CancellationToken cancellationToken = default)
+    public async Task<List<string>> GetSupportedPIDsAsync(CancellationToken cancellationToken = default)
     {
-        // Placeholder implementation - would normally query PID 00
-        return Task.FromResult(new List<string>());
+        var supportedPIDs = new List<string>();
+
+        try
+        {
+            // Query supported PIDs in ranges (00, 20, 40, 60, 80, A0, C0)
+            string[] pidRanges = { "00", "20", "40", "60", "80", "A0", "C0" };
+
+            foreach (var basePID in pidRanges)
+            {
+                string response = await SendCommandAsync($"01{basePID}", cancellationToken);
+                var pidsInRange = OBD2ResponseParser.ParseSupportedPIDs(response, basePID);
+                supportedPIDs.AddRange(pidsInRange);
+
+                // If the last PID in the range (e.g., 20, 40, etc.) is not supported,
+                // no need to query further ranges
+                string nextRangePID = (Convert.ToInt32(basePID, 16) + 0x20).ToString("X2");
+                if (!pidsInRange.Contains(nextRangePID))
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorOccurred?.Invoke(this, new OBD2ErrorEventArgs("Failed to get supported PIDs", OBD2ErrorType.CommunicationError, ex));
+        }
+
+        return supportedPIDs;
     }
 
     public async Task<OBD2Reading> ReadPIDAsync(string pid, CancellationToken cancellationToken = default)
     {
-        // Add mode 01 prefix if not present
-        string command = pid.StartsWith("01") ? pid : "01" + pid;
-        
+        // Normalize PID format (remove any prefix)
+        pid = pid.Replace("01", "").Replace("0x", "").Replace("0X", "").Trim().ToUpper();
+
+        // Add mode 01 prefix
+        string command = "01" + pid;
+
         string response = await SendCommandAsync(command, cancellationToken);
-        
-        // Parse response (Simplified)
-        // Response format: 41 0C 0F A0
-        
-        var reading = new OBD2Reading
+
+        // Parse response using the parser
+        var reading = OBD2ResponseParser.ParseMode01Response(response, pid);
+
+        if (reading == null)
         {
-            PID = pid,
-            RawResponse = response,
-            Timestamp = DateTime.UtcNow,
-            Value = 0 // Parsing logic would go here
-        };
+            // Return a failed reading
+            return new OBD2Reading
+            {
+                PID = pid,
+                Name = "Unknown",
+                RawResponse = response,
+                Timestamp = DateTime.UtcNow,
+                Value = 0,
+                Unit = "N/A"
+            };
+        }
+
+        // Raise data received event
+        DataReceived?.Invoke(this, reading);
 
         return reading;
     }
 
-    public Task<List<OBD2Reading>> ReadPIDsAsync(IEnumerable<string> pids, CancellationToken cancellationToken = default)
+    public async Task<List<OBD2Reading>> ReadPIDsAsync(IEnumerable<string> pids, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var readings = new List<OBD2Reading>();
+
+        foreach (var pid in pids)
+        {
+            if (cancellationToken.IsCancellationRequested)
+                break;
+
+            try
+            {
+                var reading = await ReadPIDAsync(pid, cancellationToken);
+                readings.Add(reading);
+            }
+            catch (Exception ex)
+            {
+                ErrorOccurred?.Invoke(this, new OBD2ErrorEventArgs($"Failed to read PID {pid}", OBD2ErrorType.CommunicationError, ex));
+            }
+        }
+
+        return readings;
     }
 
     public IObservable<OBD2Reading> StreamPIDs(IEnumerable<string> pids, int intervalMs = 200, CancellationToken cancellationToken = default)
@@ -190,24 +244,102 @@ public class OBD2Service : IOBD2Service, IDisposable
             .Do(reading => DataReceived?.Invoke(this, reading));
     }
 
-    public Task<List<DiagnosticTroubleCode>> ReadDTCsAsync(CancellationToken cancellationToken = default)
+    public async Task<List<DiagnosticTroubleCode>> ReadDTCsAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(new List<DiagnosticTroubleCode>());
+        var allDTCs = new List<DiagnosticTroubleCode>();
+
+        try
+        {
+            // Mode 03 - Request stored DTCs
+            string storedResponse = await SendCommandAsync("03", cancellationToken);
+            var storedDTCs = OBD2ResponseParser.ParseDTCs(storedResponse);
+            foreach (var dtc in storedDTCs)
+            {
+                dtc.IsPending = false;
+            }
+            allDTCs.AddRange(storedDTCs);
+
+            // Mode 07 - Request pending DTCs
+            string pendingResponse = await SendCommandAsync("07", cancellationToken);
+            var pendingDTCs = OBD2ResponseParser.ParseDTCs(pendingResponse);
+            foreach (var dtc in pendingDTCs)
+            {
+                dtc.IsPending = true;
+            }
+            allDTCs.AddRange(pendingDTCs);
+        }
+        catch (Exception ex)
+        {
+            ErrorOccurred?.Invoke(this, new OBD2ErrorEventArgs("Failed to read DTCs", OBD2ErrorType.CommunicationError, ex));
+        }
+
+        return allDTCs;
     }
 
-    public Task<bool> ClearDTCsAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> ClearDTCsAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(true);
+        try
+        {
+            // Mode 04 - Clear DTCs and freeze frame data
+            string response = await SendCommandAsync("04", cancellationToken);
+
+            // Check for positive response (44)
+            return response.Contains("44") || !response.Contains("ERROR");
+        }
+        catch (Exception ex)
+        {
+            ErrorOccurred?.Invoke(this, new OBD2ErrorEventArgs("Failed to clear DTCs", OBD2ErrorType.CommunicationError, ex));
+            return false;
+        }
     }
 
-    public Task<string?> GetVINAsync(CancellationToken cancellationToken = default)
+    public async Task<string?> GetVINAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult<string?>(null);
+        try
+        {
+            // Mode 09 PID 02 - Request VIN
+            string response = await SendCommandAsync("0902", cancellationToken);
+            return OBD2ResponseParser.ParseVIN(response);
+        }
+        catch (Exception ex)
+        {
+            ErrorOccurred?.Invoke(this, new OBD2ErrorEventArgs("Failed to get VIN", OBD2ErrorType.CommunicationError, ex));
+            return null;
+        }
     }
 
-    public Task<string?> GetECUInfoAsync(CancellationToken cancellationToken = default)
+    public async Task<string?> GetECUInfoAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult<string?>(null);
+        try
+        {
+            // Mode 09 PID 0A - Request ECU Name
+            string response = await SendCommandAsync("090A", cancellationToken);
+
+            // Clean and return the ECU name
+            response = response.Replace("49 0A", "").Trim();
+            if (string.IsNullOrWhiteSpace(response) || response.Contains("NO DATA"))
+                return null;
+
+            // Convert hex to ASCII
+            var bytes = response.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var asciiChars = new List<char>();
+
+            foreach (var byteStr in bytes)
+            {
+                if (byte.TryParse(byteStr, System.Globalization.NumberStyles.HexNumber, null, out byte b))
+                {
+                    if (b >= 0x20 && b <= 0x7E) // Printable ASCII
+                        asciiChars.Add((char)b);
+                }
+            }
+
+            return asciiChars.Count > 0 ? new string(asciiChars.ToArray()).Trim() : null;
+        }
+        catch (Exception ex)
+        {
+            ErrorOccurred?.Invoke(this, new OBD2ErrorEventArgs("Failed to get ECU info", OBD2ErrorType.CommunicationError, ex));
+            return null;
+        }
     }
     
     public void Dispose()

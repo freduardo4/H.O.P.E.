@@ -9,13 +9,24 @@ public class SqliteDatabaseService : IDatabaseService
     private readonly string _dbPath;
     private readonly string _connectionString;
 
-    public SqliteDatabaseService()
+    public SqliteDatabaseService() : this(null)
     {
-        string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        string hopeDir = Path.Combine(appData, "HOPE");
-        if (!Directory.Exists(hopeDir)) Directory.CreateDirectory(hopeDir);
-        
-        _dbPath = Path.Combine(hopeDir, "hope.db");
+    }
+
+    public SqliteDatabaseService(string? customDbPath)
+    {
+        if (customDbPath != null)
+        {
+            _dbPath = customDbPath;
+        }
+        else
+        {
+            string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string hopeDir = Path.Combine(appData, "HOPE");
+            if (!Directory.Exists(hopeDir)) Directory.CreateDirectory(hopeDir);
+            _dbPath = Path.Combine(hopeDir, "hope.db");
+        }
+
         _connectionString = $"Data Source={_dbPath}";
     }
 

@@ -111,6 +111,7 @@ public class DiagnosticTroubleCode
     public DTCSeverity Severity { get; set; }
     public DateTime DetectedAt { get; set; } = DateTime.UtcNow;
     public bool IsIntermittent { get; set; }
+    public bool IsPending { get; set; }
 }
 
 public enum DTCType

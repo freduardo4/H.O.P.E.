@@ -157,6 +157,7 @@ public enum OBD2ErrorType
     AdapterError,
     VehicleNotResponding,
     ProtocolError,
+    CommunicationError,
     Unknown
 }
 
