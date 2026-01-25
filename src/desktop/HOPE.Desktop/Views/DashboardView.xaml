@@ -7,90 +7,202 @@
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="1000"
+             d:DesignHeight="800" d:DesignWidth="1000"
              Background="#121212">
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,20">
-            <TextBlock Text="VEHICLE DASHBOARD" Foreground="White" FontSize="32" FontWeight="Bold" FontFamily="Segoe UI Semibold"/>
-            <StackPanel Orientation="Horizontal">
-                <Ellipse Width="10" Height="10" Fill="{Binding IsStreaming, Converter={StaticResource BooleanToStatusColorConverter}}" Margin="0,0,8,0"/>
-                <TextBlock Text="{Binding ConnectionStatus}" Foreground="#AAAAAA" FontSize="14"/>
+        <!-- Header with Anomaly Indicator -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <StackPanel>
+                <TextBlock Text="VEHICLE DASHBOARD" Foreground="White" FontSize="32" FontWeight="Bold" FontFamily="Segoe UI Semibold"/>
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="10" Height="10" Fill="{Binding IsStreaming, Converter={StaticResource BooleanToStatusColorConverter}}" Margin="0,0,8,0"/>
+                    <TextBlock Text="{Binding ConnectionStatus}" Foreground="#AAAAAA" FontSize="14"/>
+                </StackPanel>
             </StackPanel>
-        </StackPanel>
+            
+            <!-- Anomaly Status Panel -->
+            <Border Grid.Column="1" Background="{Binding IsAnomaly, Converter={StaticResource BooleanToAnomalyColorConverter}}" 
+                    CornerRadius="8" Padding="16,8" VerticalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="{Binding AnomalyScore, StringFormat='Anomaly Score: {0:P0}'}" 
+                               Foreground="White" FontSize="14" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding AnomalyDescription}" 
+                               Foreground="#DDDDDD" FontSize="11"/>
+                </StackPanel>
+            </Border>
+        </Grid>
 
         <!-- Gauges Grid -->
-        <UniformGrid Grid.Row="1" Columns="2">
+        <UniformGrid Grid.Row="1" Columns="4" Rows="2">
             <!-- RPM Gauge -->
-            <Border Margin="10" Background="#1E1E1E" CornerRadius="12">
-                <Grid Margin="20">
+            <Border Margin="6" Background="#1E1E1E" CornerRadius="10">
+                <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <!-- In a real app we'd use LiveCharts NeedleGauge, for now simple text/circle for demo if LiveCharts setup is tricky -->
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <TextBlock Text="{Binding EngineRpm, StringFormat={}{0:F0}}" Foreground="#00E676" FontSize="64" FontWeight="Bold" HorizontalAlignment="Center"/>
-                        <TextBlock Text="RPM" Foreground="#AAAAAA" FontSize="18" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding EngineRpm, StringFormat={}{0:F0}}" Foreground="#00E676" FontSize="42" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="RPM" Foreground="#AAAAAA" FontSize="14" HorizontalAlignment="Center"/>
                     </StackPanel>
-                    <TextBlock Grid.Row="1" Text="Engine Speed" Foreground="#666666" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                    <TextBlock Grid.Row="1" Text="Engine Speed" Foreground="#666666" FontSize="11" HorizontalAlignment="Center" Margin="0,6,0,0"/>
                 </Grid>
             </Border>
 
             <!-- Speed Gauge -->
-            <Border Margin="10" Background="#1E1E1E" CornerRadius="12">
-                <Grid Margin="20">
+            <Border Margin="6" Background="#1E1E1E" CornerRadius="10">
+                <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <TextBlock Text="{Binding VehicleSpeed, StringFormat={}{0:F0}}" Foreground="#2979FF" FontSize="64" FontWeight="Bold" HorizontalAlignment="Center"/>
-                        <TextBlock Text="km/h" Foreground="#AAAAAA" FontSize="18" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding VehicleSpeed, StringFormat={}{0:F0}}" Foreground="#2979FF" FontSize="42" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="km/h" Foreground="#AAAAAA" FontSize="14" HorizontalAlignment="Center"/>
                     </StackPanel>
-                    <TextBlock Grid.Row="1" Text="Vehicle Speed" Foreground="#666666" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                    <TextBlock Grid.Row="1" Text="Vehicle Speed" Foreground="#666666" FontSize="11" HorizontalAlignment="Center" Margin="0,6,0,0"/>
                 </Grid>
             </Border>
 
             <!-- Load Gauge -->
-            <Border Margin="10" Background="#1E1E1E" CornerRadius="12">
-                 <Grid Margin="20">
+            <Border Margin="6" Background="#1E1E1E" CornerRadius="10">
+                <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <TextBlock Text="{Binding EngineLoad, StringFormat={}{0:F1}}" Foreground="#FF9100" FontSize="48" FontWeight="Bold" HorizontalAlignment="Center"/>
-                        <TextBlock Text="%" Foreground="#AAAAAA" FontSize="18" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding EngineLoad, StringFormat={}{0:F1}}" Foreground="#FF9100" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="%" Foreground="#AAAAAA" FontSize="14" HorizontalAlignment="Center"/>
                     </StackPanel>
-                    <TextBlock Grid.Row="1" Text="Engine Load" Foreground="#666666" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                    <TextBlock Grid.Row="1" Text="Engine Load" Foreground="#666666" FontSize="11" HorizontalAlignment="Center" Margin="0,6,0,0"/>
                 </Grid>
             </Border>
 
-            <!-- Temp Gauge -->
-            <Border Margin="10" Background="#1E1E1E" CornerRadius="12">
-                 <Grid Margin="20">
+            <!-- Coolant Temp Gauge -->
+            <Border Margin="6" Background="#1E1E1E" CornerRadius="10">
+                <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <TextBlock Text="{Binding CoolantTemp, StringFormat={}{0:F0}}" Foreground="#F44336" FontSize="48" FontWeight="Bold" HorizontalAlignment="Center"/>
-                        <TextBlock Text="°C" Foreground="#AAAAAA" FontSize="18" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding CoolantTemp, StringFormat={}{0:F0}}" Foreground="#F44336" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="°C" Foreground="#AAAAAA" FontSize="14" HorizontalAlignment="Center"/>
                     </StackPanel>
-                    <TextBlock Grid.Row="1" Text="Coolant Temp" Foreground="#666666" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                    <TextBlock Grid.Row="1" Text="Coolant Temp" Foreground="#666666" FontSize="11" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                </Grid>
+            </Border>
+
+            <!-- MAF Gauge -->
+            <Border Margin="6" Background="#1E1E1E" CornerRadius="10">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding MafAirFlow, StringFormat={}{0:F1}}" Foreground="#7C4DFF" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="g/s" Foreground="#AAAAAA" FontSize="14" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Grid.Row="1" Text="MAF Air Flow" Foreground="#666666" FontSize="11" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                </Grid>
+            </Border>
+
+            <!-- Throttle Position Gauge -->
+            <Border Margin="6" Background="#1E1E1E" CornerRadius="10">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding ThrottlePosition, StringFormat={}{0:F1}}" Foreground="#00BCD4" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="%" Foreground="#AAAAAA" FontSize="14" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Grid.Row="1" Text="Throttle" Foreground="#666666" FontSize="11" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                </Grid>
+            </Border>
+
+            <!-- Intake Air Temp Gauge -->
+            <Border Margin="6" Background="#1E1E1E" CornerRadius="10">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding IntakeAirTemp, StringFormat={}{0:F0}}" Foreground="#FFEB3B" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="°C" Foreground="#AAAAAA" FontSize="14" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Grid.Row="1" Text="Intake Air" Foreground="#666666" FontSize="11" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                </Grid>
+            </Border>
+
+            <!-- Manifold Pressure Gauge -->
+            <Border Margin="6" Background="#1E1E1E" CornerRadius="10">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding ManifoldPressure, StringFormat={}{0:F0}}" Foreground="#E91E63" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="kPa" Foreground="#AAAAAA" FontSize="14" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Grid.Row="1" Text="MAP" Foreground="#666666" FontSize="11" HorizontalAlignment="Center" Margin="0,6,0,0"/>
                 </Grid>
             </Border>
         </UniformGrid>
 
+        <!-- Real-time Chart Panel (Collapsible) -->
+        <Border Grid.Row="2" Background="#1E1E1E" CornerRadius="10" Margin="0,10,0,0"
+                Visibility="{Binding IsChartVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid Margin="16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="180"/>
+                </Grid.RowDefinitions>
+                
+                <TextBlock Text="REAL-TIME TRENDS" Foreground="#AAAAAA" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                
+                <lvc:CartesianChart Grid.Row="1" 
+                                    Series="{Binding ChartSeries}"
+                                    XAxes="{Binding XAxes}"
+                                    YAxes="{Binding YAxesRpm}"
+                                    TooltipPosition="Hidden"
+                                    AnimationsSpeed="00:00:00.100">
+                    <lvc:CartesianChart.Background>
+                        <SolidColorBrush Color="Transparent"/>
+                    </lvc:CartesianChart.Background>
+                </lvc:CartesianChart>
+            </Grid>
+        </Border>
+
         <!-- Controls -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Content="{Binding IsChartVisible, Converter={StaticResource ChartButtonTextConverter}}" 
+                    Command="{Binding ToggleChartVisibilityCommand}"
+                    Padding="20,12" FontSize="14" FontWeight="SemiBold"
+                    Background="#2D2D2D" Foreground="#AAAAAA" BorderThickness="0" Margin="0,0,10,0">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="6"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
             <Button Content="{Binding IsStreaming, Converter={StaticResource StreamButtonTextConverter}}" 
                     Command="{Binding ToggleStreamingCommand}"
                     Padding="30,12" FontSize="16" FontWeight="SemiBold"

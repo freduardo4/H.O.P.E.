@@ -1,0 +1,16 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  HOPE.Core -> C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\bin\Debug\net8.0-windows\HOPE.Core.dll
+C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Desktop\ViewModels\SessionHistoryViewModel.cs(60,29): warning CS8601: Possible null reference assignment. [C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Desktop\HOPE.Desktop_ryclaiko_wpftmp.csproj]
+C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Desktop\ViewModels\SessionHistoryViewModel.cs(128,30): error CS0103: The name 'Path' does not exist in the current context [C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Desktop\HOPE.Desktop_ryclaiko_wpftmp.csproj]
+C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Desktop\ViewModels\SessionHistoryViewModel.cs(163,30): error CS0103: The name 'Path' does not exist in the current context [C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Desktop\HOPE.Desktop_ryclaiko_wpftmp.csproj]
+
+Build FAILED.
+
+C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Desktop\ViewModels\SessionHistoryViewModel.cs(60,29): warning CS8601: Possible null reference assignment. [C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Desktop\HOPE.Desktop_ryclaiko_wpftmp.csproj]
+C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Desktop\ViewModels\SessionHistoryViewModel.cs(128,30): error CS0103: The name 'Path' does not exist in the current context [C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Desktop\HOPE.Desktop_ryclaiko_wpftmp.csproj]
+C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Desktop\ViewModels\SessionHistoryViewModel.cs(163,30): error CS0103: The name 'Path' does not exist in the current context [C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Desktop\HOPE.Desktop_ryclaiko_wpftmp.csproj]
+    1 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:02.55

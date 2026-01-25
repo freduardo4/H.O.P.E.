@@ -10,5 +10,12 @@
         <converters:StreamButtonColorConverter x:Key="StreamButtonColorConverter"/>
         <converters:RpmAxisConverter x:Key="RpmAxisConverter"/>
         <converters:ValueToHeatmapConverter x:Key="ValueToHeatmapConverter"/>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+        <converters:NullToBooleanConverter x:Key="NullToBooleanConverter"/>
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <converters:ChartButtonTextConverter x:Key="ChartButtonTextConverter"/>
+        <converters:BooleanToAnomalyColorConverter x:Key="BooleanToAnomalyColorConverter"/>
     </Application.Resources>
 </prism:PrismApplication>

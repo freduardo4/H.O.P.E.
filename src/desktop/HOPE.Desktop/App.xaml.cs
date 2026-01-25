@@ -3,6 +3,8 @@ using HOPE.Core.Services.OBD;
 using HOPE.Core.Services.Database;
 using HOPE.Core.Protocols;
 using HOPE.Core.Services.ECU;
+using HOPE.Core.Services.AI;
+using HOPE.Core.Services.Export;
 using HOPE.Desktop.Views;
 using Prism.DryIoc;
 using Prism.Ioc;
@@ -28,6 +30,12 @@ public partial class App : PrismApplication
         containerRegistry.RegisterSingleton<IDiagnosticProtocol, UDSProtocol>();
         containerRegistry.RegisterSingleton<IECUService, ECUService>();
         
+        // AI Services
+        containerRegistry.RegisterSingleton<IAnomalyService, MockAnomalyService>();
+        
+        // Export Services
+        containerRegistry.RegisterSingleton<IExportService, ExportService>();
+        
         // For development, we'll use the Mock service
         // containerRegistry.RegisterSingleton<IOBD2Service, OBD2Service>();
         containerRegistry.RegisterSingleton<IOBD2Service, MockOBD2Service>();
@@ -35,6 +43,9 @@ public partial class App : PrismApplication
         // Register Views for Navigation
         containerRegistry.RegisterForNavigation<DashboardView>();
         containerRegistry.RegisterForNavigation<MapVisualizationView>();
+        containerRegistry.RegisterForNavigation<DTCView>();
+        containerRegistry.RegisterForNavigation<SettingsView>();
+        containerRegistry.RegisterForNavigation<SessionHistoryView>();
     }
 
     protected override async void OnInitialized()

@@ -1,0 +1,19 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\Services\Export\ExportService.cs(31,26): error CS0103: The name 'Path' does not exist in the current context [C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\HOPE.Core.csproj]
+C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\Services\Export\ExportService.cs(32,9): error CS0103: The name 'Directory' does not exist in the current context [C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\HOPE.Core.csproj]
+C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\Services\Export\ExportService.cs(63,15): error CS0103: The name 'File' does not exist in the current context [C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\HOPE.Core.csproj]
+C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\Services\OBD\MockOBD2Service.cs(10,26): warning CS0649: Field 'MockOBD2Service._simulationTimer' is never assigned to, and will always have its default value null [C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\HOPE.Core.csproj]
+C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\Services\OBD\MockOBD2Service.cs(20,52): warning CS0067: The event 'MockOBD2Service.ErrorOccurred' is never used [C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\HOPE.Core.csproj]
+
+Build FAILED.
+
+C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\Services\OBD\MockOBD2Service.cs(10,26): warning CS0649: Field 'MockOBD2Service._simulationTimer' is never assigned to, and will always have its default value null [C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\HOPE.Core.csproj]
+C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\Services\OBD\MockOBD2Service.cs(20,52): warning CS0067: The event 'MockOBD2Service.ErrorOccurred' is never used [C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\HOPE.Core.csproj]
+C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\Services\Export\ExportService.cs(31,26): error CS0103: The name 'Path' does not exist in the current context [C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\HOPE.Core.csproj]
+C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\Services\Export\ExportService.cs(32,9): error CS0103: The name 'Directory' does not exist in the current context [C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\HOPE.Core.csproj]
+C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\Services\Export\ExportService.cs(63,15): error CS0103: The name 'File' does not exist in the current context [C:\Users\Test\Documents\H.O.P.E\src\desktop\HOPE.Core\HOPE.Core.csproj]
+    2 Warning(s)
+    3 Error(s)
+
+Time Elapsed 00:00:02.30
