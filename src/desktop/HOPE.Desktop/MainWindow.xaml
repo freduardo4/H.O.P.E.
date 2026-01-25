@@ -1,0 +1,43 @@
+﻿<Window x:Class="HOPE.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:prism="http://prismlibrary.com/"
+        mc:Ignorable="d"
+        Title="H.O.P.E - High-Output Performance Engineering" Height="700" Width="1000"
+        Background="#121212" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar -->
+        <Border Grid.Column="0" Background="#1E1E1E" BorderBrush="#333333" BorderThickness="0,0,1,0">
+            <StackPanel Margin="10,40,10,10">
+                <TextBlock Text="H.O.P.E" Foreground="White" FontSize="28" FontWeight="Bold" Margin="0,0,0,30" HorizontalAlignment="Center"/>
+                
+                <RadioButton Content="Dashboard" 
+                             Style="{StaticResource {x:Type ToggleButton}}"
+                             Command="{Binding NavigateCommand}" CommandParameter="DashboardView"
+                             IsChecked="True"
+                             Padding="15,10" Margin="0,5" Background="Transparent" Foreground="#AAAAAA" BorderThickness="0"/>
+                
+                <RadioButton Content="ECU Tuning" 
+                             Style="{StaticResource {x:Type ToggleButton}}"
+                             Command="{Binding NavigateCommand}" CommandParameter="MapVisualizationView"
+                             Padding="15,10" Margin="0,5" Background="Transparent" Foreground="#AAAAAA" BorderThickness="0"/>
+                
+                <Separator Background="#333333" Margin="0,20"/>
+                
+                <TextBlock Text="TOOLS" Foreground="#555555" FontSize="11" FontWeight="Bold" Margin="10,0,0,10"/>
+                <Button Content="Settings" Background="Transparent" Foreground="#AAAAAA" BorderThickness="0" HorizontalAlignment="Left" Margin="10,5"/>
+                <Button Content="Logs" Background="Transparent" Foreground="#AAAAAA" BorderThickness="0" HorizontalAlignment="Left" Margin="10,5"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Content Area -->
+        <ContentControl Grid.Column="1" prism:RegionManager.RegionName="MainRegion" />
+    </Grid>
+</Window>

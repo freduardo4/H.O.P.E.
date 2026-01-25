@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # TimescaleDB: Professional PostgreSQL-based time-series database
+  database:
+    image: timescale/timescaledb:latest-pg16
+    container_name: hope-timescaledb
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - hope-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # LocalStack: For local emulation of AWS S3 (ECU file storage)
+  localstack:
+    image: localstack/localstack:latest
+    container_name: hope-localstack
+    ports:
+      - "4566:4566"            # Edge Port
+      - "4510-4559:4510-4559"  # Service range
+    environment:
+      - SERVICES=${LOCALSTACK_SERVICES:-s3}
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "./localstack-init:/etc/localstack/init/ready.d"
+      - localstack_data:/var/lib/localstack
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - hope-network
+
+  # pgAdmin: Database administration UI
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: hope-pgadmin
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "5050:80"
+    depends_on:
+      - database
+    networks:
+      - hope-network
+
+networks:
+  hope-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  localstack_data:

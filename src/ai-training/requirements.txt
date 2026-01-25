@@ -1,0 +1,23 @@
+﻿# HOPE AI Training Dependencies
+# Machine Learning and Data Processing
+
+# Deep Learning Frameworks (choose one)
+tensorflow==2.15.0
+# pytorch==2.2.0  # Alternative to TensorFlow
+
+# ONNX Export
+onnx==1.15.0
+tf2onnx==1.16.0
+
+# Data Processing
+pandas==2.2.0
+numpy==1.26.3
+scikit-learn==1.4.0
+
+# Visualization
+matplotlib==3.8.2
+seaborn==0.13.1
+
+# Utilities
+tqdm==4.66.1
+jupyter==1.0.0

@@ -5,15 +5,15 @@ namespace HOPE.Core.Models;
 /// </summary>
 public class DiagnosticSession
 {
-    public Guid SessionId { get; set; }
+    public Guid Id { get; set; }
     public Guid VehicleId { get; set; }
     public Guid TechnicianId { get; set; }
 
     public SessionType SessionType { get; set; } = SessionType.Diagnostic;
     public SessionStatus Status { get; set; } = SessionStatus.InProgress;
 
-    public DateTime StartedAt { get; set; } = DateTime.UtcNow;
-    public DateTime? CompletedAt { get; set; }
+    public DateTime StartTime { get; set; } = DateTime.UtcNow;
+    public DateTime? EndTime { get; set; }
 
     /// <summary>
     /// Baseline snapshot of vehicle state at session start
@@ -58,12 +58,12 @@ public class DiagnosticSession
     /// <summary>
     /// Duration of the session
     /// </summary>
-    public TimeSpan? Duration => CompletedAt.HasValue
-        ? CompletedAt.Value - StartedAt
-        : DateTime.UtcNow - StartedAt;
+    public TimeSpan? Duration => EndTime.HasValue
+        ? EndTime.Value - StartTime
+        : DateTime.UtcNow - StartTime;
 
     public override string ToString() =>
-        $"Session {SessionId:N} - {SessionType} ({Status}) - Started: {StartedAt:g}";
+        $"Session {Id:N} - {SessionType} ({Status}) - Started: {StartTime:g}";
 }
 
 /// <summary>

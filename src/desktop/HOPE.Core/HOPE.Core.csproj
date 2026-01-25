@@ -1,42 +1,19 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Authors>HOPE Team</Authors>
-    <Company>High-Output Performance Engineering</Company>
-    <Product>HOPE - Vehicle Diagnostics &amp; Tuning</Product>
-    <Description>Core business logic library for HOPE platform</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- MVVM and Dependency Injection -->
-    <PackageReference Include="Prism.DryIoc" Version="8.1.97" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-
-    <!-- AI/ML Inference -->
-    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.17.0" />
-
-    <!-- Database -->
     <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.0" />
-    <PackageReference Include="Dapper" Version="2.1.28" />
-
-    <!-- Serial Communication (for OBD2) -->
-    <PackageReference Include="System.IO.Ports" Version="8.0.0" />
-
-    <!-- Reactive Extensions -->
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.17.0" />
+    <PackageReference Include="Prism.DryIoc" Version="8.1.97" />
     <PackageReference Include="System.Reactive" Version="6.0.0" />
-
-    <!-- JSON -->
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-
-    <!-- Logging -->
-    <PackageReference Include="Serilog" Version="3.1.1" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
+    <PackageReference Include="System.IO.Ports" Version="8.0.0" />
   </ItemGroup>
 
 </Project>

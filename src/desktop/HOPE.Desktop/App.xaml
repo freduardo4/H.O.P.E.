@@ -1,0 +1,14 @@
+﻿<prism:PrismApplication x:Class="HOPE.Desktop.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:converters="clr-namespace:HOPE.Desktop.Converters"
+             xmlns:local="clr-namespace:HOPE.Desktop">
+    <Application.Resources>
+        <converters:BooleanToStatusColorConverter x:Key="BooleanToStatusColorConverter"/>
+        <converters:StreamButtonTextConverter x:Key="StreamButtonTextConverter"/>
+        <converters:StreamButtonColorConverter x:Key="StreamButtonColorConverter"/>
+        <converters:RpmAxisConverter x:Key="RpmAxisConverter"/>
+        <converters:ValueToHeatmapConverter x:Key="ValueToHeatmapConverter"/>
+    </Application.Resources>
+</prism:PrismApplication>
