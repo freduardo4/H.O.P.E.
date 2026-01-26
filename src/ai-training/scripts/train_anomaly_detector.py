@@ -239,13 +239,16 @@ class LSTMAutoencoder:
 
         with open(path / 'config.json', 'w') as f:
             json.dump({
-                'sequence_length': self.sequence_length,
-                'n_features': self.n_features,
-                'latent_dim': self.latent_dim,
+                'SequenceLength': self.sequence_length,
+                'NumFeatures': self.n_features,
+                'LatentDim': self.latent_dim,
                 'encoder_units': self.encoder_units,
                 'decoder_units': self.decoder_units,
-                'threshold': float(self.threshold) if self.threshold else None,
-                'features': OBD2_FEATURES,
+                'Threshold': float(self.threshold) if self.threshold else None,
+                'Features': OBD2_FEATURES,
+                # Scaler parameters for C# service
+                'ScalerMean': self.scaler.mean_.tolist() if hasattr(self.scaler, 'mean_') else None,
+                'ScalerStd': self.scaler.scale_.tolist() if hasattr(self.scaler, 'scale_') else None,
             }, f, indent=2)
 
         logger.info(f"Model saved to {path}")

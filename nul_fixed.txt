@@ -1,0 +1,11 @@
+c:\Users\Test\Documents\H.O.P.E\src\backend\src:
+total 21
+drwxr-xr-x 1 Test 197121   0 Jan 25 18:48 .
+drwxr-xr-x 1 Test 197121   0 Jan 25 18:28 ..
+-rw-r--r-- 1 Test 197121 601 Jan 25 18:48 app.module.ts
+drwxr-xr-x 1 Test 197121   0 Jan 25 14:29 common
+drwxr-xr-x 1 Test 197121   0 Jan 25 18:48 config
+drwxr-xr-x 1 Test 197121   0 Jan 25 14:04 database
+drwxr-xr-x 1 Test 197121   0 Jan 25 18:27 health
+-rw-r--r-- 1 Test 197121 220 Jan 25 14:30 main.ts
+drwxr-xr-x 1 Test 197121   0 Jan 25 14:29 modules

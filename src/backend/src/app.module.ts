@@ -4,6 +4,9 @@ import { HealthModule } from './health';
 import { AuthModule } from './modules/auth';
 import { VehiclesModule } from './modules/vehicles';
 import { DiagnosticsModule } from './modules/diagnostics';
+import { ECUCalibrationsModule } from './modules/ecu-calibrations';
+import { ReportsModule } from './modules/reports';
+import { CustomersModule } from './modules/customers';
 import { getDatabaseConfig } from './config';
 
 @Module({
@@ -13,6 +16,9 @@ import { getDatabaseConfig } from './config';
         AuthModule,
         VehiclesModule,
         DiagnosticsModule,
+        ECUCalibrationsModule,
+        ReportsModule,
+        CustomersModule,
     ],
     controllers: [],
     providers: [],
