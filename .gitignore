@@ -21,6 +21,7 @@ yarn-error.log*
 # IDEs
 .vscode/
 .idea/
+.obsidian/
 *.swp
 *.swo
 
