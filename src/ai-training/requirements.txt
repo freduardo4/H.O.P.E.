@@ -1,24 +1,25 @@
 ﻿# HOPE AI Training Dependencies
 # Machine Learning and Data Processing
 
-# Deep Learning Frameworks (choose one)
-tensorflow==2.15.0
-# pytorch==2.2.0  # Alternative to TensorFlow
+# Deep Learning Framework - PyTorch (TensorFlow not compatible with Python 3.14)
+torch>=2.0.0
+torchvision>=0.15.0
 
 # ONNX Export
-onnx==1.15.0
-tf2onnx==1.16.0
+onnx>=1.17.0
 
 # Data Processing
-pandas==2.2.0
-numpy==1.26.3
-scikit-learn==1.4.0
+pandas>=2.2.0
+numpy>=1.26.0,<3.0.0
+scikit-learn>=1.4.0
 
 # Visualization
-matplotlib==3.8.2
-seaborn==0.13.1
+matplotlib>=3.8.0
+seaborn>=0.13.0
 
 # Utilities
-tqdm==4.66.1
-jupyter==1.0.0
-joblib==1.3.2
+tqdm>=4.66.0
+jupyter>=1.0.0
+joblib>=1.3.0
+
+

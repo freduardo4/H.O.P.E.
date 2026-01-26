@@ -25,10 +25,10 @@ from typing import Tuple, List, Dict, Any
 
 import numpy as np
 import pandas as pd
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers, Model
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import Dataset, DataLoader, TensorDataset
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import joblib
@@ -64,8 +64,10 @@ EPOCHS = 100
 LEARNING_RATE = 0.001
 VALIDATION_SPLIT = 0.2
 
+# Check for GPU
+DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-class LSTMAutoencoder:
+class LSTMAutoencoder(nn.Module):
     """LSTM Autoencoder for vehicle anomaly detection."""
 
     def __init__(
@@ -76,84 +78,90 @@ class LSTMAutoencoder:
         encoder_units: int = ENCODER_UNITS,
         decoder_units: int = DECODER_UNITS,
     ):
+        super(LSTMAutoencoder, self).__init__()
         self.sequence_length = sequence_length
         self.n_features = n_features
         self.latent_dim = latent_dim
         self.encoder_units = encoder_units
         self.decoder_units = decoder_units
-        self.model = None
-        self.encoder = None
         self.threshold = None
-        self.scaler = StandardScaler()
-
-    def build_model(self) -> Model:
-        """Build the LSTM Autoencoder architecture."""
+        
         # Encoder
-        inputs = keras.Input(shape=(self.sequence_length, self.n_features))
-
-        # LSTM Encoder layers
-        x = layers.LSTM(
-            self.encoder_units,
-            activation='tanh',
-            return_sequences=True,
-            name='encoder_lstm_1'
-        )(inputs)
-        x = layers.Dropout(0.2)(x)
-
-        x = layers.LSTM(
-            self.latent_dim,
-            activation='tanh',
-            return_sequences=False,
-            name='encoder_lstm_2'
-        )(x)
-
-        # Latent space
-        latent = layers.Dense(self.latent_dim, activation='relu', name='latent')(x)
-
-        # Decoder
-        x = layers.RepeatVector(self.sequence_length)(latent)
-
-        x = layers.LSTM(
-            self.latent_dim,
-            activation='tanh',
-            return_sequences=True,
-            name='decoder_lstm_1'
-        )(x)
-        x = layers.Dropout(0.2)(x)
-
-        x = layers.LSTM(
-            self.decoder_units,
-            activation='tanh',
-            return_sequences=True,
-            name='decoder_lstm_2'
-        )(x)
-
-        # Output layer
-        outputs = layers.TimeDistributed(
-            layers.Dense(self.n_features),
-            name='output'
-        )(x)
-
-        # Build model
-        self.model = Model(inputs, outputs, name='lstm_autoencoder')
-
-        # Build encoder for latent space extraction
-        self.encoder = Model(inputs, latent, name='encoder')
-
-        # Compile
-        self.model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate=LEARNING_RATE),
-            loss='mse',
-            metrics=['mae']
+        self.encoder_lstm1 = nn.LSTM(
+            input_size=n_features,
+            hidden_size=encoder_units,
+            batch_first=True
         )
+        self.encoder_dropout = nn.Dropout(0.2)
+        self.encoder_lstm2 = nn.LSTM(
+            input_size=encoder_units,
+            hidden_size=latent_dim,
+            batch_first=True
+        )
+        self.latent_layer = nn.Linear(latent_dim, latent_dim)
+        self.latent_activation = nn.ReLU()
+        
+        # Decoder
+        self.decoder_lstm1 = nn.LSTM(
+            input_size=latent_dim,
+            hidden_size=latent_dim,
+            batch_first=True
+        )
+        self.decoder_dropout = nn.Dropout(0.2)
+        self.decoder_lstm2 = nn.LSTM(
+            input_size=latent_dim,
+            hidden_size=decoder_units,
+            batch_first=True
+        )
+        self.output_layer = nn.Linear(decoder_units, n_features)
 
-        return self.model
+    def forward(self, x):
+        # Encoder
+        x, _ = self.encoder_lstm1(x)
+        x = self.encoder_dropout(x)
+        _, (hidden, _) = self.encoder_lstm2(x)
+        
+        # Latent space (using hidden state from last timestep)
+        # hidden shape: (1, batch, latent_dim) -> (batch, latent_dim)
+        latent = hidden[-1]
+        latent = self.latent_layer(latent)
+        latent = self.latent_activation(latent)
+        
+        # Decoder
+        # Repeat vector: (batch, latent) -> (batch, seq, latent)
+        x = latent.unsqueeze(1).repeat(1, self.sequence_length, 1)
+        
+        x, _ = self.decoder_lstm1(x)
+        x = self.decoder_dropout(x)
+        x, _ = self.decoder_lstm2(x)
+        
+        # Output layer applied to each timestep
+        outputs = self.output_layer(x)
+        
+        return outputs
 
-    def prepare_sequences(self, data: np.ndarray) -> np.ndarray:
+    def get_latent_representation(self, x):
+        self.eval()
+        with torch.no_grad():
+            x, _ = self.encoder_lstm1(x)
+            _, (hidden, _) = self.encoder_lstm2(x)
+            latent = hidden[-1]
+            return self.latent_activation(self.latent_layer(latent))
+
+class AnomalyDetector:
+    """Wrapper for training and using the LSTM Autoencoder."""
+    
+    def __init__(self, model_params: Dict[str, Any] = None):
+        self.model_params = model_params or {}
+        self.model = LSTMAutoencoder(**self.model_params).to(DEVICE)
+        self.scaler = StandardScaler()
+        self.threshold = None
+        
+    def prepare_sequences(self, data: np.ndarray, sequence_length: int) -> np.ndarray:
         """Convert time series data into sequences for LSTM."""
         sequences = []
-        for i in range(len(data) - self.sequence_length + 1):
-            sequences.append(data[i:i + self.sequence_length])
+        for i in range(len(data) - sequence_length + 1):
+            sequences.append(data[i:i + sequence_length])
         return np.array(sequences)
 
     def fit(
@@ -162,88 +170,156 @@ class LSTMAutoencoder:
         X_val: np.ndarray = None,
         epochs: int = EPOCHS,
         batch_size: int = BATCH_SIZE,
-        callbacks: List = None,
-    ) -> keras.callbacks.History:
+        learning_rate: float = LEARNING_RATE,
+    ) -> Dict[str, List[float]]:
         """Train the autoencoder model."""
-        if self.model is None:
-            self.build_model()
-
+        
         # Fit scaler on training data
-        X_train_flat = X_train.reshape(-1, self.n_features)
+        n_features = X_train.shape[1] if len(X_train.shape) == 2 else X_train.shape[2]
+        X_train_flat = X_train.reshape(-1, n_features)
         self.scaler.fit(X_train_flat)
-
+        
         # Transform data
         X_train_scaled = self._scale_sequences(X_train)
         X_val_scaled = self._scale_sequences(X_val) if X_val is not None else None
-
-        validation_data = (X_val_scaled, X_val_scaled) if X_val_scaled is not None else None
-
-        history = self.model.fit(
-            X_train_scaled,
-            X_train_scaled,
-            epochs=epochs,
-            batch_size=batch_size,
-            validation_data=validation_data,
-            callbacks=callbacks,
-            verbose=1,
+        
+        # Create dataloaders
+        train_dataset = TensorDataset(
+            torch.FloatTensor(X_train_scaled),
+            torch.FloatTensor(X_train_scaled) # Target is same as input
         )
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        
+        val_loader = None
+        if X_val_scaled is not None:
+            val_dataset = TensorDataset(
+                torch.FloatTensor(X_val_scaled),
+                torch.FloatTensor(X_val_scaled)
+            )
+            val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
+        # Setup training
+        criterion = nn.MSELoss()
+        optimizer = optim.Adam(self.model.parameters(), lr=learning_rate)
+        
+        history = {'loss': [], 'val_loss': []}
+        best_val_loss = float('inf')
+        patience_counter = 0
+        patience = 10
+        
+        logger.info(f"Training on {DEVICE}")
+        
+        for epoch in range(epochs):
+            # Training loop
+            self.model.train()
+            train_loss = 0.0
+            
+            for inputs, targets in train_loader:
+                inputs, targets = inputs.to(DEVICE), targets.to(DEVICE)
+                
+                optimizer.zero_grad()
+                outputs = self.model(inputs)
+                loss = criterion(outputs, targets)
+                loss.backward()
+                optimizer.step()
+                
+                train_loss += loss.item() * inputs.size(0)
+                
+            train_loss /= len(train_loader.dataset)
+            history['loss'].append(train_loss)
+            
+            # Validation loop
+            val_loss = 0.0
+            if val_loader:
+                self.model.eval()
+                with torch.no_grad():
+                    for inputs, targets in val_loader:
+                        inputs, targets = inputs.to(DEVICE), targets.to(DEVICE)
+                        outputs = self.model(inputs)
+                        loss = criterion(outputs, targets)
+                        val_loss += loss.item() * inputs.size(0)
+                
+                val_loss /= len(val_loader.dataset)
+                history['val_loss'].append(val_loss)
+                
+                # Early stopping
+                if val_loss < best_val_loss:
+                    best_val_loss = val_loss
+                    patience_counter = 0
+                    torch.save(self.model.state_dict(), 'best_model.pth')
+                else:
+                    patience_counter += 1
+                    
+            logger.info(f"Epoch {epoch+1}/{epochs} - loss: {train_loss:.6f} - val_loss: {val_loss:.6f}")
+            
+            if patience_counter >= patience:
+                logger.info("Early stopping triggered")
+                break
+                
+        # Load best model
+        if val_loader and os.path.exists('best_model.pth'):
+            self.model.load_state_dict(torch.load('best_model.pth'))
+            os.remove('best_model.pth')
+            
         # Calculate threshold on training data
         self._calculate_threshold(X_train_scaled)
-
+        
         return history
 
     def _scale_sequences(self, sequences: np.ndarray) -> np.ndarray:
         """Scale sequences using the fitted scaler."""
         original_shape = sequences.shape
-        flat = sequences.reshape(-1, self.n_features)
-        scaled = self.scaler.transform(flat)
-        return scaled.reshape(original_shape)
+        # Handle cases where input is already sequences or raw 2D data
+        if len(original_shape) == 3:
+            flat = sequences.reshape(-1, original_shape[2])
+            scaled = self.scaler.transform(flat)
+            return scaled.reshape(original_shape)
+        else:
+            return self.scaler.transform(sequences)
 
     def _calculate_threshold(self, X: np.ndarray, percentile: float = 95):
         """Calculate anomaly threshold based on reconstruction errors."""
-        reconstructions = self.model.predict(X, verbose=0)
+        self.model.eval()
+        with torch.no_grad():
+            inputs = torch.FloatTensor(X).to(DEVICE)
+            reconstructions = self.model(inputs).cpu().numpy()
+            
         mse = np.mean(np.power(X - reconstructions, 2), axis=(1, 2))
         self.threshold = np.percentile(mse, percentile)
+        self.model.threshold = float(self.threshold)
         logger.info(f"Anomaly threshold set to: {self.threshold:.6f}")
-
-    def predict(self, X: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        """Predict reconstruction and anomaly scores."""
-        X_scaled = self._scale_sequences(X)
-        reconstructions = self.model.predict(X_scaled, verbose=0)
-        mse = np.mean(np.power(X_scaled - reconstructions, 2), axis=(1, 2))
-        return reconstructions, mse
 
     def detect_anomalies(self, X: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """Detect anomalies in the input sequences."""
-        _, mse = self.predict(X)
+        X_scaled = self._scale_sequences(X)
+        
+        self.model.eval()
+        with torch.no_grad():
+            inputs = torch.FloatTensor(X_scaled).to(DEVICE)
+            reconstructions = self.model(inputs).cpu().numpy()
+            
+        mse = np.mean(np.power(X_scaled - reconstructions, 2), axis=(1, 2))
         anomalies = mse > self.threshold
         return anomalies, mse
-
-    def get_latent_representation(self, X: np.ndarray) -> np.ndarray:
-        """Get latent space representation of input sequences."""
-        X_scaled = self._scale_sequences(X)
-        return self.encoder.predict(X_scaled, verbose=0)
 
     def save(self, path: str):
         """Save model, scaler, and threshold."""
         path = Path(path)
         path.mkdir(parents=True, exist_ok=True)
 
-        # Save Keras model
-        self.model.save(path / 'model.keras')
-        self.encoder.save(path / 'encoder.keras')
-
-        # Save scaler and threshold
+        # Save PyTorch model
+        torch.save(self.model.state_dict(), path / 'model.pth')
+        
+        # Save scaler
         joblib.dump(self.scaler, path / 'scaler.joblib')
 
         with open(path / 'config.json', 'w') as f:
             json.dump({
-                'SequenceLength': self.sequence_length,
-                'NumFeatures': self.n_features,
-                'LatentDim': self.latent_dim,
-                'encoder_units': self.encoder_units,
-                'decoder_units': self.decoder_units,
+                'SequenceLength': self.model.sequence_length,
+                'NumFeatures': self.model.n_features,
+                'LatentDim': self.model.latent_dim,
+                'encoder_units': self.model.encoder_units,
+                'decoder_units': self.model.decoder_units,
                 'Threshold': float(self.threshold) if self.threshold else None,
                 'Features': OBD2_FEATURES,
                 # Scaler parameters for C# service
@@ -254,25 +330,26 @@ class LSTMAutoencoder:
         logger.info(f"Model saved to {path}")
 
     @classmethod
-    def load(cls, path: str) -> 'LSTMAutoencoder':
+    def load(cls, path: str) -> 'AnomalyDetector':
         """Load a saved model."""
         path = Path(path)
 
         with open(path / 'config.json', 'r') as f:
             config = json.load(f)
 
-        instance = cls(
-            sequence_length=config['sequence_length'],
-            n_features=config['n_features'],
-            latent_dim=config['latent_dim'],
-            encoder_units=config['encoder_units'],
-            decoder_units=config['decoder_units'],
-        )
-
-        instance.model = keras.models.load_model(path / 'model.keras')
-        instance.encoder = keras.models.load_model(path / 'encoder.keras')
+        params = {
+            'sequence_length': config.get('SequenceLength', config.get('sequence_length')),
+            'n_features': config.get('NumFeatures', config.get('n_features')),
+            'latent_dim': config.get('LatentDim', config.get('latent_dim')),
+            'encoder_units': config.get('encoder_units', 64),
+            'decoder_units': config.get('decoder_units', 64),
+        }
+        
+        instance = cls(params)
+        instance.model.load_state_dict(torch.load(path / 'model.pth', map_location=DEVICE))
         instance.scaler = joblib.load(path / 'scaler.joblib')
-        instance.threshold = config['threshold']
+        instance.threshold = config.get('Threshold', config.get('threshold'))
+        instance.model.threshold = instance.threshold
 
         return instance
 
@@ -350,8 +427,8 @@ def generate_synthetic_data(
                     stft += np.random.uniform(-15, 15)
                     ltft += np.random.uniform(-10, 10)
                 elif anomaly_type == 'sensor_fault':
-                    idx = np.random.randint(0, len(OBD2_FEATURES))
-                    # Will be handled below
+                    # Random noise for sensor fault
+                    pass 
 
             # Clamp values to realistic ranges
             rpm = np.clip(rpm, 0, 8000)
@@ -385,38 +462,36 @@ def generate_synthetic_data(
     return data, labels
 
 
-def export_to_onnx(model: LSTMAutoencoder, output_path: str):
+def export_to_onnx(detector: AnomalyDetector, output_path: str):
     """Export the model to ONNX format for desktop deployment."""
     try:
-        import tf2onnx
-
         logger.info("Exporting model to ONNX format...")
 
-        # Convert to ONNX
-        input_signature = [
-            tf.TensorSpec(
-                shape=(None, model.sequence_length, model.n_features),
-                dtype=tf.float32,
-                name='input'
-            )
-        ]
-
-        onnx_model, _ = tf2onnx.convert.from_keras(
-            model.model,
-            input_signature=input_signature,
-            opset=13,
-        )
-
+        # Dummy input for tracing
+        dummy_input = torch.randn(1, detector.model.sequence_length, detector.model.n_features).to(DEVICE)
+        
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-
-        with open(output_path, 'wb') as f:
-            f.write(onnx_model.SerializeToString())
+        
+        detector.model.eval()
+        torch.onnx.export(
+            detector.model,
+            dummy_input,
+            str(output_path),
+            export_params=True,
+            opset_version=14,
+            do_constant_folding=True,
+            input_names=['input'],
+            output_names=['output'],
+            dynamic_axes={
+                'input': {0: 'batch_size'},
+                'output': {0: 'batch_size'}
+            },
+            dynamo=False  # Use legacy exporter for compatibility
+        )
 
         logger.info(f"ONNX model saved to {output_path}")
 
-    except ImportError:
-        logger.warning("tf2onnx not installed. Skipping ONNX export.")
     except Exception as e:
         logger.error(f"Failed to export ONNX model: {e}")
 
@@ -455,16 +530,12 @@ def main():
             data, labels = generate_synthetic_data(n_vehicles=args.n_vehicles)
 
     # Initialize model
-    autoencoder = LSTMAutoencoder()
-    autoencoder.build_model()
-
-    logger.info("Model architecture:")
-    autoencoder.model.summary()
+    detector = AnomalyDetector()
 
     # Prepare sequences
     logger.info("Preparing sequences...")
-    sequences = autoencoder.prepare_sequences(data)
-
+    sequences = detector.prepare_sequences(data, SEQUENCE_LENGTH)
+    
     # Split into train/validation
     X_train, X_val = train_test_split(
         sequences, test_size=VALIDATION_SPLIT, random_state=42
@@ -473,67 +544,40 @@ def main():
     logger.info(f"Training samples: {len(X_train)}")
     logger.info(f"Validation samples: {len(X_val)}")
 
-    # Setup callbacks
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-
-    callbacks = [
-        EarlyStopping(
-            monitor='val_loss',
-            patience=10,
-            restore_best_weights=True,
-            verbose=1,
-        ),
-        ModelCheckpoint(
-            filepath=str(output_dir / f'checkpoint_{timestamp}.keras'),
-            monitor='val_loss',
-            save_best_only=True,
-            verbose=1,
-        ),
-        TensorBoard(
-            log_dir=str(output_dir / 'logs' / timestamp),
-            histogram_freq=1,
-        ),
-    ]
-
     # Train
     logger.info("Starting training...")
-    history = autoencoder.fit(
+    history = detector.fit(
         X_train,
         X_val,
         epochs=args.epochs,
         batch_size=args.batch_size,
-        callbacks=callbacks,
     )
 
     # Save model
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     model_path = output_dir / f'lstm_autoencoder_{timestamp}'
-    autoencoder.save(model_path)
+    detector.save(model_path)
 
     # Export to ONNX for desktop deployment
     onnx_path = output_dir / 'onnx' / 'anomaly_detector.onnx'
-    export_to_onnx(autoencoder, onnx_path)
+    export_to_onnx(detector, onnx_path)
 
     # Save training history
     history_path = output_dir / f'training_history_{timestamp}.json'
     with open(history_path, 'w') as f:
-        json.dump({
-            'loss': [float(x) for x in history.history['loss']],
-            'val_loss': [float(x) for x in history.history['val_loss']],
-            'mae': [float(x) for x in history.history['mae']],
-            'val_mae': [float(x) for x in history.history['val_mae']],
-        }, f, indent=2)
+        json.dump(history, f, indent=2)
 
     # Evaluate on validation set
     logger.info("Evaluating model...")
-    anomalies, scores = autoencoder.detect_anomalies(X_val)
+    anomalies, scores = detector.detect_anomalies(X_val)
 
     logger.info(f"Validation anomaly rate: {anomalies.mean()*100:.2f}%")
     logger.info(f"Mean reconstruction error: {scores.mean():.6f}")
-    logger.info(f"Threshold: {autoencoder.threshold:.6f}")
+    logger.info(f"Threshold: {detector.threshold:.6f}")
 
     logger.info("Training complete!")
 
-    return autoencoder
+    return detector
 
 
 if __name__ == '__main__':
