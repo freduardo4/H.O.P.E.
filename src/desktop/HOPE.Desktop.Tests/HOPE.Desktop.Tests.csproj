@@ -25,4 +25,13 @@
     <ProjectReference Include="..\HOPE.Core\HOPE.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Models\anomaly_detector.onnx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Models\config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

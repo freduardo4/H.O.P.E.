@@ -39,11 +39,14 @@ __pycache__/
 venv/
 .venv/
 
-# AI/ML Models (keep trained models out of version control)
+# AI/ML Training outputs (keep trained models out of version control)
 *.pth
-*.onnx
 *.joblib
 src/models/
 src/ai-training/data/
 src/ai-training/notebooks/
 best_model.pth
+
+# Desktop ONNX models should be tracked (override the general exclusion)
+!src/desktop/**/Models/*.onnx
+!src/desktop/**/Models/*.json

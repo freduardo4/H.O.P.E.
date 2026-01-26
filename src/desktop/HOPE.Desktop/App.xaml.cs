@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.IO;
+using System.Windows;
 using HOPE.Core.Services.OBD;
 using HOPE.Core.Services.Database;
 using HOPE.Core.Protocols;
@@ -30,8 +31,8 @@ public partial class App : PrismApplication
         containerRegistry.RegisterSingleton<IDiagnosticProtocol, UDSProtocol>();
         containerRegistry.RegisterSingleton<IECUService, ECUService>();
         
-        // AI Services
-        containerRegistry.RegisterSingleton<IAnomalyService, MockAnomalyService>();
+        // AI Services - use ONNX-based anomaly detection for production
+        containerRegistry.RegisterSingleton<IAnomalyService, OnnxAnomalyService>();
         
         // Export Services
         containerRegistry.RegisterSingleton<IExportService, ExportService>();
@@ -55,6 +56,17 @@ public partial class App : PrismApplication
         // Initialize Database
         var dbService = Container.Resolve<IDatabaseService>();
         await dbService.InitializeAsync();
+
+        // Load ONNX anomaly detection model
+        var anomalyService = Container.Resolve<IAnomalyService>();
+        if (anomalyService is OnnxAnomalyService onnxService)
+        {
+            var modelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Models", "anomaly_detector.onnx");
+            if (File.Exists(modelPath))
+            {
+                await onnxService.LoadModelAsync(modelPath);
+            }
+        }
 
         var regionManager = Container.Resolve<Prism.Regions.IRegionManager>();
         regionManager.RequestNavigate("MainRegion", "DashboardView");
