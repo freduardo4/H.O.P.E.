@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using HOPE.Core.Data;
 using HOPE.Core.Models;
 using HOPE.Core.Services.OBD;
 using System.Collections.ObjectModel;
@@ -42,12 +43,14 @@ public partial class DTCViewModel : ObservableObject
             
             foreach (var dtc in dtcs)
             {
+                var dtcInfo = DTCDatabase.GetInfo(dtc.Code);
                 DiagnosticCodes.Add(new DTCItem
                 {
                     Code = dtc.Code,
-                    Description = GetDTCDescription(dtc.Code),
-                    Severity = GetDTCSeverity(dtc.Code),
-                    Category = GetDTCCategory(dtc.Code)
+                    Description = dtcInfo?.Description ?? GetDTCDescription(dtc.Code),
+                    Severity = dtcInfo != null ? GetSeverityString(dtcInfo.Severity) : GetDTCSeverity(dtc.Code),
+                    Category = dtcInfo != null ? dtcInfo.Category.ToString() : GetDTCCategory(dtc.Code),
+                    PossibleCauses = dtcInfo?.PossibleCauses ?? []
                 });
             }
 
@@ -92,40 +95,38 @@ public partial class DTCViewModel : ObservableObject
         }
     }
 
-    private string GetDTCDescription(string code)
+    private static string GetSeverityString(DTCSeverity severity)
     {
-        // Common DTC descriptions lookup
-        var descriptions = new Dictionary<string, string>
+        return severity switch
         {
-            ["P0300"] = "Random/Multiple Cylinder Misfire Detected",
-            ["P0301"] = "Cylinder 1 Misfire Detected",
-            ["P0302"] = "Cylinder 2 Misfire Detected",
-            ["P0420"] = "Catalyst System Efficiency Below Threshold",
-            ["P0171"] = "System Too Lean (Bank 1)",
-            ["P0172"] = "System Too Rich (Bank 1)",
-            ["P0440"] = "Evaporative Emission Control System Malfunction",
-            ["P0442"] = "Evaporative Emission System Leak Detected (Small Leak)",
-            ["P0455"] = "Evaporative Emission System Leak Detected (Large Leak)",
-            ["P0500"] = "Vehicle Speed Sensor Malfunction",
-            ["P0113"] = "Intake Air Temperature Sensor High Input",
-            ["P0128"] = "Coolant Thermostat Below Thermostat Regulating Temperature"
+            DTCSeverity.Critical => "Critical",
+            DTCSeverity.High => "High",
+            DTCSeverity.Medium => "Medium",
+            DTCSeverity.Low => "Low",
+            _ => "Medium"
         };
-
-        return descriptions.TryGetValue(code, out var desc) ? desc : "Unknown code - check service manual";
     }
 
-    private string GetDTCSeverity(string code)
+    private static string GetDTCDescription(string code)
     {
+        return DTCDatabase.GetDescription(code);
+    }
+
+    private static string GetDTCSeverity(string code)
+    {
+        // Fallback for codes not in database
         if (code.StartsWith("P0") || code.StartsWith("P2"))
             return "Medium";
         if (code.StartsWith("P1"))
             return "Low";
-        return "High";
+        if (code.StartsWith("P3") || code.StartsWith("U"))
+            return "High";
+        return "Medium";
     }
 
-    private string GetDTCCategory(string code)
+    private static string GetDTCCategory(string code)
     {
-        if (code.StartsWith("P0"))
+        if (code.StartsWith("P"))
             return "Powertrain";
         if (code.StartsWith("B"))
             return "Body";
@@ -143,12 +144,20 @@ public class DTCItem
     public string Description { get; set; } = string.Empty;
     public string Severity { get; set; } = string.Empty;
     public string Category { get; set; } = string.Empty;
-    
+    public string[] PossibleCauses { get; set; } = [];
+
     public string SeverityColor => Severity switch
     {
-        "Low" => "#4CAF50",
-        "Medium" => "#FF9800",
+        "Critical" => "#D32F2F",
         "High" => "#F44336",
+        "Medium" => "#FF9800",
+        "Low" => "#4CAF50",
         _ => "#9E9E9E"
     };
+
+    public string CausesText => PossibleCauses.Length > 0
+        ? string.Join("\n• ", ["Possible causes:", .. PossibleCauses])
+        : "No diagnostic information available";
+
+    public bool HasCauses => PossibleCauses.Length > 0;
 }

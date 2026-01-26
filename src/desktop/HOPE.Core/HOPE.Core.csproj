@@ -5,6 +5,12 @@
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Description>HOPE Core - AI-powered vehicle diagnostics, ECU calibration, bi-directional control, and predictive maintenance engine</Description>
+    <Company>HOPE Tuning</Company>
+    <Product>High-Output Performance Engineering</Product>
+    <Copyright>Copyright © 2026 HOPE Tuning</Copyright>
+    <Authors>HOPE Development Team</Authors>
+    <RepositoryUrl>https://github.com/freduardo4/H.O.P.E</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

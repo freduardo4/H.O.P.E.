@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HOPE.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8fd6b7d595c119de446bc2465d9db2fbbb15faf5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cd2b93bb27ef5e2e7543bc35a0ce089693df87b7")]
 [assembly: System.Reflection.AssemblyProductAttribute("HOPE.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HOPE.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

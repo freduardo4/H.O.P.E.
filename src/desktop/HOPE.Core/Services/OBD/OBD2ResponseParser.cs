@@ -1,3 +1,4 @@
+using HOPE.Core.Data;
 using HOPE.Core.Models;
 
 namespace HOPE.Core.Services.OBD;
@@ -296,40 +297,36 @@ public static class OBD2ResponseParser
     }
 
     /// <summary>
-    /// Get description for common DTCs.
+    /// Get description for DTCs from the comprehensive database.
     /// </summary>
     private static string GetDTCDescription(string code)
     {
-        // Common DTC descriptions (in production, this would be a full database)
-        var descriptions = new Dictionary<string, string>
-        {
-            ["P0300"] = "Random/Multiple Cylinder Misfire Detected",
-            ["P0301"] = "Cylinder 1 Misfire Detected",
-            ["P0302"] = "Cylinder 2 Misfire Detected",
-            ["P0303"] = "Cylinder 3 Misfire Detected",
-            ["P0304"] = "Cylinder 4 Misfire Detected",
-            ["P0171"] = "System Too Lean (Bank 1)",
-            ["P0172"] = "System Too Rich (Bank 1)",
-            ["P0420"] = "Catalyst System Efficiency Below Threshold (Bank 1)",
-            ["P0440"] = "Evaporative Emission Control System Malfunction",
-            ["P0500"] = "Vehicle Speed Sensor Malfunction",
-            ["P0700"] = "Transmission Control System Malfunction",
-        };
-
-        return descriptions.TryGetValue(code, out var desc) ? desc : "Unknown fault code";
+        return DTCDatabase.GetDescription(code);
     }
 
     /// <summary>
-    /// Get severity for DTC based on code prefix.
+    /// Get severity for DTC from the comprehensive database.
     /// </summary>
     private static DTCSeverity GetDTCSeverity(string code)
     {
-        if (code.StartsWith("P0"))
-            return DTCSeverity.Warning;
-        if (code.StartsWith("P1") || code.StartsWith("P2"))
-            return DTCSeverity.Warning;
-        if (code.StartsWith("P3"))
+        var info = DTCDatabase.GetInfo(code);
+        if (info != null)
+        {
+            return info.Severity switch
+            {
+                Data.DTCSeverity.Critical => DTCSeverity.Critical,
+                Data.DTCSeverity.High => DTCSeverity.Critical,
+                Data.DTCSeverity.Medium => DTCSeverity.Warning,
+                Data.DTCSeverity.Low => DTCSeverity.Info,
+                _ => DTCSeverity.Warning
+            };
+        }
+
+        // Fallback for codes not in database
+        if (code.StartsWith("P3") || code.StartsWith("U0"))
             return DTCSeverity.Critical;
+        if (code.StartsWith("P0") || code.StartsWith("P1") || code.StartsWith("P2"))
+            return DTCSeverity.Warning;
 
         return DTCSeverity.Info;
     }
