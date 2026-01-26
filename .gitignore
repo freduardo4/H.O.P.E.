@@ -1,52 +1,6 @@
-# .NET
-[Bb]in/
-[Oo]bj/
-*.user
-*.userosscache
-*.sln.docstates
-
-# Node.js
-node_modules/
-dist/
-build/
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# IDEs
-.vscode/
-.idea/
-.obsidian/
-*.swp
-*.swo
-
-# Project specific
-build_errors.txt
-detailed_errors.txt
-build.log
-build_output.txt
-.gemini/
-
-# Python
-__pycache__/
-*.pyc
-*.pyo
-venv/
-.venv/
-
-# AI/ML Training outputs (keep trained models out of version control)
-*.pth
-*.joblib
-src/models/
-src/ai-training/data/
-src/ai-training/notebooks/
-best_model.pth
-
-# Desktop ONNX models should be tracked (override the general exclusion)
-!src/desktop/**/Models/*.onnx
-!src/desktop/**/Models/*.json
+# DO NOT PUBLISH API KEYS
+.env*
+**/secrets/**
+**/*.key
+**/*.pem
+**/credentials*
