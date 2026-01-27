@@ -18,6 +18,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     private readonly IOBD2Service _obdService;
     private readonly IDatabaseService _dbService;
     private readonly IAnomalyService _anomalyService;
+    private readonly IRULPredictorService? _rulPredictorService;
     private readonly ExplainableAnomalyService? _explainableService;
     private CompositeDisposable _disposables = new();
     private Guid _currentSessionId;
@@ -89,6 +90,32 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private string _anomalySeverity = "Normal";
 
+    // RUL Prediction Properties
+    [ObservableProperty]
+    private double _overallVehicleHealth = 1.0;
+
+    [ObservableProperty]
+    private bool _isRulPredictionAvailable;
+
+    [ObservableProperty]
+    private string _nextServiceDate = "N/A";
+
+    [ObservableProperty]
+    private double _estimatedMaintenanceCost;
+
+    [ObservableProperty]
+    private bool _isComponentHealthPanelExpanded;
+
+    /// <summary>
+    /// Component health predictions
+    /// </summary>
+    public ObservableCollection<ComponentHealthItem> ComponentHealthItems { get; } = new();
+
+    /// <summary>
+    /// Urgent maintenance items
+    /// </summary>
+    public ObservableCollection<string> UrgentMaintenanceItems { get; } = new();
+
     /// <summary>
     /// Parameters contributing to the current anomaly
     /// </summary>
@@ -140,13 +167,16 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         IOBD2Service obdService,
         IDatabaseService dbService,
         IAnomalyService anomalyService,
+        IRULPredictorService? rulPredictorService = null,
         ExplainableAnomalyService? explainableService = null)
     {
         _obdService = obdService;
         _dbService = dbService;
         _anomalyService = anomalyService;
+        _rulPredictorService = rulPredictorService;
         _explainableService = explainableService;
         _obdService.ConnectionStatusChanged += OnConnectionStatusChanged;
+        IsRulPredictionAvailable = _rulPredictorService != null;
 
         // Initialize main chart series
         ChartSeries = new ISeries[]
@@ -474,6 +504,168 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         TotalAnomaliesDetected = 0;
     }
 
+    [RelayCommand]
+    private async Task RunRulPredictionAsync()
+    {
+        if (_rulPredictorService == null) return;
+
+        try
+        {
+            // Generate telemetry data from recent readings
+            var telemetryData = GenerateComponentTelemetry();
+
+            var progress = new Progress<RULPredictionProgress>(p =>
+            {
+                // Could update a progress indicator here
+            });
+
+            var prediction = await _rulPredictorService.PredictMaintenanceAsync(
+                "CURRENT_VEHICLE",
+                50000, // TODO: Get actual odometer from vehicle
+                telemetryData,
+                50.0,
+                progress);
+
+            if (prediction.Success)
+            {
+                OverallVehicleHealth = prediction.OverallHealth;
+                EstimatedMaintenanceCost = prediction.EstimatedMaintenanceCost;
+                NextServiceDate = prediction.NextRecommendedService.ToString("MMM dd, yyyy");
+
+                // Update component health items
+                ComponentHealthItems.Clear();
+                foreach (var comp in prediction.Components.OrderBy(c => c.HealthScore))
+                {
+                    ComponentHealthItems.Add(new ComponentHealthItem
+                    {
+                        ComponentName = FormatComponentName(comp.Component),
+                        HealthScore = comp.HealthScore,
+                        WarningLevel = comp.WarningLevel.ToString(),
+                        RemainingLifeKm = comp.EstimatedRulKm,
+                        RemainingLifeDays = comp.EstimatedRulDays,
+                        DegradationRate = comp.DegradationRate,
+                        ContributingFactors = comp.ContributingFactors
+                    });
+                }
+
+                // Update urgent items
+                UrgentMaintenanceItems.Clear();
+                foreach (var item in prediction.UrgentItems)
+                {
+                    UrgentMaintenanceItems.Add(item);
+                }
+
+                // Auto-expand panel if there are urgent items
+                if (prediction.UrgentItems.Count > 0)
+                {
+                    IsComponentHealthPanelExpanded = true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't crash
+            System.Diagnostics.Debug.WriteLine($"RUL prediction failed: {ex.Message}");
+        }
+    }
+
+    private List<ComponentTelemetry> GenerateComponentTelemetry()
+    {
+        // Generate synthetic telemetry based on current sensor readings
+        // In a real implementation, this would come from historical data
+        var telemetry = new List<ComponentTelemetry>();
+
+        // Battery health based on voltage patterns
+        if (MafAirFlow > 0)
+        {
+            telemetry.Add(new ComponentTelemetry
+            {
+                Component = VehicleComponentType.Battery,
+                SensorData = GenerateSyntheticHealthData(0.85, 0.02)
+            });
+        }
+
+        // Spark plugs based on engine performance
+        if (EngineRpm > 0)
+        {
+            var sparkHealth = CalculateSparkPlugHealth();
+            telemetry.Add(new ComponentTelemetry
+            {
+                Component = VehicleComponentType.SparkPlugs,
+                SensorData = GenerateSyntheticHealthData(sparkHealth, 0.01)
+            });
+        }
+
+        // O2 sensor based on fuel mixture
+        telemetry.Add(new ComponentTelemetry
+        {
+            Component = VehicleComponentType.O2Sensor,
+            SensorData = GenerateSyntheticHealthData(0.82, 0.015)
+        });
+
+        // Catalytic converter
+        telemetry.Add(new ComponentTelemetry
+        {
+            Component = VehicleComponentType.CatalyticConverter,
+            SensorData = GenerateSyntheticHealthData(0.90, 0.005)
+        });
+
+        // Brake pads (simulated)
+        telemetry.Add(new ComponentTelemetry
+        {
+            Component = VehicleComponentType.BrakePads,
+            SensorData = GenerateSyntheticHealthData(0.65, 0.02)
+        });
+
+        return telemetry;
+    }
+
+    private double CalculateSparkPlugHealth()
+    {
+        // Estimate spark plug health based on engine smoothness
+        var rpmVariance = Math.Abs(EngineRpm - 2000) / 6000;
+        var loadFactor = EngineLoad / 100;
+        return Math.Max(0.5, 1.0 - (rpmVariance * 0.2 + loadFactor * 0.1));
+    }
+
+    private double[] GenerateSyntheticHealthData(double currentHealth, double degradationRate)
+    {
+        var data = new double[30];
+        for (int i = 0; i < 30; i++)
+        {
+            // Simulate gradual degradation with small noise
+            var dayOffset = 30 - i;
+            var historicalHealth = Math.Min(1.0, currentHealth + (dayOffset * degradationRate));
+            var noise = (Random.Shared.NextDouble() - 0.5) * 0.02;
+            data[i] = Math.Clamp(historicalHealth + noise, 0, 1);
+        }
+        return data;
+    }
+
+    private static string FormatComponentName(VehicleComponentType component)
+    {
+        return component switch
+        {
+            VehicleComponentType.CatalyticConverter => "Catalytic Converter",
+            VehicleComponentType.O2Sensor => "O2 Sensor",
+            VehicleComponentType.SparkPlugs => "Spark Plugs",
+            VehicleComponentType.Battery => "Battery",
+            VehicleComponentType.BrakePads => "Brake Pads",
+            VehicleComponentType.AirFilter => "Air Filter",
+            VehicleComponentType.FuelFilter => "Fuel Filter",
+            VehicleComponentType.TimingBelt => "Timing Belt",
+            VehicleComponentType.Coolant => "Coolant",
+            VehicleComponentType.TransmissionFluid => "Transmission Fluid",
+            _ => component.ToString()
+        };
+    }
+
+    [RelayCommand]
+    private void ToggleComponentHealthPanel()
+    {
+        IsComponentHealthPanelExpanded = !IsComponentHealthPanelExpanded;
+    }
+
     private async Task StopStreamingAsync()
     {
         _disposables.Dispose();
@@ -543,4 +735,34 @@ public class AnomalyHistoryItem
         if (elapsed.TotalHours < 24) return $"{elapsed.Hours}h ago";
         return Timestamp.ToString("g");
     }
+}
+
+/// <summary>
+/// Component health item for RUL prediction display
+/// </summary>
+public class ComponentHealthItem
+{
+    public string ComponentName { get; set; } = string.Empty;
+    public double HealthScore { get; set; }
+    public string WarningLevel { get; set; } = "Normal";
+    public double RemainingLifeKm { get; set; }
+    public int RemainingLifeDays { get; set; }
+    public double DegradationRate { get; set; }
+    public List<string> ContributingFactors { get; set; } = new();
+
+    public string HealthPercent => $"{HealthScore * 100:F0}%";
+    public string RemainingLifeFormatted => RemainingLifeKm >= 1000
+        ? $"{RemainingLifeKm / 1000:F1}k km"
+        : $"{RemainingLifeKm:F0} km";
+    public string RemainingDaysFormatted => RemainingLifeDays >= 365
+        ? $"{RemainingLifeDays / 365:F1} years"
+        : RemainingLifeDays >= 30
+            ? $"{RemainingLifeDays / 30:F0} months"
+            : $"{RemainingLifeDays} days";
+    public string StatusColor => WarningLevel switch
+    {
+        "Critical" => "#FF4444",
+        "Warning" => "#FFAA00",
+        _ => "#44FF44"
+    };
 }

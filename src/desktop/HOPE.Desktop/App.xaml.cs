@@ -33,6 +33,12 @@ public partial class App : PrismApplication
         
         // AI Services - use ONNX-based anomaly detection for production
         containerRegistry.RegisterSingleton<IAnomalyService, OnnxAnomalyService>();
+
+        // Tuning Optimizer Service - genetic algorithm-based ECU tuning
+        containerRegistry.RegisterSingleton<ITuningOptimizerService, TuningOptimizerService>();
+
+        // RUL Predictor Service - remaining useful life prediction
+        containerRegistry.RegisterSingleton<IRULPredictorService, RULPredictorService>();
         
         // Export Services
         containerRegistry.RegisterSingleton<IExportService, ExportService>();

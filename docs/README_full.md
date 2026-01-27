@@ -262,7 +262,7 @@ HOPE/
 
 ## Roadmap
 
-### Phase 1: Core Diagnostics
+### Phase 1: Core Diagnostics (Completed)
 - [x] Project structure and architecture
 - [x] ELM327 connection and live data streaming
 - [x] Real-time gauges (RPM, Speed, Load, Temps)
@@ -275,8 +275,8 @@ HOPE/
 - [x] KWP2000/UDS protocol implementation
 - [x] Read ECU calibration files
 - [x] Version-controlled calibration repository
-- [ ] Graphical map diff tool
 - [x] Safe-mode ECU flashing
+- [ ] Graphical map diff tool
 - [ ] Genetic algorithm tuning optimizer
 - [ ] Map-switching implementation
 - [ ] Master/Slave marketplace
@@ -289,22 +289,40 @@ HOPE/
 - [ ] Predictive Maintenance (RUL)
 - [ ] Generative AI customer reports
 
-### Phase 4: Infrastructure
-- [ ] CRDT-based offline sync
-- [ ] Cryptographic audit trails
-- [ ] Wiki-Fix community database
-- [ ] Carbon credit verification
+### Phase 4: User Experience (HMI)
+- [ ] Contextual Focus Modes (WOT, Cruise, etc.)
+- [ ] Dynamic UI reconfiguration
+- [ ] Generative AI Reports via LLM
+- [ ] Mobile Companion App
 
-### Phase 5: Simulation & Digital Twin
-- [ ] BeamNG.drive integration
-- [ ] Automation engine export
-- [ ] Virtual pre-flight validation
+### Phase 5: Infrastructure & Ecosystem
+- [ ] Offline-First Architecture (CRDT sync)
+- [ ] Cryptographic Audit Trails
+- [ ] Wiki-Fix Community Database
+- [ ] Carbon Credit Verification
 
-### Phase 6: HOPE Central
-- [ ] Next.js DXP portal
-- [ ] Calibration marketplace
-- [ ] Wiki-Fix knowledge graph
-- [ ] Fleet health dashboard
+### Phase 6: Simulation & Digital Twin
+- [ ] BeamNG.drive Integration
+- [ ] Automation Engine Export
+- [ ] Virtual Pre-Flight Validation
+
+### Phase 7: Cloud Ecosystem (HOPE Central)
+- [ ] Next.js DXP Portal
+- [ ] Calibration Marketplace (Web)
+- [ ] Wiki-Fix Knowledge Graph
+- [ ] Asset & License Management
+
+### Phase 8: Engineering & Operational Improvements
+- [ ] Dev CLI & Recipes
+- [ ] Simulated Hardware & Integration Tests
+- [ ] Transactional Flashing & Safety Policy
+- [ ] ML Reproducibility & MLOps
+- [ ] Backend GraphQL Schema & Contract Tests
+- [ ] Observability (Logging, Tracing, Metrics)
+- [ ] Infrastructure as Code (IaC) Modularization
+- [ ] Legal Compliance (ToS, EULA)
+- [ ] User Experience Polish (Onboarding)
+- [ ] Packaging & Signed Releases
 
 ---
 

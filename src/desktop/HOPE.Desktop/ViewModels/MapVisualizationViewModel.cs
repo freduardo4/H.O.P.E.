@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HOPE.Core.Services.ECU;
+using HOPE.Core.Services.AI;
 using HOPE.Desktop.Converters;
 using System.Collections.ObjectModel;
 
@@ -10,6 +11,7 @@ public partial class MapVisualizationViewModel : ObservableObject
 {
     private readonly IECUService _ecuService;
     private readonly CalibrationRepository? _calibrationRepository;
+    private readonly ITuningOptimizerService? _tuningOptimizer;
 
     [ObservableProperty]
     private string _statusMessage = "Ready to Read ECU";
@@ -19,6 +21,49 @@ public partial class MapVisualizationViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _isDiffMode;
+
+    // Optimization properties
+    [ObservableProperty]
+    private bool _isOptimizing;
+
+    [ObservableProperty]
+    private int _optimizationProgress;
+
+    [ObservableProperty]
+    private string _optimizationStatus = string.Empty;
+
+    [ObservableProperty]
+    private bool _isOptimizerAvailable;
+
+    [ObservableProperty]
+    private int _generations = 50;
+
+    [ObservableProperty]
+    private int _populationSize = 50;
+
+    [ObservableProperty]
+    private double _mutationRate = 0.1;
+
+    [ObservableProperty]
+    private OptimizationObjective _selectedObjective = OptimizationObjective.AfrAccuracy;
+
+    [ObservableProperty]
+    private double _lastFitness;
+
+    [ObservableProperty]
+    private double _lastAfrError;
+
+    [ObservableProperty]
+    private int _lastCellsChanged;
+
+    [ObservableProperty]
+    private bool _showOptimizationResults;
+
+    /// <summary>
+    /// Available optimization objectives
+    /// </summary>
+    public IReadOnlyList<OptimizationObjective> OptimizationObjectives { get; } =
+        Enum.GetValues<OptimizationObjective>().ToList();
 
     [ObservableProperty]
     private string _baseMapLabel = "Current Map";
@@ -64,11 +109,18 @@ public partial class MapVisualizationViewModel : ObservableObject
 
     private double[,]? _baseMapData;
     private double[,]? _compareMapData;
+    private CalibrationMap? _currentCalibrationMap;
+    private List<TelemetryDataPoint> _telemetryData = new();
 
-    public MapVisualizationViewModel(IECUService ecuService, CalibrationRepository? calibrationRepository = null)
+    public MapVisualizationViewModel(
+        IECUService ecuService,
+        CalibrationRepository? calibrationRepository = null,
+        ITuningOptimizerService? tuningOptimizer = null)
     {
         _ecuService = ecuService;
         _calibrationRepository = calibrationRepository;
+        _tuningOptimizer = tuningOptimizer;
+        IsOptimizerAvailable = _tuningOptimizer?.IsAvailable ?? false;
     }
 
     [RelayCommand]
@@ -159,6 +211,214 @@ public partial class MapVisualizationViewModel : ObservableObject
     {
         IsDiffMode = false;
         StatusMessage = "Single Map View";
+    }
+
+    [RelayCommand(CanExecute = nameof(CanOptimize))]
+    private async Task OptimizeMapAsync(CancellationToken ct)
+    {
+        if (_tuningOptimizer == null || _baseMapData == null)
+        {
+            StatusMessage = "Load a map first before optimizing";
+            return;
+        }
+
+        IsOptimizing = true;
+        IsBusy = true;
+        ShowOptimizationResults = false;
+        OptimizationProgress = 0;
+        OptimizationStatus = "Preparing optimization...";
+
+        try
+        {
+            // Convert the base map data to CalibrationMap format
+            var calibrationMap = CreateCalibrationMap(_baseMapData);
+            _currentCalibrationMap = calibrationMap;
+
+            // Generate or use existing telemetry data
+            if (_telemetryData.Count == 0)
+            {
+                _telemetryData = GenerateSyntheticTelemetry(calibrationMap);
+                StatusMessage = "Using synthetic telemetry data for optimization";
+            }
+
+            var options = new OptimizationOptions
+            {
+                Generations = Generations,
+                PopulationSize = PopulationSize,
+                MutationRate = MutationRate,
+                Objective = SelectedObjective,
+                CrossoverRate = 0.7,
+                TargetFitness = 0.95
+            };
+
+            var progress = new Progress<OptimizationProgress>(p =>
+            {
+                OptimizationProgress = p.PercentComplete;
+                OptimizationStatus = $"Gen {p.CurrentGeneration}/{p.TotalGenerations} - Fitness: {p.CurrentFitness:F3}, AFR Error: {p.CurrentAfrError:F3}";
+            });
+
+            OptimizationStatus = "Running genetic algorithm optimization...";
+
+            var result = await _tuningOptimizer.OptimizeAsync(
+                calibrationMap,
+                _telemetryData,
+                options,
+                progress,
+                ct);
+
+            if (result.Success)
+            {
+                // Convert optimized map back to 2D array for display
+                _compareMapData = ConvertCalibrationMapToArray(result.OptimizedMap);
+
+                // Update statistics
+                LastFitness = result.FinalFitness;
+                LastAfrError = result.FinalAfrError;
+                LastCellsChanged = result.CellsChanged;
+
+                // Compute and display diff
+                ComputeDiff(_baseMapData, _compareMapData);
+                IsDiffMode = true;
+                ShowOptimizationResults = true;
+
+                StatusMessage = $"Optimization complete - {result.CellsChanged} cells changed, Fitness: {result.FinalFitness:F3}";
+                OptimizationStatus = $"Completed in {result.Duration.TotalSeconds:F1}s - {result.GenerationsCompleted} generations";
+            }
+            else
+            {
+                StatusMessage = $"Optimization failed: {result.ErrorMessage}";
+                OptimizationStatus = "Failed";
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Optimization cancelled";
+            OptimizationStatus = "Cancelled";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error: {ex.Message}";
+            OptimizationStatus = "Error occurred";
+        }
+        finally
+        {
+            IsOptimizing = false;
+            IsBusy = false;
+            OptimizationProgress = 100;
+        }
+    }
+
+    private bool CanOptimize()
+    {
+        return IsOptimizerAvailable && _baseMapData != null && !IsOptimizing;
+    }
+
+    [RelayCommand]
+    private void ClearTelemetryData()
+    {
+        _telemetryData.Clear();
+        StatusMessage = "Telemetry data cleared - will use synthetic data for next optimization";
+    }
+
+    /// <summary>
+    /// Add telemetry data point from live OBD2 readings
+    /// </summary>
+    public void AddTelemetryPoint(double rpm, double load, double actualAfr, double targetAfr, double maf)
+    {
+        _telemetryData.Add(new TelemetryDataPoint
+        {
+            Rpm = rpm,
+            Load = load,
+            ActualAfr = actualAfr,
+            TargetAfr = targetAfr,
+            Maf = maf,
+            CoolantTemp = 90.0,
+            IntakeTemp = 30.0,
+            Timestamp = DateTime.UtcNow
+        });
+
+        // Keep buffer manageable
+        if (_telemetryData.Count > 10000)
+        {
+            _telemetryData.RemoveRange(0, 1000);
+        }
+    }
+
+    private CalibrationMap CreateCalibrationMap(double[,] data)
+    {
+        int rows = data.GetLength(0);
+        int cols = data.GetLength(1);
+
+        // Create standard RPM and load axes
+        var rpmAxis = new double[rows];
+        var loadAxis = new double[cols];
+
+        for (int i = 0; i < rows; i++)
+        {
+            rpmAxis[i] = 800 + i * 500; // 800, 1300, 1800, etc.
+        }
+
+        for (int j = 0; j < cols; j++)
+        {
+            loadAxis[j] = j * 12.5; // 0%, 12.5%, 25%, etc.
+        }
+
+        var map = new CalibrationMap
+        {
+            Name = "Target AFR Map",
+            RpmAxis = rpmAxis,
+            LoadAxis = loadAxis,
+            Values = (double[,])data.Clone(),
+            MinValue = 10.0,
+            MaxValue = 18.0
+        };
+
+        return map;
+    }
+
+    private double[,] ConvertCalibrationMapToArray(CalibrationMap map)
+    {
+        return (double[,])map.Values.Clone();
+    }
+
+    private List<TelemetryDataPoint> GenerateSyntheticTelemetry(CalibrationMap map)
+    {
+        var telemetry = new List<TelemetryDataPoint>();
+        var random = new Random(42);
+
+        // Generate telemetry data points across the map surface
+        for (int i = 0; i < map.RpmAxis.Length; i++)
+        {
+            for (int j = 0; j < map.LoadAxis.Length; j++)
+            {
+                // Generate multiple samples per cell with realistic variation
+                int samplesPerCell = 3;
+                for (int s = 0; s < samplesPerCell; s++)
+                {
+                    double rpm = map.RpmAxis[i] + (random.NextDouble() - 0.5) * 200;
+                    double load = map.LoadAxis[j] + (random.NextDouble() - 0.5) * 5;
+                    double targetAfr = map.Values[i, j];
+
+                    // Simulate actual AFR with some deviation
+                    double deviation = (random.NextDouble() - 0.5) * 0.8;
+                    double actualAfr = targetAfr + deviation;
+
+                    telemetry.Add(new TelemetryDataPoint
+                    {
+                        Rpm = Math.Max(600, rpm),
+                        Load = Math.Clamp(load, 0, 100),
+                        ActualAfr = actualAfr,
+                        TargetAfr = targetAfr,
+                        Maf = 10 + load * 0.4 + rpm * 0.005,
+                        CoolantTemp = 85 + random.NextDouble() * 10,
+                        IntakeTemp = 25 + random.NextDouble() * 15,
+                        Timestamp = DateTime.UtcNow.AddSeconds(-random.Next(0, 3600))
+                    });
+                }
+            }
+        }
+
+        return telemetry;
     }
 
     [RelayCommand]

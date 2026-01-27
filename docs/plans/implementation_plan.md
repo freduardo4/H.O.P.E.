@@ -564,9 +564,64 @@ src/hope-central/
 
 Extensions to the backend modules created in Phases 2 and 5.
 
+
 ---
 
-## Verification Plan
+## Phase 8: Engineering & Operational Improvements
+
+**Timeline: Ongoing | Complexity: Variable**
+
+### 8.1 Developer Experience
+
+- **Dev CLI**: Create a PowerShell/Makefile helper for one-command setup, testing, and linting.
+- **Recipes**: Provide living examples for calibration, OBD sessions, and local scripts.
+
+### 8.2 Testing, Safety & Reliability
+
+- **Simulated Hardware**: Implement `MockHardwareAdapter` with fault injection.
+- **Flashing Safety**: Add transactional logic, checksums, and battery voltage policy enforcement.
+- **Fuzzing**: Integrate AFL/LibFuzzer for binary parsers.
+
+### 8.3 ML & Reproducibility (MLOps)
+
+- **Environment**: Pin dependencies and verify with Docker.
+- **Data Lineage**: Implement DVC for dataset versioning and Model Cards for exports.
+- **Testing**: Add regression tests for the Genetic Optimizer and ONNX smoke tests.
+
+### 8.4 Backend & API Reliability
+
+- **GraphQL**: Publish schema and generate strict TypeScript types.
+- **Integrity**: Add database migrations and seeder tools.
+- **Contract Tests**: Verify Backend-Frontend compatibility.
+
+### 8.5 Observability & Operations
+
+- **Telemetry**: Integrate OpenTelemetry and Prometheus/Grafana.
+- **Error Tracking**: Set up Sentry for client-side crash reporting.
+- **Backups**: Implement automated strategy for DB and ECU dumps.
+
+### 8.6 Infrastructure & Security
+
+- **IaC**: Modularize Terraform stacks and add security scanning (tfsec).
+- **Policy**: Enforce strict IAM and network policies.
+
+### 8.7 Compliance & Legal
+
+- **Documents**: Draft EULA, Privacy Policy, and ToS specific to tuning liabilities.
+- **Controls**: Document export restrictions and PKI strategy for signed calibrations.
+
+### 8.8 Product & UX Polish
+
+- **Onboarding**: Create "Zero to Hero" guide and demo assets.
+- **Safety UX**: Add mandatory pre-flash checklists and feature flags.
+
+### 8.9 Packaging & Releases
+
+- **Distribution**: Build signed MSIX installers for Desktop.
+- **Supply Chain**: Sign all artifacts and provide verification tools.
+
+---
+
 
 ### Automated Tests
 

@@ -90,3 +90,59 @@
 - [ ] **7.4 Asset & License Management**
   - [ ] CDN for software updates
   - [ ] Fleet health dashboard
+
+## Phase 8: Engineering & Operational Improvements
+
+### Dev Enablement
+- [ ] **8.1 Developer Experience**
+  - [ ] Add Dev CLI/Makefile/PowerShell helper (setup, test, lint)
+  - [ ] Provide living examples/recipes (calibration, OBD session, local scripts)
+
+### Testing, Safety & Reliability
+- [ ] **8.2 Critical Safety Infrastructure**
+  - [ ] Implement simulated IHardwareAdapter with integration tests
+  - [ ] Add unit/integration tests for flashing logic (pre-flight, failure, recovery)
+  - [ ] Implement transactional flashing with verification/checksums
+  - [ ] Enforce battery-voltage safety policy (device + cloud)
+  - [ ] Add fuzzing for binary parsing and calibration
+
+### ML & Reproducibility
+- [ ] **8.3 AI/ML Operations (MLOps)**
+  - [ ] Pin training dependencies & publish Docker training env
+  - [ ] Add dataset provenance (DVC) and model cards
+  - [ ] Add unit/CI tests for exported ONNX models
+  - [ ] Add performance/regression tests for genetic optimizer
+
+### Backend & API
+- [ ] **8.4 Backend Reliability**
+  - [ ] Publish GraphQL schema & auto-generate clients/types
+  - [ ] Add contract/integration tests (Backend <-> Next.js)
+  - [ ] Add DB migration tool & seed data
+
+### Observability & Operations
+- [ ] **8.5 Monitoring & Ops**
+  - [ ] Add structured logging, tracing (OpenTelemetry), metrics (Prometheus)
+  - [ ] Add Sentry for frontend/desktop crash reporting
+  - [ ] Implement backup strategy (ECU storage, DB, S3)
+
+### Infrastructure & IaC
+- [ ] **8.6 Infrastructure Security**
+  - [ ] Modularize Terraform (staging/prod, remote state, CI validation)
+  - [ ] IaC security scanning (tfsec) and policy (Sentinel/Opa)
+
+### Compliance, Legal & Marketplace
+- [ ] **8.7 Legal & Compliance**
+  - [ ] Draft ToS, Privacy Policy, EULA (tuning liabilities)
+  - [ ] Add export-control guidance
+  - [ ] Design PKI + calibration signing + revocation strategy
+
+### Product & UX
+- [ ] **8.8 User Experience Polish**
+  - [ ] Add onboarding flows & demo media in README
+  - [ ] Implement feature flags for risky features
+  - [ ] Add in-app safety checklist for flashing
+
+### Packaging & Releases
+- [ ] **8.9 Release Engineering**
+  - [ ] Package desktop app (MSIX/signed) & release artifacts
+  - [ ] Sign marketplace artifacts & verification tools

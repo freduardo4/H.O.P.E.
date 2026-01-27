@@ -61,8 +61,97 @@
             <Button Content="TOGGLE DIFF" Command="{Binding ToggleDiffModeCommand}"
                     Padding="20,10" Margin="10,0,0,0" Background="#00897B" Foreground="White" BorderThickness="0" FontWeight="Bold"/>
 
+            <Button Content="OPTIMIZE MAP" Command="{Binding OptimizeMapCommand}"
+                    Padding="20,10" Margin="10,0,0,0" Background="#FF6F00" Foreground="White" BorderThickness="0" FontWeight="Bold"
+                    IsEnabled="{Binding IsOptimizerAvailable}">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Style.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#333333"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+
             <TextBlock Text="{Binding StatusMessage}" Foreground="#AAAAAA" VerticalAlignment="Center" Margin="20,0,0,0" FontSize="14"/>
         </StackPanel>
+
+        <!-- Optimization Settings & Progress Panel -->
+        <Border Grid.Row="2" Background="#1E1E1E" CornerRadius="8" Padding="15" Margin="0,0,0,15"
+                Visibility="{Binding IsOptimizing, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel>
+                <TextBlock Text="GENETIC ALGORITHM OPTIMIZATION" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ProgressBar Grid.Column="0" Value="{Binding OptimizationProgress}" Minimum="0" Maximum="100"
+                                 Height="20" Background="#333333" Foreground="#FF6F00"/>
+                    <TextBlock Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0}%">
+                                <Binding Path="OptimizationProgress"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                        <TextBlock.Foreground>
+                            <SolidColorBrush Color="#FF6F00"/>
+                        </TextBlock.Foreground>
+                    </TextBlock>
+                </Grid>
+
+                <TextBlock Text="{Binding OptimizationStatus}" Foreground="#888888" FontSize="12" Margin="0,5,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Optimization Results Panel -->
+        <Border Grid.Row="2" Background="#1E1E1E" CornerRadius="8" Padding="15" Margin="0,0,0,15"
+                Visibility="{Binding ShowOptimizationResults, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                    <TextBlock Text="FINAL FITNESS" Foreground="#888888" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    <TextBlock Foreground="#FF6F00" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,5,0,0">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0:F3}">
+                                <Binding Path="LastFitness"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                    <TextBlock Text="AFR ERROR" Foreground="#888888" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    <TextBlock Foreground="#2196F3" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,5,0,0">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0:F3}">
+                                <Binding Path="LastAfrError"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                    <TextBlock Text="CELLS CHANGED" Foreground="#888888" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding LastCellsChanged}" Foreground="#4CAF50" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="3" HorizontalAlignment="Center">
+                    <TextBlock Text="STATUS" Foreground="#888888" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding OptimizationStatus}" Foreground="#888888" FontSize="12" HorizontalAlignment="Center" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Grid>
+        </Border>
 
         <!-- Diff Statistics Panel (visible only in diff mode) -->
         <Border Grid.Row="2" Background="#1E1E1E" CornerRadius="8" Padding="15" Margin="0,0,0,15"
