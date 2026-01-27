@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![HOPE Logo](docs/assets/hope-logo.png)
+![HOPE Logo](docs/assets/image001.png)
 
 **Next-Generation AI-Driven Vehicle Diagnostics, ECU Tuning & Digital Twin Platform**
 
@@ -18,7 +18,7 @@
 
 ---
 
-## 🚗 Overview
+## Overview
 
 **HOPE** is an enterprise-grade, AI-powered automotive engineering platform designed for professional tuning shops, performance workshops, and fleet operators. The system integrates real-time vehicle diagnostics, safe ECU calibration management, explainable AI-driven anomaly detection, genetic algorithm-based tuning optimization, and a complete digital twin simulation environment.
 
@@ -26,9 +26,9 @@ HOPE bridges the gap between traditional scan tools and cutting-edge machine lea
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 🔌 Core Diagnostics & Communication
+### Core Diagnostics & Communication
 | Feature | Description |
 |---------|-------------|
 | **High-Frequency OBD2 Streaming** | 10-50Hz data ingestion via ELM327 or J2534 Pass-Thru interfaces |
@@ -37,7 +37,7 @@ HOPE bridges the gap between traditional scan tools and cutting-edge machine lea
 | **Bi-Directional Control** | Active actuator testing (fuel pump, fans, injectors) with safety interlocks |
 | **Voltage-Aware HAL** | Monitors battery voltage via J2534 `READ_VBATT`; blocks write operations below 12.5V |
 
-### ⚙️ ECU Calibration & Tuning
+### ECU Calibration & Tuning
 | Feature | Description |
 |---------|-------------|
 | **Version-Controlled Calibrations** | Git-like history for ECU binaries with checksum validation |
@@ -47,7 +47,7 @@ HOPE bridges the gap between traditional scan tools and cutting-edge machine lea
 | **Map-Switching** | Multiple tune profiles (Economy, Performance, Valet) in a single flash |
 | **Master/Slave Marketplace** | AES-256 encrypted, hardware-locked calibration file sales |
 
-### 🧠 Artificial Intelligence & Analytics
+### Artificial Intelligence & Analytics
 | Feature | Description |
 |---------|-------------|
 | **LSTM Anomaly Detection** | Autoencoder identifies sensor drift before DTC triggers |
@@ -56,14 +56,14 @@ HOPE bridges the gap between traditional scan tools and cutting-edge machine lea
 | **Predictive Maintenance (RUL)** | Remaining Useful Life forecasting for catalysts, O2 sensors, turbos |
 | **Generative AI Reports** | LLM translates DTCs and performance data into customer-friendly PDFs |
 
-### 🎨 User Experience (HMI)
+### User Experience (HMI)
 | Feature | Description |
 |---------|-------------|
 | **Contextual Focus Modes** | Dynamic UI: WOT mode shows only AFR/Knock; Cruise mode shows economy |
 | **Dark Mode / Glassmorphism** | Modern, high-contrast interface optimized for shop environments |
 | **Mobile Companion App** | (Planned) Customer-facing iOS/Android app for live vehicle status |
 
-### ☁️ Infrastructure & Ecosystem
+### Infrastructure & Ecosystem
 | Feature | Description |
 |---------|-------------|
 | **Offline-First Architecture** | SQLite (WAL mode) with CRDT-based cloud sync for conflict-free merging |
@@ -71,14 +71,14 @@ HOPE bridges the gap between traditional scan tools and cutting-edge machine lea
 | **Wiki-Fix Community Database** | Stack-Overflow style knowledge base linking repairs to diagnostic patterns |
 | **Carbon Credit Verification** | B2B fuel savings quantification for Eco-Tuning certification |
 
-### 🎮 Simulation & Digital Twin
+### Simulation & Digital Twin
 | Feature | Description |
 |---------|-------------|
 | **BeamNG.drive Integration** | Bidirectional data bridge for "In-Silico" tune validation |
 | **Automation Engine Export** | Import engine designs for virtual dyno testing |
 | **Virtual Pre-Flight Validation** | Test tunes for thermal stress and mechanical failure in simulation before flashing |
 
-### 🌐 HOPE Central (Cloud Platform)
+### HOPE Central (Cloud Platform)
 | Feature | Description |
 |---------|-------------|
 | **Digital Experience Platform (DXP)** | Next.js web portal with SSO (OAuth2/OIDC) |
@@ -88,7 +88,7 @@ HOPE bridges the gap between traditional scan tools and cutting-edge machine lea
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌───────────────────────────────────────────────────────────────────────────────┐
@@ -131,7 +131,7 @@ HOPE bridges the gap between traditional scan tools and cutting-edge machine lea
 
 ---
 
-## 🔧 Technology Stack
+## Technology Stack
 
 | Layer | Technologies |
 |-------|-------------|
@@ -146,7 +146,7 @@ HOPE bridges the gap between traditional scan tools and cutting-edge machine lea
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -184,7 +184,7 @@ npm run start:dev
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 HOPE/
@@ -260,9 +260,9 @@ HOPE/
 
 ---
 
-## 🎯 Roadmap
+## Roadmap
 
-### Phase 1: Core Diagnostics ✅
+### Phase 1: Core Diagnostics
 - [x] Project structure and architecture
 - [x] ELM327 connection and live data streaming
 - [x] Real-time gauges (RPM, Speed, Load, Temps)
@@ -271,7 +271,7 @@ HOPE/
 - [x] Bi-directional control with safety interlocks
 - [x] Voltage-aware HAL
 
-### Phase 2: ECU Calibration & Tuning 🔄
+### Phase 2: ECU Calibration & Tuning
 - [x] KWP2000/UDS protocol implementation
 - [x] Read ECU calibration files
 - [x] Version-controlled calibration repository
@@ -281,7 +281,7 @@ HOPE/
 - [ ] Map-switching implementation
 - [ ] Master/Slave marketplace
 
-### Phase 3: AI & Analytics 🔄
+### Phase 3: AI & Analytics
 - [x] Train LSTM Autoencoder
 - [x] ONNX model export
 - [x] Explainable AI (XAI) narratives
@@ -289,18 +289,18 @@ HOPE/
 - [ ] Predictive Maintenance (RUL)
 - [ ] Generative AI customer reports
 
-### Phase 4: Infrastructure 🔲
+### Phase 4: Infrastructure
 - [ ] CRDT-based offline sync
 - [ ] Cryptographic audit trails
 - [ ] Wiki-Fix community database
 - [ ] Carbon credit verification
 
-### Phase 5: Simulation & Digital Twin 🔲
+### Phase 5: Simulation & Digital Twin
 - [ ] BeamNG.drive integration
 - [ ] Automation engine export
 - [ ] Virtual pre-flight validation
 
-### Phase 6: HOPE Central 🔲
+### Phase 6: HOPE Central
 - [ ] Next.js DXP portal
 - [ ] Calibration marketplace
 - [ ] Wiki-Fix knowledge graph
@@ -308,7 +308,7 @@ HOPE/
 
 ---
 
-## 📊 AI Model Details
+## AI Model Details
 
 ### Anomaly Detection (LSTM Autoencoder)
 
@@ -339,7 +339,7 @@ Evolve over N generations → Optimized calibration
 
 ---
 
-## 🔒 Security & Compliance
+## Security & Compliance
 
 | Area | Implementation |
 |------|----------------|
@@ -353,7 +353,7 @@ Evolve over N generations → Optimized calibration
 
 ---
 
-## 🛠️ Development
+## Development
 
 ### Desktop App (WPF)
 
@@ -397,7 +397,7 @@ npm run build        # Production build
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
@@ -411,13 +411,13 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for de
 
 ---
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **LiveCharts2** - Real-time charting (MIT license)
 - **NestJS** - Backend framework
@@ -428,24 +428,20 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 📞 Support
+## Support
 
 | Channel | Link |
 |---------|------|
-| 📧 Email | support@hope-tuning.com |
-| 💬 Discord | [HOPE Community](https://discord.gg/hope-tuning) |
-| 📖 Documentation | [docs.hope-tuning.com](https://docs.hope-tuning.com) |
-| 🐛 Bug Reports | [GitHub Issues](https://github.com/freduardo4/H.O.P.E/issues) |
-| 🌐 HOPE Central | [central.hope-tuning.com](https://central.hope-tuning.com) |
+| Email | support@hope-tuning.com |
+| Discord | [HOPE Community](https://discord.gg/hope-tuning) |
+| Documentation | [docs.hope-tuning.com](https://docs.hope-tuning.com) |
+| Bug Reports | [GitHub Issues](https://github.com/freduardo4/H.O.P.E/issues) |
+| HOPE Central | [central.hope-tuning.com](https://central.hope-tuning.com) |
 
 ---
 
-<div align="center">
-
-**Built with ❤️ for the automotive tuning community**
+**Built for the automotive tuning community**
 
 *Empowering technicians with AI. Protecting vehicles with safety-first engineering.*
-
-![HOPE Architecture](docs/assets/hope-architecture-banner.png)
 
 </div>

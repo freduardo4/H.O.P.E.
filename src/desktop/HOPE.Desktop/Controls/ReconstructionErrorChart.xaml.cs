@@ -662,17 +662,17 @@ public partial class ReconstructionErrorChart : UserControl
 
         if (closestPoint.Value >= DangerThreshold)
         {
-            TooltipStatus.Text = "⚠️ ANOMALY DETECTED";
+            TooltipStatus.Text = "ANOMALY DETECTED";
             TooltipStatus.Foreground = new SolidColorBrush(Color.FromRgb(0xFF, 0x44, 0x44));
         }
         else if (closestPoint.Value >= WarningThreshold)
         {
-            TooltipStatus.Text = "⚡ Elevated";
+            TooltipStatus.Text = "Elevated";
             TooltipStatus.Foreground = new SolidColorBrush(Color.FromRgb(0xFF, 0xFF, 0x00));
         }
         else
         {
-            TooltipStatus.Text = "✓ Normal";
+            TooltipStatus.Text = "Normal";
             TooltipStatus.Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x00));
         }
 

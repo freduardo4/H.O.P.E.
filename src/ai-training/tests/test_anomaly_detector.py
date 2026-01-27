@@ -20,7 +20,7 @@ import torch
 
 # Add parent directory to path for imports
 import sys
-sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Check if onnxruntime is available
 try:
@@ -29,11 +29,10 @@ try:
 except ImportError:
     ONNXRUNTIME_AVAILABLE = False
 
-from train_anomaly_detector import (
-    LSTMAutoencoder,
-    AnomalyDetector,
-    generate_synthetic_data,
-    export_to_onnx,
+from hope_ai.model import LSTMAutoencoder, AnomalyDetector
+from hope_ai.dataset import generate_synthetic_data
+from hope_ai.train import export_to_onnx
+from hope_ai.config import (
     OBD2_FEATURES,
     SEQUENCE_LENGTH,
     LATENT_DIM,

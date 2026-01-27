@@ -130,7 +130,7 @@ public partial class SessionHistoryViewModel : ObservableObject
 
             await _exportService.ExportToCsvAsync(SelectedSession.Id, outputPath);
             
-            StatusMessage = $"✓ Exported to: {fileName}";
+            StatusMessage = $"Exported to: {fileName}";
             
             // Open the export folder
             Process.Start("explorer.exe", $"/select,\"{outputPath}\"");
@@ -165,7 +165,7 @@ public partial class SessionHistoryViewModel : ObservableObject
 
             await _exportService.ExportToPdfAsync(SelectedSession.Id, outputPath);
             
-            StatusMessage = $"✓ Report generated: {fileName}";
+            StatusMessage = $"Report generated: {fileName}";
             
             // Open the PDF
             Process.Start(new ProcessStartInfo

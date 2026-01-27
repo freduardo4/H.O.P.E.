@@ -16,12 +16,16 @@ import argparse
 import logging
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
+import sys
+
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import numpy as np
 import pandas as pd
 import torch
 
-from train_anomaly_detector import DEVICE
+from hope_ai.config import DEVICE
 
 # Configure logging
 logging.basicConfig(
@@ -84,7 +88,7 @@ class AnomalyDetector:
     def _load_pytorch_model(self):
         """Load PyTorch model for inference."""
         # Import here to avoid loading TensorFlow if ONNX is available
-        from train_anomaly_detector import AnomalyDetector as TrainingDetector
+        from hope_ai.model import AnomalyDetector as TrainingDetector
 
         training_detector = TrainingDetector.load(self.model_path)
         self.model = training_detector.model

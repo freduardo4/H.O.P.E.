@@ -5,6 +5,18 @@ const typeorm_1 = require("@nestjs/typeorm");
 const common_1 = require("@nestjs/common");
 const ecu_calibrations_service_1 = require("./ecu-calibrations.service");
 const ecu_calibration_entity_1 = require("./entities/ecu-calibration.entity");
+const mockS3Send = jest.fn();
+jest.mock('@aws-sdk/client-s3', () => ({
+    S3Client: jest.fn().mockImplementation(() => ({
+        send: mockS3Send,
+    })),
+    PutObjectCommand: jest.fn(),
+    GetObjectCommand: jest.fn(),
+    DeleteObjectCommand: jest.fn(),
+}));
+jest.mock('@aws-sdk/s3-request-presigner', () => ({
+    getSignedUrl: jest.fn().mockResolvedValue('https://s3.amazonaws.com/signed-url'),
+}));
 describe('ECUCalibrationsService', () => {
     let service;
     let repository;
@@ -12,37 +24,34 @@ describe('ECUCalibrationsService', () => {
         id: 'calibration-uuid',
         tenantId: 'tenant-uuid',
         vehicleId: 'vehicle-uuid',
-        name: 'Stage 1 Tune',
-        description: 'Performance tune',
-        version: '1.0.0',
-        parentVersionId: null,
-        status: ecu_calibration_entity_1.CalibrationStatus.DRAFT,
-        protocol: ecu_calibration_entity_1.CalibrationProtocol.UDS,
-        ecuPartNumber: '06K906016AC',
-        ecuSoftwareNumber: 'SW123456',
-        ecuHardwareNumber: 'HW789012',
-        originalChecksum: 'ABC123',
-        modifiedChecksum: 'DEF456',
-        fileSize: 4096,
-        s3Key: 'calibrations/calibration-uuid/modified.bin',
-        originalS3Key: 'calibrations/calibration-uuid/original.bin',
-        mapData: [
-            {
-                name: 'Boost Pressure',
-                address: '0x4000',
-                originalValues: [1.2, 1.3, 1.4],
-                modifiedValues: [1.4, 1.5, 1.6],
-                unit: 'bar',
-            },
-        ],
-        modifications: [],
-        notes: 'Verified on dyno',
-        createdById: 'user-uuid',
-        approvedById: null,
-        approvedAt: null,
+        customerId: 'customer-uuid',
+        fileName: 'stock_tune.bin',
+        s3Key: 'tenant-uuid/ecu-calibrations/vehicle-uuid/12345-stock_tune.bin',
+        s3Bucket: 'hope-ecu-calibrations',
+        fileSize: 2048,
+        fileFormat: ecu_calibration_entity_1.FileFormat.BIN,
+        calibrationType: ecu_calibration_entity_1.CalibrationType.STOCK,
+        checksum: 'abc123def456',
+        version: 1,
+        ecuType: 'Bosch ME7',
         isActive: true,
+        uploadedBy: 'user-uuid',
         createdAt: new Date(),
         updatedAt: new Date(),
+    };
+    const mockStage1Calibration = {
+        ...mockCalibration,
+        id: 'stage1-calibration-uuid',
+        fileName: 'stage1_tune.bin',
+        calibrationType: ecu_calibration_entity_1.CalibrationType.STAGE_1,
+        version: 2,
+        previousVersionId: 'calibration-uuid',
+        metadata: {
+            enginePowerStock: 300,
+            enginePowerTuned: 350,
+            torqueStock: 400,
+            torqueTuned: 480,
+        },
     };
     const mockQueryBuilder = {
         where: jest.fn().mockReturnThis(),
@@ -50,12 +59,7 @@ describe('ECUCalibrationsService', () => {
         orderBy: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        addSelect: jest.fn().mockReturnThis(),
-        groupBy: jest.fn().mockReturnThis(),
-        getCount: jest.fn(),
-        getMany: jest.fn(),
-        getRawMany: jest.fn(),
+        getManyAndCount: jest.fn(),
     };
     beforeEach(async () => {
         const mockRepository = {
@@ -63,7 +67,6 @@ describe('ECUCalibrationsService', () => {
             find: jest.fn(),
             create: jest.fn(),
             save: jest.fn(),
-            count: jest.fn(),
             createQueryBuilder: jest.fn(() => mockQueryBuilder),
         };
         const module = await testing_1.Test.createTestingModule({
@@ -78,100 +81,148 @@ describe('ECUCalibrationsService', () => {
         service = module.get(ecu_calibrations_service_1.ECUCalibrationsService);
         repository = module.get((0, typeorm_1.getRepositoryToken)(ecu_calibration_entity_1.ECUCalibration));
         jest.clearAllMocks();
+        mockS3Send.mockResolvedValue({});
     });
-    describe('create', () => {
-        it('should create a new calibration', async () => {
+    describe('uploadFile', () => {
+        it('should upload a file and create calibration record', async () => {
             const dto = {
                 vehicleId: 'vehicle-uuid',
-                name: 'Stage 1 Tune',
-                version: '1.0.0',
-                protocol: ecu_calibration_entity_1.CalibrationProtocol.UDS,
+                fileName: 'stock_tune.bin',
+                fileSize: 2048,
+                calibrationType: ecu_calibration_entity_1.CalibrationType.STOCK,
+                checksum: 'abc123def456',
             };
             repository.create.mockReturnValue(mockCalibration);
             repository.save.mockResolvedValue(mockCalibration);
-            const result = await service.create('tenant-uuid', 'user-uuid', dto);
-            expect(repository.create).toHaveBeenCalledWith({
+            const result = await service.uploadFile({
+                tenantId: 'tenant-uuid',
+                dto,
+                fileBuffer: Buffer.from('test data'),
+                uploadedBy: 'user-uuid',
+            });
+            expect(mockS3Send).toHaveBeenCalled();
+            expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({
                 ...dto,
                 tenantId: 'tenant-uuid',
-                createdById: 'user-uuid',
-            });
-            expect(result.name).toBe('Stage 1 Tune');
-            expect(result.status).toBe(ecu_calibration_entity_1.CalibrationStatus.DRAFT);
+                s3Bucket: 'hope-ecu-calibrations',
+                version: 1,
+                uploadedBy: 'user-uuid',
+            }));
+            expect(result.fileName).toBe('stock_tune.bin');
         });
-        it('should create calibration with map data', async () => {
+        it('should increment version when previousVersionId is provided', async () => {
             const dto = {
                 vehicleId: 'vehicle-uuid',
-                name: 'Stage 2 Tune',
-                version: '1.0.0',
-                mapData: [
-                    {
-                        name: 'Boost',
-                        address: '0x4000',
-                        originalValues: [1.2],
-                        modifiedValues: [1.5],
-                        unit: 'bar',
-                    },
-                ],
+                fileName: 'stage1_tune.bin',
+                fileSize: 2048,
+                calibrationType: ecu_calibration_entity_1.CalibrationType.STAGE_1,
+                checksum: 'def456ghi789',
+                previousVersionId: 'calibration-uuid',
             };
-            repository.create.mockReturnValue({ ...mockCalibration, ...dto });
-            repository.save.mockResolvedValue({ ...mockCalibration, ...dto });
-            const result = await service.create('tenant-uuid', 'user-uuid', dto);
-            expect(result.mapData).toHaveLength(1);
+            repository.findOne.mockResolvedValue(mockCalibration);
+            repository.create.mockReturnValue(mockStage1Calibration);
+            repository.save.mockResolvedValue(mockStage1Calibration);
+            const result = await service.uploadFile({
+                tenantId: 'tenant-uuid',
+                dto,
+                fileBuffer: Buffer.from('test data'),
+                uploadedBy: 'user-uuid',
+            });
+            expect(repository.findOne).toHaveBeenCalledWith({
+                where: { id: 'calibration-uuid', tenantId: 'tenant-uuid' },
+            });
+            expect(result.version).toBe(2);
+        });
+        it('should throw BadRequestException on S3 upload failure', async () => {
+            const dto = {
+                vehicleId: 'vehicle-uuid',
+                fileName: 'stock_tune.bin',
+                fileSize: 2048,
+                calibrationType: ecu_calibration_entity_1.CalibrationType.STOCK,
+                checksum: 'abc123def456',
+            };
+            mockS3Send.mockRejectedValue(new Error('S3 upload failed'));
+            await expect(service.uploadFile({
+                tenantId: 'tenant-uuid',
+                dto,
+                fileBuffer: Buffer.from('test data'),
+                uploadedBy: 'user-uuid',
+            })).rejects.toThrow(common_1.BadRequestException);
         });
     });
     describe('findAll', () => {
         it('should return paginated calibrations', async () => {
-            mockQueryBuilder.getCount.mockResolvedValue(1);
-            mockQueryBuilder.getMany.mockResolvedValue([mockCalibration]);
+            mockQueryBuilder.getManyAndCount.mockResolvedValue([
+                [mockCalibration],
+                1,
+            ]);
             const result = await service.findAll({
                 tenantId: 'tenant-uuid',
                 page: 1,
                 limit: 20,
             });
-            expect(result.items).toHaveLength(1);
+            expect(result.data).toHaveLength(1);
             expect(result.total).toBe(1);
             expect(result.page).toBe(1);
             expect(result.limit).toBe(20);
             expect(result.totalPages).toBe(1);
         });
-        it('should filter by vehicle ID', async () => {
-            mockQueryBuilder.getCount.mockResolvedValue(1);
-            mockQueryBuilder.getMany.mockResolvedValue([mockCalibration]);
+        it('should filter active calibrations only', async () => {
+            mockQueryBuilder.getManyAndCount.mockResolvedValue([
+                [mockCalibration],
+                1,
+            ]);
+            await service.findAll({
+                tenantId: 'tenant-uuid',
+            });
+            expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('calibration.isActive = :isActive', { isActive: true });
+        });
+        it('should filter by vehicleId', async () => {
+            mockQueryBuilder.getManyAndCount.mockResolvedValue([
+                [mockCalibration],
+                1,
+            ]);
             await service.findAll({
                 tenantId: 'tenant-uuid',
                 vehicleId: 'vehicle-uuid',
             });
             expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('calibration.vehicleId = :vehicleId', { vehicleId: 'vehicle-uuid' });
         });
-        it('should filter by status', async () => {
-            mockQueryBuilder.getCount.mockResolvedValue(1);
-            mockQueryBuilder.getMany.mockResolvedValue([mockCalibration]);
+        it('should filter by calibrationType', async () => {
+            mockQueryBuilder.getManyAndCount.mockResolvedValue([
+                [mockStage1Calibration],
+                1,
+            ]);
             await service.findAll({
                 tenantId: 'tenant-uuid',
-                status: ecu_calibration_entity_1.CalibrationStatus.PRODUCTION,
+                calibrationType: 'stage1',
             });
-            expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('calibration.status = :status', { status: ecu_calibration_entity_1.CalibrationStatus.PRODUCTION });
+            expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('calibration.calibrationType = :calibrationType', { calibrationType: 'stage1' });
         });
-        it('should filter by protocol', async () => {
-            mockQueryBuilder.getCount.mockResolvedValue(1);
-            mockQueryBuilder.getMany.mockResolvedValue([mockCalibration]);
+        it('should filter by customerId', async () => {
+            mockQueryBuilder.getManyAndCount.mockResolvedValue([
+                [mockCalibration],
+                1,
+            ]);
             await service.findAll({
                 tenantId: 'tenant-uuid',
-                protocol: 'uds',
+                customerId: 'customer-uuid',
             });
-            expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('calibration.protocol = :protocol', { protocol: 'uds' });
+            expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('calibration.customerId = :customerId', { customerId: 'customer-uuid' });
         });
         it('should handle pagination correctly', async () => {
-            mockQueryBuilder.getCount.mockResolvedValue(100);
-            mockQueryBuilder.getMany.mockResolvedValue([mockCalibration]);
+            mockQueryBuilder.getManyAndCount.mockResolvedValue([
+                [mockCalibration],
+                50,
+            ]);
             const result = await service.findAll({
                 tenantId: 'tenant-uuid',
-                page: 5,
+                page: 3,
                 limit: 10,
             });
-            expect(mockQueryBuilder.skip).toHaveBeenCalledWith(40);
+            expect(mockQueryBuilder.skip).toHaveBeenCalledWith(20);
             expect(mockQueryBuilder.take).toHaveBeenCalledWith(10);
-            expect(result.totalPages).toBe(10);
+            expect(result.totalPages).toBe(5);
         });
     });
     describe('findOne', () => {
@@ -179,145 +230,60 @@ describe('ECUCalibrationsService', () => {
             repository.findOne.mockResolvedValue(mockCalibration);
             const result = await service.findOne('tenant-uuid', 'calibration-uuid');
             expect(repository.findOne).toHaveBeenCalledWith({
-                where: { id: 'calibration-uuid', tenantId: 'tenant-uuid', isActive: true },
+                where: { id: 'calibration-uuid', tenantId: 'tenant-uuid' },
             });
             expect(result.id).toBe('calibration-uuid');
         });
         it('should throw NotFoundException if calibration not found', async () => {
             repository.findOne.mockResolvedValue(null);
             await expect(service.findOne('tenant-uuid', 'non-existent-uuid')).rejects.toThrow(common_1.NotFoundException);
-        });
-        it('should not return calibrations from other tenants', async () => {
-            repository.findOne.mockResolvedValue(null);
-            await expect(service.findOne('other-tenant-uuid', 'calibration-uuid')).rejects.toThrow(common_1.NotFoundException);
+            await expect(service.findOne('tenant-uuid', 'non-existent-uuid')).rejects.toThrow('ECU Calibration with ID non-existent-uuid not found');
         });
     });
-    describe('findVersionHistory', () => {
-        it('should return version history for a vehicle', async () => {
-            const versions = [
-                mockCalibration,
-                { ...mockCalibration, id: 'v2-uuid', version: '2.0.0', parentVersionId: 'calibration-uuid' },
-            ];
-            repository.find.mockResolvedValue(versions);
-            const result = await service.findVersionHistory('tenant-uuid', 'vehicle-uuid');
-            expect(repository.find).toHaveBeenCalledWith({
-                where: { tenantId: 'tenant-uuid', vehicleId: 'vehicle-uuid', isActive: true },
-                order: { createdAt: 'DESC' },
-            });
-            expect(result).toHaveLength(2);
-        });
-        it('should return empty array if no versions found', async () => {
-            repository.find.mockResolvedValue([]);
-            const result = await service.findVersionHistory('tenant-uuid', 'vehicle-uuid');
-            expect(result).toHaveLength(0);
-        });
-    });
-    describe('update', () => {
-        it('should update a calibration', async () => {
-            const updatedCalibration = {
-                ...mockCalibration,
-                description: 'Updated description',
-            };
+    describe('getDownloadUrl', () => {
+        it('should return signed URL for calibration file', async () => {
             repository.findOne.mockResolvedValue(mockCalibration);
-            repository.save.mockResolvedValue(updatedCalibration);
-            const result = await service.update('tenant-uuid', 'calibration-uuid', {
-                description: 'Updated description',
-            });
-            expect(result.description).toBe('Updated description');
+            const result = await service.getDownloadUrl('tenant-uuid', 'calibration-uuid');
+            expect(result).toBe('https://s3.amazonaws.com/signed-url');
         });
         it('should throw NotFoundException if calibration not found', async () => {
             repository.findOne.mockResolvedValue(null);
-            await expect(service.update('tenant-uuid', 'non-existent-uuid', { description: 'New' })).rejects.toThrow(common_1.NotFoundException);
+            await expect(service.getDownloadUrl('tenant-uuid', 'non-existent-uuid')).rejects.toThrow(common_1.NotFoundException);
+        });
+        it('should accept custom expiration time', async () => {
+            repository.findOne.mockResolvedValue(mockCalibration);
+            const result = await service.getDownloadUrl('tenant-uuid', 'calibration-uuid', 7200);
+            expect(result).toBe('https://s3.amazonaws.com/signed-url');
         });
     });
-    describe('updateStatus', () => {
-        it('should update calibration status to approved', async () => {
-            const approvedCalibration = {
-                ...mockCalibration,
-                status: ecu_calibration_entity_1.CalibrationStatus.APPROVED,
-                approvedById: 'approver-uuid',
-                approvedAt: expect.any(Date),
+    describe('update', () => {
+        it('should update calibration metadata', async () => {
+            const updateDto = {
+                notes: 'Updated notes',
+                ecuType: 'Bosch ME7.5',
             };
-            repository.findOne.mockResolvedValue({ ...mockCalibration });
-            repository.save.mockResolvedValue(approvedCalibration);
-            const result = await service.updateStatus('tenant-uuid', 'calibration-uuid', ecu_calibration_entity_1.CalibrationStatus.APPROVED, 'approver-uuid');
-            expect(result.status).toBe(ecu_calibration_entity_1.CalibrationStatus.APPROVED);
-            expect(result.approvedById).toBe('approver-uuid');
-        });
-        it('should update to production without approval fields', async () => {
-            const productionCalibration = {
+            const updatedCalibration = {
                 ...mockCalibration,
-                status: ecu_calibration_entity_1.CalibrationStatus.PRODUCTION,
-            };
-            repository.findOne.mockResolvedValue({ ...mockCalibration });
-            repository.save.mockResolvedValue(productionCalibration);
-            const result = await service.updateStatus('tenant-uuid', 'calibration-uuid', ecu_calibration_entity_1.CalibrationStatus.PRODUCTION, 'user-uuid');
-            expect(result.status).toBe(ecu_calibration_entity_1.CalibrationStatus.PRODUCTION);
-        });
-        it('should update to testing status', async () => {
-            const testingCalibration = {
-                ...mockCalibration,
-                status: ecu_calibration_entity_1.CalibrationStatus.TESTING,
-            };
-            repository.findOne.mockResolvedValue({ ...mockCalibration });
-            repository.save.mockResolvedValue(testingCalibration);
-            const result = await service.updateStatus('tenant-uuid', 'calibration-uuid', ecu_calibration_entity_1.CalibrationStatus.TESTING, 'user-uuid');
-            expect(result.status).toBe(ecu_calibration_entity_1.CalibrationStatus.TESTING);
-        });
-    });
-    describe('createVersion', () => {
-        it('should create a new version from existing calibration', async () => {
-            const newVersion = {
-                ...mockCalibration,
-                id: 'new-version-uuid',
-                version: '2.0.0',
-                parentVersionId: 'calibration-uuid',
-                status: ecu_calibration_entity_1.CalibrationStatus.DRAFT,
-                createdById: 'new-user-uuid',
-                approvedById: undefined,
-                approvedAt: undefined,
+                ...updateDto,
             };
             repository.findOne.mockResolvedValue(mockCalibration);
-            repository.create.mockReturnValue(newVersion);
-            repository.save.mockResolvedValue(newVersion);
-            const result = await service.createVersion('tenant-uuid', 'calibration-uuid', 'new-user-uuid', { version: '2.0.0' });
-            expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({
-                parentVersionId: 'calibration-uuid',
-                status: ecu_calibration_entity_1.CalibrationStatus.DRAFT,
-                createdById: 'new-user-uuid',
-                id: undefined,
-            }));
-            expect(result.parentVersionId).toBe('calibration-uuid');
-            expect(result.status).toBe(ecu_calibration_entity_1.CalibrationStatus.DRAFT);
+            repository.save.mockResolvedValue(updatedCalibration);
+            const result = await service.update('tenant-uuid', 'calibration-uuid', updateDto);
+            expect(result.notes).toBe('Updated notes');
+            expect(result.ecuType).toBe('Bosch ME7.5');
         });
-        it('should inherit map data from parent', async () => {
-            const newVersion = {
-                ...mockCalibration,
-                id: 'new-version-uuid',
-                version: '2.0.0',
-                parentVersionId: 'calibration-uuid',
-            };
-            repository.findOne.mockResolvedValue(mockCalibration);
-            repository.create.mockReturnValue(newVersion);
-            repository.save.mockResolvedValue(newVersion);
-            await service.createVersion('tenant-uuid', 'calibration-uuid', 'user-uuid', {});
-            expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({
-                mapData: mockCalibration.mapData,
-            }));
-        });
-        it('should throw NotFoundException if parent not found', async () => {
+        it('should throw NotFoundException if calibration not found', async () => {
             repository.findOne.mockResolvedValue(null);
-            await expect(service.createVersion('tenant-uuid', 'non-existent-uuid', 'user-uuid', {})).rejects.toThrow(common_1.NotFoundException);
+            await expect(service.update('tenant-uuid', 'non-existent-uuid', { notes: 'test' })).rejects.toThrow(common_1.NotFoundException);
         });
     });
     describe('remove', () => {
-        it('should soft delete a calibration', async () => {
-            const deletedCalibration = {
+        it('should soft delete calibration by marking as inactive', async () => {
+            repository.findOne.mockResolvedValue(mockCalibration);
+            repository.save.mockResolvedValue({
                 ...mockCalibration,
                 isActive: false,
-            };
-            repository.findOne.mockResolvedValue({ ...mockCalibration });
-            repository.save.mockResolvedValue(deletedCalibration);
+            });
             await service.remove('tenant-uuid', 'calibration-uuid');
             expect(repository.save).toHaveBeenCalledWith(expect.objectContaining({ isActive: false }));
         });
@@ -326,22 +292,25 @@ describe('ECUCalibrationsService', () => {
             await expect(service.remove('tenant-uuid', 'non-existent-uuid')).rejects.toThrow(common_1.NotFoundException);
         });
     });
-    describe('getStats', () => {
-        it('should return calibration statistics', async () => {
-            repository.count.mockResolvedValue(25);
-            mockQueryBuilder.getRawMany
-                .mockResolvedValueOnce([
-                { status: ecu_calibration_entity_1.CalibrationStatus.DRAFT, count: '5' },
-                { status: ecu_calibration_entity_1.CalibrationStatus.PRODUCTION, count: '20' },
-            ])
-                .mockResolvedValueOnce([
-                { protocol: ecu_calibration_entity_1.CalibrationProtocol.UDS, count: '15' },
-                { protocol: ecu_calibration_entity_1.CalibrationProtocol.KWP2000, count: '10' },
-            ]);
-            const result = await service.getStats('tenant-uuid');
-            expect(result.total).toBe(25);
-            expect(result.byStatus).toHaveLength(2);
-            expect(result.byProtocol).toHaveLength(2);
+    describe('getVersionHistory', () => {
+        it('should return version history for a vehicle', async () => {
+            const calibrations = [
+                mockStage1Calibration,
+                mockCalibration,
+            ];
+            repository.find.mockResolvedValue(calibrations);
+            const result = await service.getVersionHistory('tenant-uuid', 'vehicle-uuid');
+            expect(repository.find).toHaveBeenCalledWith({
+                where: { tenantId: 'tenant-uuid', vehicleId: 'vehicle-uuid', isActive: true },
+                order: { version: 'DESC', createdAt: 'DESC' },
+            });
+            expect(result).toHaveLength(2);
+            expect(result[0].version).toBe(2);
+        });
+        it('should return empty array if no calibrations found', async () => {
+            repository.find.mockResolvedValue([]);
+            const result = await service.getVersionHistory('tenant-uuid', 'new-vehicle-uuid');
+            expect(result).toHaveLength(0);
         });
     });
 });
