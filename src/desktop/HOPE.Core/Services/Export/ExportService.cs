@@ -2,6 +2,7 @@ using System.IO;
 using System.Text;
 using HOPE.Core.Models;
 using HOPE.Core.Services.Database;
+using HOPE.Core.Services.ECU;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -187,5 +188,96 @@ public class ExportService : IExportService
         });
 
         document.GeneratePdf(outputPath);
+    }
+    public async Task ExportDiffReportAsync(CalibrationDiff diff, string outputPath)
+    {
+        var document = Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(40);
+                page.DefaultTextStyle(x => x.FontSize(10));
+
+                page.Header()
+                    .Column(column =>
+                    {
+                        column.Item().Text("Calibration Diff Report")
+                            .FontSize(24).Bold().FontColor(Colors.Blue.Darken2);
+                        column.Item().Text($"Base: {diff.BaseEcuId} vs Compare: {diff.CompareEcuId}")
+                            .FontSize(12).FontColor(Colors.Grey.Darken2);
+                    });
+
+                page.Content()
+                    .PaddingVertical(20)
+                    .Column(column =>
+                    {
+                        column.Item().Text("Summary").FontSize(14).Bold();
+                        column.Item().PaddingBottom(10).Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn();
+                                columns.RelativeColumn();
+                            });
+                            
+                            table.Cell().Text("Base Timestamp:").Bold();
+                            table.Cell().Text(diff.BaseTimestamp.ToString("g"));
+                            
+                            table.Cell().Text("Compare Timestamp:").Bold();
+                            table.Cell().Text(diff.CompareTimestamp.ToString("g"));
+                            
+                            table.Cell().Text("Total Bytes Changed:").Bold();
+                            table.Cell().Text(diff.TotalBytesChanged.ToString());
+                        });
+
+                        column.Item().PaddingTop(20);
+                        column.Item().Text("Block Changes").FontSize(14).Bold();
+                        
+                        column.Item().PaddingTop(5).Table(table => 
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn(2);
+                                columns.RelativeColumn(1);
+                                columns.RelativeColumn(1);
+                                columns.RelativeColumn(1);
+                            });
+
+                            table.Header(header =>
+                            {
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Block Name").FontColor(Colors.White).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Address").FontColor(Colors.White).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Type").FontColor(Colors.White).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Bytes").FontColor(Colors.White).Bold();
+                            });
+
+                            foreach(var change in diff.Changes)
+                            {
+                                var bgColor = diff.Changes.IndexOf(change) % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
+                                int byteCount = change.ByteChanges?.Count ?? 0;
+                                if (change.ChangeType == ChangeType.Added) byteCount = change.NewData?.Length ?? 0;
+                                if (change.ChangeType == ChangeType.Removed) byteCount = change.OldData?.Length ?? 0;
+
+                                table.Cell().Background(bgColor).Padding(5).Text(change.BlockName);
+                                table.Cell().Background(bgColor).Padding(5).Text($"0x{change.Address:X}");
+                                table.Cell().Background(bgColor).Padding(5).Text(change.ChangeType.ToString());
+                                table.Cell().Background(bgColor).Padding(5).Text(byteCount.ToString());
+                            }
+                        });
+                    });
+
+                 page.Footer()
+                    .AlignCenter()
+                    .Text(x =>
+                    {
+                        x.Span("HOPE Calibration Diff | ");
+                        x.Span(DateTime.Now.ToString("g"));
+                    });
+            });
+        });
+
+        document.GeneratePdf(outputPath);
+        await Task.CompletedTask;
     }
 }

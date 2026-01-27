@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
+using HOPE.Core.Models;
 
 namespace HOPE.Desktop.Converters;
 
@@ -79,16 +80,5 @@ public class DiffToColorConverter : IValueConverter
 /// <summary>
 /// Represents a cell in the diff visualization with base, compare, and diff values.
 /// </summary>
-public class DiffCell
-{
-    public double BaseValue { get; set; }
-    public double CompareValue { get; set; }
-    public double Difference => CompareValue - BaseValue;
-    public double PercentChange => BaseValue != 0 ? (Difference / BaseValue) * 100 : (CompareValue != 0 ? 100 : 0);
-    public bool HasChanged => Math.Abs(Difference) > 0.001;
 
-    public string DisplayText => HasChanged
-        ? $"{CompareValue:F1} ({(Difference >= 0 ? "+" : "")}{Difference:F1})"
-        : $"{BaseValue:F1}";
-}
 

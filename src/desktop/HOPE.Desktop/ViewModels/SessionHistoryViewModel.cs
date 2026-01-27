@@ -58,7 +58,7 @@ public partial class SessionHistoryViewModel : ObservableObject
                     Duration = session.EndTime.HasValue 
                         ? session.EndTime.Value - session.StartTime 
                         : TimeSpan.Zero,
-                    Notes = session.Notes
+                    Notes = session.Notes ?? string.Empty
                 });
             }
 

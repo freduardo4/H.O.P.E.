@@ -47,9 +47,14 @@ public partial class App : PrismApplication
         // containerRegistry.RegisterSingleton<IOBD2Service, OBD2Service>();
         containerRegistry.RegisterSingleton<IOBD2Service, MockOBD2Service>();
 
+        // Register Calibration Repository
+        var repoPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "HOPE", "CalibrationRepo");
+        containerRegistry.RegisterInstance(new CalibrationRepository(repoPath));
+
         // Register Views for Navigation
         containerRegistry.RegisterForNavigation<DashboardView>();
         containerRegistry.RegisterForNavigation<MapVisualizationView>();
+        containerRegistry.RegisterForNavigation<MapDiffViewer>();
         containerRegistry.RegisterForNavigation<DTCView>();
         containerRegistry.RegisterForNavigation<SettingsView>();
         containerRegistry.RegisterForNavigation<SessionHistoryView>();

@@ -28,6 +28,11 @@
                              Style="{StaticResource {x:Type ToggleButton}}"
                              Command="{Binding NavigateCommand}" CommandParameter="MapVisualizationView"
                              Padding="15,10" Margin="0,5" Background="Transparent" Foreground="#AAAAAA" BorderThickness="0"/>
+
+                <RadioButton Content="3D Map Tool" 
+                             Style="{StaticResource {x:Type ToggleButton}}"
+                             Command="{Binding NavigateCommand}" CommandParameter="MapDiffViewer"
+                             Padding="15,10" Margin="0,5" Background="Transparent" Foreground="#AAAAAA" BorderThickness="0"/>
                 
                 <RadioButton Content="Trouble Codes" 
                              Style="{StaticResource {x:Type ToggleButton}}"

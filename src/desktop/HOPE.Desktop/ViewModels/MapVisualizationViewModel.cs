@@ -4,6 +4,7 @@ using HOPE.Core.Services.ECU;
 using HOPE.Core.Services.AI;
 using HOPE.Desktop.Converters;
 using System.Collections.ObjectModel;
+using HOPE.Core.Models;
 
 namespace HOPE.Desktop.ViewModels;
 
@@ -564,17 +565,7 @@ public partial class MapVisualizationViewModel : ObservableObject
     }
 }
 
-public class MapRow
-{
-    public int Index { get; set; }
-    public ObservableCollection<double> Values { get; } = new();
-}
 
-public class DiffMapRow
-{
-    public int Index { get; set; }
-    public ObservableCollection<DiffCell> Cells { get; } = new();
-}
 
 public class CalibrationCommitItem
 {
@@ -585,3 +576,5 @@ public class CalibrationCommitItem
     public DateTime Timestamp { get; set; }
     public string DisplayText { get; set; } = string.Empty;
 }
+
+

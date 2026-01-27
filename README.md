@@ -14,29 +14,21 @@ H.O.P.E. is an advanced, AI-powered vehicle diagnostics and ECU calibration plat
 - Python 3.10+
 - PostgreSQL
 
-### Running the Stack
+## Quick Start
 
-1.  **Backend**:
-    ```bash
-    cd src/backend
-    npm install
-    npm run start:dev
-    ```
+The easiest way to get started is using the **HOPE Developer CLI**.
 
-2.  **Desktop App**:
-    - Open `src/desktop/HOPE.Desktop.sln` in Visual Studio.
-    - Build and Run.
+1.  **Dependencies**: Ensure .NET 8.0, Node.js 20+, and Python 3.10+ are installed.
+2.  **Setup**: Run `.\scripts\hope.ps1 setup` to install all module dependencies.
+3.  **Start Services**:
+    - `.\scripts\hope.ps1 start backend` (API server)
+    - `.\scripts\hope.ps1 start desktop` (UI App)
+4.  **Test Everything**: `.\scripts\hope.ps1 test all`
 
-3.  **AI Training**:
-    ```bash
-    cd src/ai-training
-    pip install -r requirements.txt
-    python train_anomaly_detector.py
-    ```
+## Documentation & Recipes
 
-## Documentation
-
-- **[Full Documentation](docs/README_full.md)**: Detailed architecture, features, and deep dives.
+- **[Developer Recipes](recipes/README.md)**: Living examples for common tasks (OBD sessions, tuning, AI).
+- **[Full Documentation](docs/README_full.md)**: Detailed architecture and deep dives.
 - **[Documentation Index](docs/index.md)**: Navigation for all project docs.
 - **[Contributing](CONTRIBUTING.md)**: How to get involved.
 

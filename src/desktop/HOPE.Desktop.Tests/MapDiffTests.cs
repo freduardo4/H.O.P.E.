@@ -1,4 +1,5 @@
 using HOPE.Desktop.Converters;
+using HOPE.Core.Models;
 using Xunit;
 
 namespace HOPE.Desktop.Tests;
@@ -88,8 +89,12 @@ public class MapDiffTests
             CompareValue = 13.5
         };
 
-        Assert.Contains("13.5", cell.DisplayText);
-        Assert.Contains("-0.5", cell.DisplayText);
+        // Base: 14.00
+        // Compare: 13.50
+        // Diff: -0.50 (-3.6%)
+        Assert.Contains("Base: 14.00", cell.DisplayText);
+        Assert.Contains("Compare: 13.50", cell.DisplayText);
+        Assert.Contains("Diff: -0.50", cell.DisplayText);
     }
 
     [Fact]
@@ -101,7 +106,12 @@ public class MapDiffTests
             CompareValue = 14.0
         };
 
-        Assert.Equal("14.0", cell.DisplayText);
+        // Base: 14.00
+        // Compare: 14.00
+        // Diff: 0.00 (0.0%)
+        Assert.Contains("Base: 14.00", cell.DisplayText);
+        Assert.Contains("Compare: 14.00", cell.DisplayText);
+        Assert.Contains("Diff: 0.00", cell.DisplayText);
     }
 
     [Fact]

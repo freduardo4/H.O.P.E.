@@ -1,3 +1,5 @@
+using HOPE.Core.Services.ECU;
+
 namespace HOPE.Core.Services.Export;
 
 /// <summary>
@@ -19,6 +21,11 @@ public interface IExportService
     /// <param name="outputPath">Output file path</param>
     Task ExportToPdfAsync(Guid sessionId, string outputPath);
     
+    /// <summary>
+    /// Export calibration diff to PDF report
+    /// </summary>
+    Task ExportDiffReportAsync(CalibrationDiff diff, string outputPath);
+
     /// <summary>
     /// Get the default export directory
     /// </summary>

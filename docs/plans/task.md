@@ -18,7 +18,7 @@
 - [x] **2.1 ECU Calibration Management**
   - [x] Version-controlled binary storage
   - [x] Checksum validation engine
-  - [ ] Graphical diff tool for maps
+  - [x] Graphical diff tool for maps
 - [x] **2.2 Safe-Mode ECU Flashing**
   - [x] Pre-flight environment checks
   - [x] Shadow backup system
@@ -94,9 +94,9 @@
 ## Phase 8: Engineering & Operational Improvements
 
 ### Dev Enablement
-- [ ] **8.1 Developer Experience**
-  - [ ] Add Dev CLI/Makefile/PowerShell helper (setup, test, lint)
-  - [ ] Provide living examples/recipes (calibration, OBD session, local scripts)
+- [x] **8.1 Developer Experience**
+  - [x] Add Dev CLI/Makefile/PowerShell helper (setup, test, lint)
+  - [x] Provide living examples/recipes (calibration, OBD session, local scripts)
 
 ### Testing, Safety & Reliability
 - [ ] **8.2 Critical Safety Infrastructure**
