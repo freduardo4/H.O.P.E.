@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![HOPE Logo](docs/assets/image001.png)
+<img src="docs/assets/image001.png" alt="HOPE Logo" width="400">
 
 **Next-Generation AI-Driven Vehicle Diagnostics, ECU Tuning & Digital Twin Platform**
 
