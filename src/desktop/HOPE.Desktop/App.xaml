@@ -17,5 +17,6 @@
         <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
         <converters:ChartButtonTextConverter x:Key="ChartButtonTextConverter"/>
         <converters:BooleanToAnomalyColorConverter x:Key="BooleanToAnomalyColorConverter"/>
+        <converters:DiffToColorConverter x:Key="DiffToColorConverter"/>
     </Application.Resources>
 </prism:PrismApplication>

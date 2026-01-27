@@ -19,6 +19,9 @@ from typing import Dict, List, Tuple, Optional
 
 import numpy as np
 import pandas as pd
+import torch
+
+from train_anomaly_detector import DEVICE
 
 # Configure logging
 logging.basicConfig(
@@ -47,7 +50,7 @@ class AnomalyDetector:
         if onnx_path.exists():
             self._load_onnx_model(onnx_path)
         else:
-            self._load_keras_model()
+            self._load_pytorch_model()
 
     def _load_onnx_model(self, onnx_path: Path):
         """Load ONNX model for inference."""
@@ -75,23 +78,26 @@ class AnomalyDetector:
             logger.info(f"Loaded ONNX model from {onnx_path}")
 
         except ImportError:
-            logger.warning("onnxruntime not available, falling back to Keras")
-            self._load_keras_model()
+            logger.warning("onnxruntime not available, falling back to PyTorch")
+            self._load_pytorch_model()
 
-    def _load_keras_model(self):
-        """Load Keras model for inference."""
+    def _load_pytorch_model(self):
+        """Load PyTorch model for inference."""
         # Import here to avoid loading TensorFlow if ONNX is available
-        from train_anomaly_detector import LSTMAutoencoder
+        from train_anomaly_detector import AnomalyDetector as TrainingDetector
 
-        self.model = LSTMAutoencoder.load(self.model_path)
+        training_detector = TrainingDetector.load(self.model_path)
+        self.model = training_detector.model
         self.config = {
             'sequence_length': self.model.sequence_length,
             'n_features': self.model.n_features,
-            'threshold': self.model.threshold,
+            'threshold': training_detector.threshold,
         }
-        self.scaler = self.model.scaler
+        self.scaler = training_detector.scaler
 
-        logger.info(f"Loaded Keras model from {self.model_path}")
+        self.scaler = training_detector.scaler
+
+        logger.info(f"Loaded PyTorch model from {self.model_path}")
 
     def preprocess(self, data: np.ndarray) -> np.ndarray:
         """Preprocess input data for inference."""
@@ -123,8 +129,11 @@ class AnomalyDetector:
                 {input_name: sequences_scaled.astype(np.float32)}
             )[0]
         else:
-            # Keras inference
-            reconstructions = self.model.model.predict(sequences_scaled, verbose=0)
+            # PyTorch inference
+            self.model.eval()
+            with torch.no_grad():
+                inputs = torch.FloatTensor(sequences_scaled).to(DEVICE)
+                reconstructions = self.model(inputs).cpu().numpy()
 
         # Calculate anomaly scores (MSE)
         mse = np.mean(np.power(sequences_scaled - reconstructions, 2), axis=(1, 2))

@@ -1,0 +1,36 @@
+# Environments
+**/venv/
+**/node_modules/
+**/obj/
+**/bin/
+
+# Secrets & Config
+**/.env
+**/*.local
+**/secrets.json
+**/appsettings.Development.json
+
+# IDEs
+**/.vscode/
+**/.idea/
+**/*.user
+**/*.suo
+
+# Temporary Files
+**/build.log
+**/build_errors.txt
+**/build_output.txt
+**/detailed_errors.txt
+**/nul_fixed.txt
+**/*.tmp
+**/*.temp
+**/.pytest_cache/
+**/__pycache__/
+
+# Large Files
+**/*.onnx
+**/*.bin
+**/*.zip
+**/*.7z
+**/*.rar
+**/*.log

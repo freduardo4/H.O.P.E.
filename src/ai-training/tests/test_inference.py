@@ -17,6 +17,13 @@ import pytest
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
 
+# Check if onnxruntime is available
+try:
+    import onnxruntime
+    ONNXRUNTIME_AVAILABLE = True
+except ImportError:
+    ONNXRUNTIME_AVAILABLE = False
+
 from train_anomaly_detector import (
     AnomalyDetector as TrainingDetector,
     generate_synthetic_data,
@@ -64,7 +71,7 @@ class TestInferenceDetector:
         assert not detector.is_onnx
 
     @pytest.mark.skipif(
-        not pytest.importorskip("onnxruntime", reason="onnxruntime not installed"),
+        not ONNXRUNTIME_AVAILABLE,
         reason="onnxruntime not installed"
     )
     def test_load_model_onnx(self, saved_model_path):

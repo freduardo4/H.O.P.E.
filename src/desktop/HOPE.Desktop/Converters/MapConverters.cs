@@ -24,7 +24,7 @@ public class ValueToHeatmapConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         double val = (double)value;
-        
+
         // Target AFR 10.0 (Rich/Blue) to 15.0 (Lean/Red)
         // For now, let's do a simple Green/Yellow/Red
         if (val < 13.0) return new SolidColorBrush(Color.FromRgb(46, 125, 50)); // Deep Green
@@ -38,3 +38,57 @@ public class ValueToHeatmapConverter : IValueConverter
         return Binding.DoNothing;
     }
 }
+
+/// <summary>
+/// Converts a diff value (percentage change) to a color gradient.
+/// Positive changes (increases) are shown in green, negative (decreases) in red.
+/// </summary>
+public class DiffToColorConverter : IValueConverter
+{
+    private static readonly Color PositiveColor = Color.FromRgb(46, 125, 50);   // Green - increase
+    private static readonly Color NegativeColor = Color.FromRgb(211, 47, 47);   // Red - decrease
+    private static readonly Color NeutralColor = Color.FromRgb(45, 45, 45);     // Dark gray - no change
+
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is not DiffCell cell)
+            return new SolidColorBrush(NeutralColor);
+
+        if (Math.Abs(cell.PercentChange) < 0.01)
+            return new SolidColorBrush(NeutralColor);
+
+        // Calculate intensity based on percentage change (cap at +/- 50%)
+        double intensity = Math.Min(Math.Abs(cell.PercentChange) / 50.0, 1.0);
+
+        Color baseColor = cell.PercentChange > 0 ? PositiveColor : NegativeColor;
+
+        // Interpolate between neutral and base color based on intensity
+        byte r = (byte)(NeutralColor.R + (baseColor.R - NeutralColor.R) * intensity);
+        byte g = (byte)(NeutralColor.G + (baseColor.G - NeutralColor.G) * intensity);
+        byte b = (byte)(NeutralColor.B + (baseColor.B - NeutralColor.B) * intensity);
+
+        return new SolidColorBrush(Color.FromRgb(r, g, b));
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return Binding.DoNothing;
+    }
+}
+
+/// <summary>
+/// Represents a cell in the diff visualization with base, compare, and diff values.
+/// </summary>
+public class DiffCell
+{
+    public double BaseValue { get; set; }
+    public double CompareValue { get; set; }
+    public double Difference => CompareValue - BaseValue;
+    public double PercentChange => BaseValue != 0 ? (Difference / BaseValue) * 100 : (CompareValue != 0 ? 100 : 0);
+    public bool HasChanged => Math.Abs(Difference) > 0.001;
+
+    public string DisplayText => HasChanged
+        ? $"{CompareValue:F1} ({(Difference >= 0 ? "+" : "")}{Difference:F1})"
+        : $"{BaseValue:F1}";
+}
+

@@ -23,7 +23,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            
+
             <StackPanel>
                 <TextBlock Text="VEHICLE DASHBOARD" Foreground="White" FontSize="32" FontWeight="Bold" FontFamily="Segoe UI Semibold"/>
                 <StackPanel Orientation="Horizontal">
@@ -31,18 +31,181 @@
                     <TextBlock Text="{Binding ConnectionStatus}" Foreground="#AAAAAA" FontSize="14"/>
                 </StackPanel>
             </StackPanel>
-            
-            <!-- Anomaly Status Panel -->
-            <Border Grid.Column="1" Background="{Binding IsAnomaly, Converter={StaticResource BooleanToAnomalyColorConverter}}" 
-                    CornerRadius="8" Padding="16,8" VerticalAlignment="Center">
-                <StackPanel>
-                    <TextBlock Text="{Binding AnomalyScore, StringFormat='Anomaly Score: {0:P0}'}" 
-                               Foreground="White" FontSize="14" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding AnomalyDescription}" 
-                               Foreground="#DDDDDD" FontSize="11"/>
-                </StackPanel>
+
+            <!-- Anomaly Status Panel (Clickable to expand) -->
+            <Border Grid.Column="1" Background="{Binding IsAnomaly, Converter={StaticResource BooleanToAnomalyColorConverter}}"
+                    CornerRadius="8" Padding="16,8" VerticalAlignment="Center" Cursor="Hand">
+                <Border.InputBindings>
+                    <MouseBinding MouseAction="LeftClick" Command="{Binding ToggleAnomalyPanelCommand}"/>
+                </Border.InputBindings>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding AnomalyScore, StringFormat='Score: {0:P0}'}"
+                                       Foreground="White" FontSize="14" FontWeight="SemiBold"/>
+                            <Border Background="#333333" CornerRadius="3" Padding="6,2" Margin="10,0,0,0">
+                                <TextBlock Text="{Binding AnomalySeverity}" Foreground="White" FontSize="10" FontWeight="Bold"/>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="{Binding AnomalyDescription}" Foreground="#DDDDDD" FontSize="11" MaxWidth="280" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" Text=">" Foreground="#888888" FontSize="16" VerticalAlignment="Center" Margin="10,0,0,0"
+                               RenderTransformOrigin="0.5,0.5">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsAnomalyPanelExpanded}" Value="True">
+                                        <Setter Property="RenderTransform">
+                                            <Setter.Value>
+                                                <RotateTransform Angle="90"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
             </Border>
         </Grid>
+
+        <!-- Expanded Anomaly Details Panel (Floating overlay) -->
+        <Border Grid.Row="0" Grid.RowSpan="2" Background="#1A1A1A" CornerRadius="10" Margin="0,70,0,0" Padding="15"
+                VerticalAlignment="Top" HorizontalAlignment="Right" Width="360"
+                Visibility="{Binding IsAnomalyPanelExpanded, Converter={StaticResource BooleanToVisibilityConverter}}"
+                Panel.ZIndex="100">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="20" ShadowDepth="5" Opacity="0.5"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Panel Header -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBlock Text="AI ANOMALY ANALYSIS" Foreground="White" FontSize="14" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding TotalAnomaliesDetected, StringFormat=' ({0} detected)'}" Foreground="#888888" FontSize="12" VerticalAlignment="Bottom"/>
+                </StackPanel>
+
+                <!-- Contributing Parameters -->
+                <Border Grid.Row="1" Background="#252525" CornerRadius="6" Padding="10" Margin="0,0,0,10"
+                        Visibility="{Binding IsAnomaly, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel>
+                        <TextBlock Text="CONTRIBUTING FACTORS" Foreground="#888888" FontSize="10" FontWeight="Bold" Margin="0,0,0,8"/>
+                        <ItemsControl ItemsSource="{Binding ContributingParameters}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,3">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="50"/>
+                                            <ColumnDefinition Width="80"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Name}" Foreground="#CCCCCC" FontSize="11"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding ContributionPercent}" Foreground="#FF9800" FontSize="11" FontWeight="SemiBold"/>
+                                        <ProgressBar Grid.Column="2" Value="{Binding Contribution}" Maximum="1" Height="6"
+                                                     Background="#333333" Foreground="#FF9800"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Repair Suggestions -->
+                <Border Grid.Row="2" Background="#252525" CornerRadius="6" Padding="10" Margin="0,0,0,10"
+                        Visibility="{Binding IsAnomaly, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel>
+                        <TextBlock Text="REPAIR SUGGESTIONS" Foreground="#888888" FontSize="10" FontWeight="Bold" Margin="0,0,0,8"/>
+                        <ItemsControl ItemsSource="{Binding RepairSuggestions}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#1E1E1E" CornerRadius="4" Padding="8" Margin="0,0,0,5">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Border CornerRadius="3" Padding="4,2" VerticalAlignment="Top" Margin="0,0,8,0">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="#666666"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Priority}" Value="1">
+                                                                <Setter Property="Background" Value="#D32F2F"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Priority}" Value="2">
+                                                                <Setter Property="Background" Value="#FF9800"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding PriorityLabel}" Foreground="White" FontSize="8" FontWeight="Bold"/>
+                                            </Border>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="{Binding Component}" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Action}" Foreground="#AAAAAA" FontSize="10" TextWrapping="Wrap"/>
+                                                <TextBlock Text="{Binding EstimatedCost}" Foreground="#4CAF50" FontSize="10" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Anomaly History -->
+                <Border Grid.Row="3" Background="#252525" CornerRadius="6" Padding="10" Margin="0,0,0,10" MaxHeight="120">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Text="RECENT ANOMALIES" Foreground="#888888" FontSize="10" FontWeight="Bold"/>
+                            <Button Content="Clear" Command="{Binding ClearAnomalyHistoryCommand}"
+                                    Background="Transparent" Foreground="#666666" FontSize="9" BorderThickness="0"
+                                    Margin="10,0,0,0" Padding="0" Cursor="Hand"/>
+                        </StackPanel>
+                        <ScrollViewer MaxHeight="80" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding AnomalyHistory}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="55"/>
+                                                <ColumnDefinition Width="40"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding TimeAgo}" Foreground="#666666" FontSize="9"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding ScorePercent}" Foreground="#FF9800" FontSize="10" FontWeight="SemiBold"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding Description}" Foreground="#AAAAAA" FontSize="9" TextTrimming="CharacterEllipsis"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </StackPanel>
+                </Border>
+
+                <!-- Close Button -->
+                <Button Grid.Row="4" Content="CLOSE" Command="{Binding ToggleAnomalyPanelCommand}"
+                        Background="#333333" Foreground="#AAAAAA" Padding="10,6" BorderThickness="0"
+                        HorizontalAlignment="Right" FontSize="11" FontWeight="SemiBold">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="4"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </Grid>
+        </Border>
 
         <!-- Gauges Grid -->
         <UniformGrid Grid.Row="1" Columns="4" Rows="2">

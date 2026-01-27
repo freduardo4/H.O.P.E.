@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HOPE.Core\HOPE.Core.csproj" />
+    <ProjectReference Include="..\HOPE.Desktop\HOPE.Desktop.csproj" />
   </ItemGroup>
 
   <ItemGroup>

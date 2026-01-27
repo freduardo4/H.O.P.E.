@@ -22,6 +22,13 @@ import torch
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
 
+# Check if onnxruntime is available
+try:
+    import onnxruntime
+    ONNXRUNTIME_AVAILABLE = True
+except ImportError:
+    ONNXRUNTIME_AVAILABLE = False
+
 from train_anomaly_detector import (
     LSTMAutoencoder,
     AnomalyDetector,
@@ -306,7 +313,7 @@ class TestONNXExport:
             assert onnx_path.stat().st_size > 0
 
     @pytest.mark.skipif(
-        not pytest.importorskip("onnxruntime", reason="onnxruntime not installed"),
+        not ONNXRUNTIME_AVAILABLE,
         reason="onnxruntime not installed"
     )
     def test_onnx_model_runs_inference(self, trained_detector):
@@ -333,7 +340,7 @@ class TestONNXExport:
             assert output[0].shape == test_input.shape
 
     @pytest.mark.skipif(
-        not pytest.importorskip("onnxruntime", reason="onnxruntime not installed"),
+        not ONNXRUNTIME_AVAILABLE,
         reason="onnxruntime not installed"
     )
     def test_onnx_output_matches_pytorch(self, trained_detector):

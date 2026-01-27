@@ -267,16 +267,16 @@ HOPE/
 - [x] ELM327 connection and live data streaming
 - [x] Real-time gauges (RPM, Speed, Load, Temps)
 - [x] Session recording to SQLite
-- [ ] J2534 Pass-Thru support
-- [ ] Bi-directional control with safety interlocks
-- [ ] Voltage-aware HAL
+- [x] J2534 Pass-Thru support
+- [x] Bi-directional control with safety interlocks
+- [x] Voltage-aware HAL
 
 ### Phase 2: ECU Calibration & Tuning 🔄
 - [x] KWP2000/UDS protocol implementation
 - [x] Read ECU calibration files
-- [ ] Version-controlled calibration repository
+- [x] Version-controlled calibration repository
 - [ ] Graphical map diff tool
-- [ ] Safe-mode ECU flashing
+- [x] Safe-mode ECU flashing
 - [ ] Genetic algorithm tuning optimizer
 - [ ] Map-switching implementation
 - [ ] Master/Slave marketplace
@@ -284,7 +284,7 @@ HOPE/
 ### Phase 3: AI & Analytics 🔄
 - [x] Train LSTM Autoencoder
 - [x] ONNX model export
-- [ ] Explainable AI (XAI) narratives
+- [x] Explainable AI (XAI) narratives
 - [ ] Physics-Informed Neural Networks (PINNs)
 - [ ] Predictive Maintenance (RUL)
 - [ ] Generative AI customer reports

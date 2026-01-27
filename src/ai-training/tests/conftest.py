@@ -10,6 +10,13 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+# Check if onnxruntime is available
+try:
+    import onnxruntime
+    ONNXRUNTIME_AVAILABLE = True
+except ImportError:
+    ONNXRUNTIME_AVAILABLE = False
+
 # Add scripts directory to path
 SCRIPTS_DIR = Path(__file__).parent.parent / 'scripts'
 sys.path.insert(0, str(SCRIPTS_DIR))
