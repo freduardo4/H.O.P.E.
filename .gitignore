@@ -1,6 +1,0 @@
-# DO NOT PUBLISH API KEYS
-.env*
-**/secrets/**
-**/*.key
-**/*.pem
-**/credentials*

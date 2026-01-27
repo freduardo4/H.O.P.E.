@@ -1,0 +1,207 @@
+<UserControl x:Class="HOPE.Desktop.Controls.ReconstructionErrorChart"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="600"
+             Background="#1E1E1E">
+
+    <UserControl.Resources>
+        <!-- Gradient for anomaly severity -->
+        <LinearGradientBrush x:Key="AnomalyGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#00FF00" Offset="0.0"/>
+            <GradientStop Color="#FFFF00" Offset="0.5"/>
+            <GradientStop Color="#FF4444" Offset="1.0"/>
+        </LinearGradientBrush>
+
+        <!-- Normal zone fill -->
+        <SolidColorBrush x:Key="NormalZoneBrush" Color="#1A00FF00"/>
+
+        <!-- Warning zone fill -->
+        <SolidColorBrush x:Key="WarningZoneBrush" Color="#1AFFFF00"/>
+
+        <!-- Danger zone fill -->
+        <SolidColorBrush x:Key="DangerZoneBrush" Color="#1AFF4444"/>
+
+        <!-- Grid line brush -->
+        <SolidColorBrush x:Key="GridLineBrush" Color="#333333"/>
+
+        <!-- Text style -->
+        <Style x:Key="ChartLabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#AAAAAA"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+        </Style>
+
+        <!-- Anomaly indicator style -->
+        <Style x:Key="AnomalyMarkerStyle" TargetType="Ellipse">
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Stroke" Value="#FF4444"/>
+            <Setter Property="StrokeThickness" Value="2"/>
+            <Setter Property="Fill" Value="#44FF4444"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="50"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="120"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Title -->
+        <TextBlock Grid.Row="0" Grid.Column="1"
+                   Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                   Foreground="White" FontSize="14" FontWeight="SemiBold"
+                   HorizontalAlignment="Center" Margin="0,5,0,10"/>
+
+        <!-- Y-Axis Labels -->
+        <Canvas x:Name="YAxisCanvas" Grid.Row="1" Grid.Column="0">
+            <!-- Y-axis labels will be drawn programmatically -->
+        </Canvas>
+
+        <!-- Main Chart Area -->
+        <Border Grid.Row="1" Grid.Column="1"
+                BorderBrush="#333333" BorderThickness="1"
+                Background="#0A0A0A">
+            <Canvas x:Name="ChartCanvas" ClipToBounds="True">
+                <!-- Threshold zones -->
+                <Rectangle x:Name="NormalZone" Fill="{StaticResource NormalZoneBrush}"/>
+                <Rectangle x:Name="WarningZone" Fill="{StaticResource WarningZoneBrush}"/>
+                <Rectangle x:Name="DangerZone" Fill="{StaticResource DangerZoneBrush}"/>
+
+                <!-- Grid lines -->
+                <Canvas x:Name="GridCanvas"/>
+
+                <!-- Warning threshold line -->
+                <Line x:Name="WarningThresholdLine"
+                      Stroke="#FFFF00" StrokeThickness="1"
+                      StrokeDashArray="4,2" Opacity="0.7"/>
+
+                <!-- Danger threshold line -->
+                <Line x:Name="DangerThresholdLine"
+                      Stroke="#FF4444" StrokeThickness="1"
+                      StrokeDashArray="4,2" Opacity="0.7"/>
+
+                <!-- Error line path -->
+                <Path x:Name="ErrorLinePath"
+                      Stroke="#00BFFF" StrokeThickness="2"
+                      StrokeLineJoin="Round"/>
+
+                <!-- Ghost curve (expected) -->
+                <Path x:Name="ExpectedLinePath"
+                      Stroke="#666666" StrokeThickness="1"
+                      StrokeDashArray="2,2" Opacity="0.5"/>
+
+                <!-- Anomaly markers canvas -->
+                <Canvas x:Name="AnomalyMarkersCanvas"/>
+
+                <!-- Hover tooltip -->
+                <Border x:Name="TooltipBorder"
+                        Background="#DD000000"
+                        BorderBrush="#555555" BorderThickness="1"
+                        CornerRadius="4" Padding="8,4"
+                        Visibility="Collapsed">
+                    <StackPanel>
+                        <TextBlock x:Name="TooltipTime" Foreground="#AAAAAA" FontSize="10"/>
+                        <TextBlock x:Name="TooltipValue" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="TooltipStatus" FontSize="10"/>
+                    </StackPanel>
+                </Border>
+            </Canvas>
+        </Border>
+
+        <!-- Legend / Info Panel -->
+        <Border Grid.Row="1" Grid.Column="2"
+                Background="#151515" Margin="5,0,0,0"
+                BorderBrush="#333333" BorderThickness="1"
+                CornerRadius="4" Padding="8">
+            <StackPanel>
+                <TextBlock Text="ANOMALY STATUS"
+                           Foreground="#888888" FontSize="9" FontWeight="Bold"
+                           Margin="0,0,0,8"/>
+
+                <!-- Current Score -->
+                <StackPanel Margin="0,0,0,10">
+                    <TextBlock Text="Current Score" Style="{StaticResource ChartLabelStyle}"/>
+                    <TextBlock x:Name="CurrentScoreText"
+                               Text="0.00"
+                               Foreground="#00BFFF" FontSize="24" FontWeight="Bold"/>
+                </StackPanel>
+
+                <!-- Status Indicator -->
+                <Border x:Name="StatusIndicator"
+                        CornerRadius="3" Padding="6,3" Margin="0,0,0,10"
+                        Background="#1A00FF00">
+                    <TextBlock x:Name="StatusText"
+                               Text="NORMAL"
+                               Foreground="#00FF00" FontSize="11" FontWeight="Bold"
+                               HorizontalAlignment="Center"/>
+                </Border>
+
+                <!-- Statistics -->
+                <StackPanel Margin="0,5,0,0">
+                    <TextBlock Text="Statistics" Style="{StaticResource ChartLabelStyle}" Margin="0,0,0,5"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Mean:" Style="{StaticResource ChartLabelStyle}"/>
+                        <TextBlock x:Name="MeanText" Grid.Row="0" Grid.Column="1" Text="0.00" Foreground="White" FontSize="10"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Max:" Style="{StaticResource ChartLabelStyle}"/>
+                        <TextBlock x:Name="MaxText" Grid.Row="1" Grid.Column="1" Text="0.00" Foreground="White" FontSize="10"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="σ:" Style="{StaticResource ChartLabelStyle}"/>
+                        <TextBlock x:Name="StdDevText" Grid.Row="2" Grid.Column="1" Text="0.00" Foreground="White" FontSize="10"/>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Anomalies:" Style="{StaticResource ChartLabelStyle}"/>
+                        <TextBlock x:Name="AnomalyCountText" Grid.Row="3" Grid.Column="1" Text="0" Foreground="#FF4444" FontSize="10"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Legend -->
+                <StackPanel Margin="0,15,0,0">
+                    <TextBlock Text="Legend" Style="{StaticResource ChartLabelStyle}" Margin="0,0,0,5"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <Rectangle Width="12" Height="3" Fill="#00BFFF" Margin="0,0,5,0"/>
+                        <TextBlock Text="Reconstruction Error" Style="{StaticResource ChartLabelStyle}"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <Rectangle Width="12" Height="3" Fill="#666666" Margin="0,0,5,0"/>
+                        <TextBlock Text="Expected Baseline" Style="{StaticResource ChartLabelStyle}"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <Ellipse Width="8" Height="8" Fill="#44FF4444" Stroke="#FF4444" StrokeThickness="1" Margin="0,0,5,0"/>
+                        <TextBlock Text="Anomaly Detected" Style="{StaticResource ChartLabelStyle}"/>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- X-Axis Labels -->
+        <Canvas x:Name="XAxisCanvas" Grid.Row="2" Grid.Column="1" Height="25">
+            <!-- X-axis labels will be drawn programmatically -->
+        </Canvas>
+    </Grid>
+</UserControl>

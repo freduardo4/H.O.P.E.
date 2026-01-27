@@ -1,3 +1,5 @@
+using HOPE.Core.Data;
+
 namespace HOPE.Core.Models;
 
 /// <summary>
@@ -120,11 +122,4 @@ public enum DTCType
     Chassis,     // C-codes
     Body,        // B-codes
     Network      // U-codes
-}
-
-public enum DTCSeverity
-{
-    Info,
-    Warning,
-    Critical
 }

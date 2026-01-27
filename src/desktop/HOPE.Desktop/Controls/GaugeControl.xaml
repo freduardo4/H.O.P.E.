@@ -1,0 +1,138 @@
+<UserControl x:Class="HOPE.Desktop.Controls.GaugeControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="200" d:DesignWidth="200"
+             x:Name="GaugeRoot">
+
+    <UserControl.Resources>
+        <Style x:Key="GaugeTickStyle" TargetType="Line">
+            <Setter Property="Stroke" Value="#666666"/>
+            <Setter Property="StrokeThickness" Value="2"/>
+        </Style>
+
+        <Style x:Key="GaugeMajorTickStyle" TargetType="Line">
+            <Setter Property="Stroke" Value="#AAAAAA"/>
+            <Setter Property="StrokeThickness" Value="3"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Viewbox Stretch="Uniform">
+        <Grid Width="200" Height="200">
+            <!-- Background Circle -->
+            <Ellipse Width="190" Height="190"
+                     HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Ellipse.Fill>
+                    <RadialGradientBrush GradientOrigin="0.5,0.3">
+                        <GradientStop Color="#252525" Offset="0"/>
+                        <GradientStop Color="#1A1A1A" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+
+            <!-- Outer Ring -->
+            <Ellipse Width="190" Height="190"
+                     Stroke="#333333" StrokeThickness="2"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+            <!-- Warning Zone Arc (rendered behind main arc) -->
+            <Path x:Name="WarningArc"
+                  Stroke="{Binding WarningZoneColor, ElementName=GaugeRoot}"
+                  StrokeThickness="8"
+                  Fill="Transparent"
+                  Opacity="0.4"
+                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+            <!-- Danger Zone Arc -->
+            <Path x:Name="DangerArc"
+                  Stroke="{Binding DangerZoneColor, ElementName=GaugeRoot}"
+                  StrokeThickness="8"
+                  Fill="Transparent"
+                  Opacity="0.4"
+                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+            <!-- Value Arc (Progress) -->
+            <Path x:Name="ValueArc"
+                  Stroke="{Binding GaugeColor, ElementName=GaugeRoot}"
+                  StrokeThickness="10"
+                  Fill="Transparent"
+                  StrokeStartLineCap="Round"
+                  StrokeEndLineCap="Round"
+                  HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Path.Effect>
+                    <DropShadowEffect Color="{Binding GaugeColor, ElementName=GaugeRoot}"
+                                      BlurRadius="10" ShadowDepth="0" Opacity="0.6"/>
+                </Path.Effect>
+            </Path>
+
+            <!-- Tick Marks Canvas -->
+            <Canvas x:Name="TickCanvas" Width="200" Height="200"/>
+
+            <!-- Needle -->
+            <Grid x:Name="NeedleContainer" HorizontalAlignment="Center" VerticalAlignment="Center"
+                  RenderTransformOrigin="0.5,0.5">
+                <Grid.RenderTransform>
+                    <RotateTransform x:Name="NeedleRotation" Angle="-135"/>
+                </Grid.RenderTransform>
+
+                <!-- Needle Shape -->
+                <Polygon Points="0,-75 3,0 0,10 -3,0"
+                         Fill="{Binding NeedleColor, ElementName=GaugeRoot}">
+                    <Polygon.Effect>
+                        <DropShadowEffect BlurRadius="5" ShadowDepth="2" Direction="315" Opacity="0.5"/>
+                    </Polygon.Effect>
+                </Polygon>
+            </Grid>
+
+            <!-- Center Cap -->
+            <Ellipse Width="20" Height="20"
+                     HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Ellipse.Fill>
+                    <RadialGradientBrush GradientOrigin="0.3,0.3">
+                        <GradientStop Color="#444444" Offset="0"/>
+                        <GradientStop Color="#222222" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+
+            <!-- Digital Readout -->
+            <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,30">
+                <TextBlock x:Name="ValueText"
+                           Text="{Binding Value, ElementName=GaugeRoot, StringFormat={}{0:F1}}"
+                           Foreground="{Binding GaugeColor, ElementName=GaugeRoot}"
+                           FontSize="28" FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           FontFamily="Segoe UI Semibold"/>
+                <TextBlock Text="{Binding Unit, ElementName=GaugeRoot}"
+                           Foreground="#888888"
+                           FontSize="12"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Label -->
+            <TextBlock Text="{Binding Label, ElementName=GaugeRoot}"
+                       Foreground="#666666"
+                       FontSize="11"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Top"
+                       Margin="0,20,0,0"/>
+
+            <!-- Min/Max Labels -->
+            <TextBlock Text="{Binding Minimum, ElementName=GaugeRoot, StringFormat={}{0:F0}}"
+                       Foreground="#555555"
+                       FontSize="10"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Bottom"
+                       Margin="25,0,0,40"/>
+            <TextBlock Text="{Binding Maximum, ElementName=GaugeRoot, StringFormat={}{0:F0}}"
+                       Foreground="#555555"
+                       FontSize="10"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Bottom"
+                       Margin="0,0,25,40"/>
+        </Grid>
+    </Viewbox>
+</UserControl>

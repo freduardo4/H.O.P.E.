@@ -307,28 +307,21 @@ public static class OBD2ResponseParser
     /// <summary>
     /// Get severity for DTC from the comprehensive database.
     /// </summary>
-    private static DTCSeverity GetDTCSeverity(string code)
+    private static Data.DTCSeverity GetDTCSeverity(string code)
     {
         var info = DTCDatabase.GetInfo(code);
         if (info != null)
         {
-            return info.Severity switch
-            {
-                Data.DTCSeverity.Critical => DTCSeverity.Critical,
-                Data.DTCSeverity.High => DTCSeverity.Critical,
-                Data.DTCSeverity.Medium => DTCSeverity.Warning,
-                Data.DTCSeverity.Low => DTCSeverity.Info,
-                _ => DTCSeverity.Warning
-            };
+            return info.Severity;
         }
 
         // Fallback for codes not in database
         if (code.StartsWith("P3") || code.StartsWith("U0"))
-            return DTCSeverity.Critical;
+            return Data.DTCSeverity.Critical;
         if (code.StartsWith("P0") || code.StartsWith("P1") || code.StartsWith("P2"))
-            return DTCSeverity.Warning;
+            return Data.DTCSeverity.Medium;
 
-        return DTCSeverity.Info;
+        return Data.DTCSeverity.Low;
     }
 
     /// <summary>
