@@ -1,6 +1,6 @@
 # H.O.P.E. (Heuristic Optimization & Predictive Ecosystem)
 
-![H.O.P.E. Logo](assets/image001.png)
+![H.O.P.E. Logo](docs/assets/image001.png)
 
 ## Overview
 
