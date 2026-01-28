@@ -41,10 +41,13 @@ graph LR
 
 ## Project Status
 
-- **Status**: ✅ All core components verified.
+- [x] **Status**: ✅ All core AI and diagnostics components verified.
 - **Diagnostics**: UDS/KWP2000 protocol handlers implemented and tested.
 - **Safety**: Voltage-aware HAL and simulated hardware integration complete.
-- **AI**: LSTM Anomaly Detection pipeline functional with 96% test coverage.
+- **AI Analytics**:
+  - LSTM Anomaly Detection pipeline functional with 96% test coverage.
+  - Physics-Informed Neural Networks (PINNs) for virtual sensors (EGT estimation).
+  - Remaining Useful Life (RUL) forecasting for predictive maintenance.
 - **Security**: Mandatory S3 encryption, public access blocks, and ECR scanning enabled.
 - **Tests**: 440+ automated tests passing across Desktop, Backend, and AI.
 

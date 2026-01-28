@@ -48,12 +48,12 @@
 - [x] **3.2 Explainable AI (XAI)**
   - [x] Diagnostic narratives module
   - [x] Ghost curves visualization
-- [ ] **3.3 Physics-Informed Neural Networks (PINNs)**
-  - [ ] Virtual sensor framework
-  - [ ] EGT estimation model
-- [ ] **3.4 Predictive Maintenance (RUL)**
-  - [ ] Time-series forecasting
-  - [ ] Component degradation tracking
+- [x] **3.3 Physics-Informed Neural Networks (PINNs)**
+  - [x] Virtual sensor framework
+  - [x] EGT estimation model
+- [x] **3.4 Predictive Maintenance (RUL)**
+  - [x] Time-series forecasting
+  - [x] Component degradation tracking
 
 ## Phase 4: User Experience (HMI)
 - [x] **4.1 Premium Onboarding**

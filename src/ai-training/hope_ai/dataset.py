@@ -59,25 +59,41 @@ def generate_synthetic_data(
             stft = np.random.normal(0, 3)
             ltft = np.random.normal(0, 2)
 
+            # Simulated Ignition Timing (BTDC)
+            # Higher load -> less advance
+            # Higher RPM -> more advance
+            ignition_timing = 15 - (load * 0.1) + (rpm * 0.002) + np.random.normal(0, 1)
+
+            # Simple EGT Physical Model (Simplified)
+            # Base temp + load factor + RPM factor + Ignition effect
+            # Retarded ignition (lower advance) -> higher EGT
+            egt = intake_temp + (load * 6) + (rpm * 0.05) - (ignition_timing * 5) + 300
+            
+            # Anomaly injection can affect EGT
             is_anomaly = False
 
             # Inject anomalies
             if np.random.random() < anomaly_rate:
                 is_anomaly = True
                 anomaly_type = np.random.choice([
-                    'misfire', 'overheating', 'fuel_issue', 'sensor_fault'
+                    'misfire', 'overheating', 'fuel_issue', 'sensor_fault', 'egt_spike'
                 ])
 
                 if anomaly_type == 'misfire':
                     rpm += np.random.uniform(-500, 500)
                     load += np.random.uniform(-20, 20)
+                    egt -= np.random.uniform(50, 150) # Misfire usually drops EGT in that cylinder, but here it's aggregate
                 elif anomaly_type == 'overheating':
                     coolant_temp += np.random.uniform(10, 30)
+                    egt += np.random.uniform(20, 50)
                 elif anomaly_type == 'fuel_issue':
                     stft += np.random.uniform(-15, 15)
                     ltft += np.random.uniform(-10, 10)
+                    # Lean condition increases EGT
+                    if stft < 0: egt += np.random.uniform(50, 100)
+                elif anomaly_type == 'egt_spike':
+                    egt += np.random.uniform(150, 300)
                 elif anomaly_type == 'sensor_fault':
-                    # Random noise for sensor fault
                     pass 
 
             # Clamp values to realistic ranges
@@ -91,10 +107,13 @@ def generate_synthetic_data(
             fuel_pressure = np.clip(fuel_pressure, 0, 800)
             stft = np.clip(stft, -25, 25)
             ltft = np.clip(ltft, -25, 25)
+            ignition_timing = np.clip(ignition_timing, -10, 50)
+            egt = np.clip(egt, 200, 1100)
 
             sample = [
                 rpm, speed, load, coolant_temp, intake_temp,
-                maf_flow, throttle, fuel_pressure, stft, ltft
+                maf_flow, throttle, fuel_pressure, stft, ltft,
+                ignition_timing, egt
             ]
 
             vehicle_data.append(sample)

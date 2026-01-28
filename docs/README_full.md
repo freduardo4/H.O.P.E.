@@ -288,12 +288,12 @@ HOPE/
 - [ ] Map-switching implementation
 - [ ] Master/Slave marketplace
 
-### Phase 3: AI & Analytics (In Progress)
+### Phase 3: AI & Analytics (Completed)
 - [x] Train LSTM Autoencoder & ONNX export
 - [x] Explainable AI (XAI) narratives
 - [x] MLOps pipeline (DVC, Docker, Model Cards)
-- [ ] Physics-Informed Neural Networks (PINNs)
-- [ ] Predictive Maintenance (RUL)
+- [x] Physics-Informed Neural Networks (PINNs)
+- [x] Predictive Maintenance (RUL)
 - [ ] Generative AI customer reports
 
 ### Phase 4: User Experience (HMI)

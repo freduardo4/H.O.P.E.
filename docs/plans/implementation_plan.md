@@ -322,7 +322,7 @@ Actual MAF (from sensor):         ─ ─ ─ ─ ─
 
 ---
 
-### 3.3 Physics-Informed Neural Networks (PINNs)
+### 3.3 Physics-Informed Neural Networks (PINNs) [COMPLETED]
 
 ---
 
@@ -345,7 +345,7 @@ class PINNVirtualSensor:
 
 ---
 
-### 3.4 Predictive Maintenance (RUL Estimation)
+### 3.4 Predictive Maintenance (RUL Estimation) [COMPLETED]
 
 ---
 

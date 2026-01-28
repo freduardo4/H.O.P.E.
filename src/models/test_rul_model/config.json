@@ -1,0 +1,10 @@
+{
+  "sequence_length": 30,
+  "hidden_size": 64,
+  "num_layers": 2,
+  "trained_components": [
+    "catalytic_converter",
+    "o2_sensor",
+    "battery"
+  ]
+}

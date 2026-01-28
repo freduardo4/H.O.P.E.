@@ -15,14 +15,14 @@ import pytest
 # Add scripts directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
 
-from rul_forecaster import (
+from hope_ai.forecasting import (
     RULPredictor,
     ComponentType,
     ComponentHealth,
     MaintenancePrediction,
     LSTMForecaster,
-    generate_synthetic_degradation_data,
 )
+from rul_forecaster import generate_synthetic_degradation_data
 
 
 class TestComponentType:

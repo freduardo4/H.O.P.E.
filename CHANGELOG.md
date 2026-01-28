@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Polyglot CI workflow for .NET, Node, and Python.
 - Dependabot configuration for automated dependency updates.
 - Documentation restructuring with a new summary README and docs index.
+- Physics-Informed Neural Networks (PINNs) for virtual sensor estimation (EGT).
+- Remaining Useful Life (RUL) forecasting system with modular architecture.
 
 ### Changed
 - Moved original README to `docs/README_full.md`.
