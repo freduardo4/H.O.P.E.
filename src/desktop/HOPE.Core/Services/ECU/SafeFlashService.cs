@@ -256,20 +256,34 @@ public class SafeFlashService : IDisposable
                 result.Success = false;
                 result.FailureReason = "Pre-flight checks failed";
                 result.PreFlightResult = preFlightResult;
+                result.FailedAtStage = FlashStage.PreFlight;
                 return result;
             }
 
             result.PreFlightResult = preFlightResult;
 
             // Step 2: Create shadow backup
-            _currentSession.Stage = FlashStage.Backup;
-            ReportProgress(FlashStage.Backup, 5, "Creating shadow backup...");
+            if (config.CreateBackup)
+            {
+                _currentSession.Stage = FlashStage.Backup;
+                ReportProgress(FlashStage.Backup, 5, "Creating shadow backup...");
 
-            var backup = await CreateShadowBackupAsync(config, _flashCts.Token);
-            _currentSession.BackupPath = backup.BackupPath;
-            result.BackupPath = backup.BackupPath;
+                var backup = await CreateShadowBackupAsync(config, _flashCts.Token);
+                
+                // Verify backup integrity immediately
+                var backupCalPath = Path.Combine(backup.BackupPath, "calibration.json");
+                if (!File.Exists(backupCalPath))
+                    throw new FlashException("Shadow backup failed: calibration file not created");
 
-            ReportProgress(FlashStage.Backup, 15, $"Backup created: {backup.BackupHash[..8]}");
+                _currentSession.BackupPath = backup.BackupPath;
+                result.BackupPath = backup.BackupPath;
+
+                ReportProgress(FlashStage.Backup, 15, $"Backup verified: {backup.BackupHash[..8]}");
+            }
+            else
+            {
+                ReportProgress(FlashStage.Backup, 15, "Skipping backup as requested.");
+            }
 
             // Step 3: Enter programming session
             _currentSession.Stage = FlashStage.EnterSession;
@@ -319,7 +333,8 @@ public class SafeFlashService : IDisposable
             // Step 6: Transfer data
             _currentSession.Stage = FlashStage.Transfer;
             var blocksWritten = 0;
-            var bytesWritten = 0;
+            long totalBytesWritten = 0; // Declared here
+            long lastVoltageCheckBytes = 0; // Declared here
             byte blockSequence = 1;
 
             foreach (var block in config.Calibration.Blocks.OrderBy(b => b.StartAddress))
@@ -331,14 +346,22 @@ public class SafeFlashService : IDisposable
                 while (offset < block.Data.Length)
                 {
                     // Check voltage continuously during flash
-                    if (blocksWritten % 10 == 0)
+                    if (totalBytesWritten == 0 || totalBytesWritten - lastVoltageCheckBytes >= 128)
                     {
-                        var voltage = await _voltageMonitor.ReadBatteryVoltageAsync(_flashCts.Token);
-                        if (voltage.Voltage.HasValue && voltage.Voltage < 12.0)
+                        var voltageResult = await _voltageMonitor.ReadBatteryVoltageAsync(_flashCts.Token);
+                        if (voltageResult.Voltage.HasValue)
                         {
-                            RaiseWarning(FlashWarningType.LowVoltage,
-                                $"Battery voltage dropped to {voltage.Voltage:F1}V during flash!");
+                            if (voltageResult.Voltage < VoltageMonitor.CRITICAL_THRESHOLD)
+                            {
+                                throw new FlashException($"CRITICAL: Battery voltage dropped below {VoltageMonitor.CRITICAL_THRESHOLD}V ({voltageResult.Voltage:F1}V)! Aborting for safety.", FlashStage.Transfer);
+                            }
+                            else if (voltageResult.Voltage < VoltageMonitor.WARNING_THRESHOLD)
+                            {
+                                RaiseWarning(FlashWarningType.LowVoltage,
+                                    $"Battery voltage low: {voltageResult.Voltage:F1}V. Please check power supply.");
+                            }
                         }
+                        lastVoltageCheckBytes = totalBytesWritten;
                     }
 
                     var chunkSize = Math.Min(maxBlockSize - 2, block.Data.Length - offset);
@@ -353,13 +376,13 @@ public class SafeFlashService : IDisposable
                     }
 
                     offset += chunkSize;
-                    bytesWritten += chunkSize;
+                    totalBytesWritten += chunkSize;
                     blockSequence++;
 
                     // Update progress
-                    var progress = 35 + (int)(bytesWritten * 50.0 / totalSize);
+                    var progress = 35 + (int)(totalBytesWritten * 50.0 / totalSize);
                     ReportProgress(FlashStage.Transfer, progress,
-                        $"Writing: {bytesWritten:N0} / {totalSize:N0} bytes");
+                        $"Writing: {totalBytesWritten:N0} / {totalSize:N0} bytes");
                 }
 
                 blocksWritten++;
@@ -423,14 +446,14 @@ public class SafeFlashService : IDisposable
                 result.Success = true; // Flash itself succeeded, just communication issue
             }
 
-            result.BytesWritten = bytesWritten;
+            result.BytesWritten = (int)totalBytesWritten;
             result.BlocksWritten = blocksWritten;
         }
         catch (FlashException ex)
         {
             result.Success = false;
             result.FailureReason = ex.Message;
-            result.FailedAtStage = _currentSession?.Stage;
+            result.FailedAtStage = ex.FailedStage ?? _currentSession?.Stage;
 
             ReportProgress(_currentSession?.Stage ?? FlashStage.PreFlight, -1,
                 $"Flash failed: {ex.Message}");
@@ -688,6 +711,8 @@ public enum CheckStatus
     Failed
 }
 
+
+
 public class FlashResult
 {
     public bool Success { get; set; }
@@ -771,8 +796,15 @@ public class FlashCompleteEventArgs : EventArgs
 
 public class FlashException : Exception
 {
-    public FlashException(string message) : base(message) { }
-    public FlashException(string message, Exception inner) : base(message, inner) { }
+    public FlashStage? FailedStage { get; }
+    public FlashException(string message, FlashStage? stage = null) : base(message) 
+    {
+        FailedStage = stage;
+    }
+    public FlashException(string message, Exception inner, FlashStage? stage = null) : base(message, inner) 
+    {
+        FailedStage = stage;
+    }
 }
 
 #endregion

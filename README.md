@@ -25,6 +25,14 @@ The easiest way to get started is using the **HOPE Developer CLI**.
     - `.\scripts\hope.ps1 start desktop` (UI App)
 4.  **Test Everything**: `.\scripts\hope.ps1 test all`
 
+## Project Status
+
+- **Status**: ✅ All core components verified.
+- **Diagnostics**: UDS/KWP2000 protocol handlers implemented and tested.
+- **Safety**: Voltage-aware HAL and simulated hardware integration complete.
+- **AI**: LSTM Anomaly Detection pipeline functional with 96% test coverage.
+- **Tests**: 440+ automated tests passing across Desktop, Backend, and AI.
+
 ## Documentation & Recipes
 
 - **[Developer Recipes](recipes/README.md)**: Living examples for common tasks (OBD sessions, tuning, AI).

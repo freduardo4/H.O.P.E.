@@ -34,3 +34,15 @@
 **/*.7z
 **/*.rar
 **/*.log
+
+# Test & Build Outputs
+**/TestResults/
+**/test_results*.log
+**/build_vfinal.log
+**/core_build.log
+**/*_error.log
+**/*_errors.txt
+**/err.txt
+**/test_err.txt
+**/test_output.txt
+**/detailed_errors.txt

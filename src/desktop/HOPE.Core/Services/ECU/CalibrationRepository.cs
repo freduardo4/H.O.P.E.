@@ -97,7 +97,8 @@ public class CalibrationRepository : IDisposable
                 VIN = config.VIN,
                 EcuPartNumber = config.PartNumber,
                 SoftwareVersion = config.SoftwareVersion
-            }
+            },
+            Blocks = new List<CalibrationBlock>()
         };
 
         var blocks = new List<CalibrationBlock>();
@@ -159,14 +160,15 @@ public class CalibrationRepository : IDisposable
             var blockSize = (int)Math.Min(remaining, BLOCK_SIZE);
 
             // UDS Read Memory By Address (0x23)
-            var request = new byte[7];
+            var request = new byte[8];
             request[0] = 0x23; // ReadMemoryByAddress
-            request[1] = 0x24; // Address and length format (2 bytes each)
+            request[1] = 0x24; // Address length (4), size length (2)
             request[2] = (byte)(currentAddress >> 24);
             request[3] = (byte)(currentAddress >> 16);
             request[4] = (byte)(currentAddress >> 8);
             request[5] = (byte)(currentAddress & 0xFF);
-            request[6] = (byte)blockSize;
+            request[6] = (byte)(blockSize >> 8);
+            request[7] = (byte)(blockSize & 0xFF);
 
             var response = await adapter.SendMessageAsync(request, 5000, ct);
 
@@ -674,10 +676,31 @@ public class CalibrationRepository : IDisposable
 
 public class CalibrationFile
 {
-    public string EcuId { get; set; } = string.Empty;
+    private string _ecuId = string.Empty;
+    private List<CalibrationBlock> _blocks = new();
+
+    public required string EcuId 
+    { 
+        get { return _ecuId; }
+        set 
+        { 
+            if (string.IsNullOrEmpty(value)) throw new JsonException("EcuId cannot be null or empty");
+            _ecuId = value; 
+        }
+    }
+    
     public DateTime ReadTimestamp { get; set; }
     public CalibrationMetadata Metadata { get; set; } = new();
-    public List<CalibrationBlock> Blocks { get; set; } = new();
+
+    public required List<CalibrationBlock> Blocks 
+    { 
+        get { return _blocks; }
+        set 
+        { 
+            _blocks = value ?? throw new JsonException("Blocks cannot be null"); 
+        }
+    }
+
     public string FullChecksum { get; set; } = string.Empty;
 }
 
@@ -693,9 +716,9 @@ public class CalibrationMetadata
 
 public class CalibrationBlock
 {
-    public string Name { get; set; } = string.Empty;
+    public required string Name { get; set; } = string.Empty;
     public uint StartAddress { get; set; }
-    public byte[] Data { get; set; } = Array.Empty<byte>();
+    public required byte[] Data { get; set; } = Array.Empty<byte>();
     public string Checksum { get; set; } = string.Empty;
 }
 

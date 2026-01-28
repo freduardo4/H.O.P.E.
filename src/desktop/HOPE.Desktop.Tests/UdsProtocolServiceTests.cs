@@ -363,7 +363,7 @@ public class UdsProtocolServiceTests : IDisposable
     }
 
     [Fact]
-    public void SessionChanged_EventFires_OnSessionChange()
+    public async Task SessionChanged_EventFires_OnSessionChange()
     {
         // Arrange
         var positiveResponse = new byte[] { 0x50, 0x03 };
@@ -377,7 +377,7 @@ public class UdsProtocolServiceTests : IDisposable
         _service.SessionChanged += (sender, args) => eventArgs = args;
 
         // Act
-        _service.DiagnosticSessionControlAsync(UdsSession.ExtendedDiagnostic).Wait();
+        await _service.DiagnosticSessionControlAsync(UdsSession.ExtendedDiagnostic);
 
         // Assert
         Assert.NotNull(eventArgs);

@@ -99,10 +99,10 @@
   - [x] Provide living examples/recipes (calibration, OBD session, local scripts)
 
 ### Testing, Safety & Reliability
-- [ ] **8.2 Critical Safety Infrastructure**
-  - [ ] Implement simulated IHardwareAdapter with integration tests
-  - [ ] Add unit/integration tests for flashing logic (pre-flight, failure, recovery)
-  - [ ] Implement transactional flashing with verification/checksums
+- [x] **8.2 Critical Safety Infrastructure**
+  - [x] Implement simulated IHardwareAdapter with integration tests
+  - [x] Add unit/integration tests for flashing logic (pre-flight, failure, recovery)
+  - [x] Implement transactional flashing with verification/checksums
   - [ ] Enforce battery-voltage safety policy (device + cloud)
   - [ ] Add fuzzing for binary parsing and calibration
 
