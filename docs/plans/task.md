@@ -16,22 +16,33 @@
   - [x] **[NEW]** Mandatory battery-voltage safety policy (device + cloud)
   - [x] **[NEW]** Scanmatik 2 PRO high-precision hardware support (Quantized Logic)
   - [x] **[NEW]** Fuzzing for protocol parsers and binary resilience
+- [ ] **1.4 Robust Connectivity & Hardware Versatility**
+  - [ ] **[NEW]** Bench Mode (Direct-to-pin, Scanmatik TP support)
+  - [ ] **[NEW]** "Black Box" Flight Recorder (Circular buffer CAN logging)
 
 ## Phase 2: ECU Calibration & Tuning
 - [x] **2.1 ECU Calibration Management**
   - [x] Version-controlled binary storage
   - [x] Checksum validation engine
   - [x] Graphical diff tool for maps
+  - [ ] **[NEW]** Multi-View Interface (3D/2D/Hex/Tabular)
+  - [ ] **[NEW]** Axis Editing (Rescaling for hardware changes)
 - [x] **2.2 Safe-Mode ECU Flashing**
   - [x] Pre-flight environment checks & mandatory checklist
   - [x] Shadow backup system (local + cloud)
   - [x] Multi-step flash protocol with transactional verification
   - [x] **[NEW]** Simulated hardware environment for pre-flight validation
   - [x] **[NEW]** PKI trust model and calibration signing strategy
+  - [ ] **[NEW]** Recovery Mode (Wake-up protocol for failed flashes)
+  - [ ] **[NEW]** Formal Verification (TLA+) for flash state machine
 - [x] **2.3 Intelligent Tuning Optimizer**
   - [x] Genetic Algorithm core
   - [x] VE/Ignition map optimization
   - [x] AFR targeting system
+  - [ ] **[NEW]** Automated Map Labeling (AI pattern recognition)
+  - [ ] **[NEW]** Logic Conflict Warnings (AI pre-flight safety check)
+  - [ ] **[NEW]** RL-Enhanced Genetic Map Optimization (RL-GA Hybrid)
+  - [ ] **[NEW]** Emissions Guardrail (O2/NOx limit checks)
 - [x] **2.4 Map-Switching Implementation**
   - [x] Multi-profile bootloader (Simulated via Desktop Service)
   - [x] Mode toggle interface
@@ -49,6 +60,8 @@
 - [x] **3.2 Explainable AI (XAI)**
   - [x] Diagnostic narratives module
   - [x] Ghost curves visualization
+  - [ ] **[NEW]** RAG-based Diagnostic Assistant ("Tuning Copilot")
+  - [ ] **[NEW]** Overlay Comparison (Log vs Map cell tracking)
 - [x] **3.3 Physics-Informed Neural Networks (PINNs)**
   - [x] Virtual sensor framework
   - [x] EGT estimation model
@@ -64,9 +77,11 @@
 - [x] **4.2 Contextual Focus Modes**
   - [x] WOT mode implementation
   - [x] Dynamic UI reconfiguration
+  - [ ] **[NEW]** "Panic Button" UI (High contrast, color-only critical alerts)
 - [x] **4.3 Generative AI Reports**
   - [x] LLM integration for DTC translation
   - [x] Customer-facing PDF generation
+  - [ ] **[NEW]** "Lead Mechanic" Mode (AI explanation of codes & fixes)
 
 ## Phase 5: Infrastructure & Ecosystem
 - [x] **5.1 Professional Operations**
@@ -86,6 +101,7 @@
   - [x] SQLite WAL optimization
 - [x] **5.5 Cryptographic Audit Trails**
   - [x] Hash-chained modification logs
+  - [ ] **[NEW]** Decentralized Calibration Ledger (Private side-chain)
 - [x] **5.6 Wiki-Fix Community Database**
   - [x] Stack-Overflow style platform
   - [x] NLP-indexed repair patterns
@@ -95,6 +111,7 @@
   - [x] Bidirectional data bridge (BeamNgService)
   - [x] Simulation orchestrator
   - [x] Virtual pre-flight validation
+  - [ ] **[NEW]** Hardware-in-the-Loop (HiL) Testing Tier
 
 ## Phase 7: Cloud Ecosystem (HOPE Central)
 - [x] **7.1 Digital Experience Platform (DXP)**
@@ -103,9 +120,9 @@
 - [x] **7.2 Calibration Marketplace**
   - [x] Secure file exchange
   - [x] License generation system
-- [ ] **7.3 Wiki-Fix Knowledge Graph**
-  - [ ] NLP forum indexing
-  - [ ] Machine-readable DTC database
-- [ ] **7.4 Asset & License Management**
-  - [ ] CDN for software updates
-  - [ ] Fleet health dashboard
+- [x] **7.3 Wiki-Fix Knowledge Graph**
+  - [x] NLP forum indexing (Enhanced Search)
+  - [x] Machine-readable DTC database (Seeded Graph)
+- [x] **7.4 Asset & License Management**
+  - [x] CDN for software updates (Simulated Endpoint)
+  - [x] Fleet health dashboard (Backend API)

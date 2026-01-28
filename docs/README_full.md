@@ -37,6 +37,7 @@ HOPE bridges the gap between traditional scan tools and cutting-edge machine lea
 | **Bi-Directional Control** | Active actuator testing (fuel pump, fans, injectors) with safety interlock system |
 | **Voltage-Aware HAL** | Monitors battery voltage via J2534 `READ_VBATT`; blocks write operations below 12.5V (Local + Cloud Policy). Specific support for Scanmatik 2 PRO quantized reporting (7.0V/13.7V). |
 | **Protocol Fuzzing** | Built-in fuzz testing for UDS/KWP2000 parsers to ensure binary protocol stability |
+| **Bench Mode & Hardware** | Direct-to-pin ECU connection (Scanmatik "Tuning Protection" support) and circular-buffer "Black Box" flight auditing. |
 
 ### ECU Calibration & Tuning
 | Feature | Description |
@@ -45,8 +46,10 @@ HOPE bridges the gap between traditional scan tools and cutting-edge machine lea
 | **Graphical Map Diff Tool** | 3D surface comparison of fuel, ignition, and boost maps |
 | **Safe-Mode ECU Flashing** | Pre-flight check orchestrator, shadow backup, and transactional flash protocol |
 | **Artifact Signing (PKI)** | Cryptographic signing of calibrations to ensure tuner authenticity and file integrity |
-| **Intelligent Tuning Optimizer** | Genetic algorithm engine that evolves VE tables to hit target AFR |
+| **Map Editing Suite** | Multi-View interface (3D/2D/Hex/Tablular) with automatic axis rescaling and AI-driven map labeling. |
+| **Intelligent Tuning Optimizer** | RL-Enhanced Genetic Algorithm engine that evolves VE tables to hit target AFR. Includes emissions guardrails. |
 | **Map-Switching** | Multiple tune profiles (Economy, Performance, Valet) in a single flash |
+| **Safety & Recovery** | Formal verification (TLA+) for flash state machine deadlock prevention. "Wake-up" recovery mode for failed flashes. |
 | **Master/Slave Marketplace** | AES-256 encrypted, hardware-locked calibration file sales |
 
 ### Artificial Intelligence & Analytics
@@ -57,6 +60,7 @@ HOPE bridges the gap between traditional scan tools and cutting-edge machine lea
 | **MLOps Pipeline** | Reproducible training via Docker and DVC dataset versioning |
 | **Physics-Informed Neural Networks (PINNs)** | Virtual sensors estimate EGT and other non-instrumented metrics |
 | **Predictive Maintenance (RUL)** | Remaining Useful Life forecasting for catalysts, O2 sensors, turbos |
+| **AI Copilots** | "Tuning Copilot" (RAG) for diagnostic Q&A and "Lead Mechanic" for generative repair reports. |
 | **Generative AI Reports** | LLM translates DTCs and performance data into customer-friendly PDFs |
 
 ### Infrastructure & Operations
