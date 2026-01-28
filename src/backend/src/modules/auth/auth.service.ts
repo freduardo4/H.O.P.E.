@@ -1,9 +1,9 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 import { RegisterDto, LoginDto } from './dto';
 
 export interface TokenPayload {
@@ -129,6 +129,36 @@ export class AuthService {
 
     async findById(id: string): Promise<User | null> {
         return this.userRepository.findOne({ where: { id } });
+    }
+
+    async validateOAuthUser(profile: any): Promise<AuthResponse> {
+        const { email, firstName, lastName } = profile;
+        let user = await this.userRepository.findOne({ where: { email } });
+
+        if (!user) {
+            // Create user without password for OAuth2
+            user = this.userRepository.create({
+                email,
+                firstName: firstName || email.split('@')[0],
+                lastName: lastName || '',
+                role: UserRole.VIEWER, // Default role for OAuth users
+                isActive: true,
+                passwordHash: '', // No password for OAuth users
+            });
+            await this.userRepository.save(user);
+        }
+
+        if (!user.isActive) {
+            throw new UnauthorizedException('Account is deactivated');
+        }
+
+        const tokens = await this.generateTokens(user);
+        await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+        return {
+            ...tokens,
+            user: this.sanitizeUser(user),
+        };
     }
 
     private async generateTokens(user: User): Promise<AuthTokens> {

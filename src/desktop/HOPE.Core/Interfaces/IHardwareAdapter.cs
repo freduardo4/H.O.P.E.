@@ -37,6 +37,11 @@ public interface IHardwareAdapter : IDisposable
     bool SupportsBiDirectionalControl { get; }
 
     /// <summary>
+    /// Gets whether the adapter reports quantized voltage (e.g., Scanmatik 7V/13.7V)
+    /// </summary>
+    bool HasQuantizedVoltageReporting { get; }
+
+    /// <summary>
     /// Connect to the hardware adapter
     /// </summary>
     /// <param name="connectionString">Port name (COM3) or device ID</param>
@@ -84,6 +89,14 @@ public interface IHardwareAdapter : IDisposable
     /// </summary>
     /// <returns>Voltage in volts, or null if not supported</returns>
     Task<double?> ReadBatteryVoltageAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Set programming voltage on a specific pin (J2534 only)
+    /// </summary>
+    /// <param name="pinNumber">OBD2 pin number</param>
+    /// <param name="voltage">Voltage in volts (0 to 24)</param>
+    /// <returns>True if successful</returns>
+    Task<bool> SetProgrammingVoltageAsync(int pinNumber, double voltage, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Set the communication protocol

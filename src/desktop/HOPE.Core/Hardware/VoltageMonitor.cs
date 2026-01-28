@@ -103,13 +103,14 @@ public class VoltageMonitor : IDisposable
         }
 
         var voltage = await _adapter.ReadBatteryVoltageAsync(cancellationToken);
+        var isQuantized = _adapter.HasQuantizedVoltageReporting;
 
         var reading = new VoltageReading
         {
             Timestamp = DateTime.UtcNow,
             Voltage = voltage,
-            Status = DetermineStatus(voltage),
-            Message = GetStatusMessage(voltage)
+            Status = DetermineStatus(voltage, isQuantized),
+            Message = GetStatusMessage(voltage, isQuantized)
         };
 
         UpdateLastReading(reading);
@@ -243,9 +244,17 @@ public class VoltageMonitor : IDisposable
         }
     }
 
-    private static VoltageStatus DetermineStatus(double? voltage)
+    private static VoltageStatus DetermineStatus(double? voltage, bool isQuantized = false)
     {
         if (!voltage.HasValue) return VoltageStatus.Unknown;
+
+        if (isQuantized)
+        {
+            // Scanmatik specific: 7V or 13.7V
+            if (voltage.Value >= 13.7) return VoltageStatus.DiagnosticSafe; // We can't be sure it's 13.0+ precisely
+            if (voltage.Value <= 7.0) return VoltageStatus.Critical;
+            return VoltageStatus.Low;
+        }
 
         return voltage.Value switch
         {
@@ -257,9 +266,14 @@ public class VoltageMonitor : IDisposable
         };
     }
 
-    private static string GetStatusMessage(double? voltage)
+    private static string GetStatusMessage(double? voltage, bool isQuantized = false)
     {
         if (!voltage.HasValue) return "Unable to read battery voltage";
+
+        if (isQuantized && voltage.Value >= 13.7)
+        {
+            return "OK (Quantized): Battery reported as 13.7V. Precise voltage unknown. Manual verification recommended.";
+        }
 
         return voltage.Value switch
         {

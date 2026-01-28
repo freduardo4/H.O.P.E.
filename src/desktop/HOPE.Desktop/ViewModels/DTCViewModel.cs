@@ -20,9 +20,20 @@ public partial class DTCViewModel : ObservableObject
     [ObservableProperty]
     private string _statusMessage = "Click 'Read DTCs' to scan for codes";
 
-    public DTCViewModel(IOBD2Service obdService)
+    private readonly WikiFixViewModel _wikiFixViewModel;
+
+    public DTCViewModel(IOBD2Service obdService, WikiFixViewModel wikiFixViewModel)
     {
         _obdService = obdService;
+        _wikiFixViewModel = wikiFixViewModel;
+    }
+
+    [RelayCommand]
+    private async Task ViewCommunityFixAsync(DTCItem item)
+    {
+        if (item == null) return;
+        await _wikiFixViewModel.LoadDtcFixesAsync(item.Code);
+        // Navigation logic would go here, assuming a simple Tab/View switcher
     }
 
     [RelayCommand]
@@ -50,7 +61,8 @@ public partial class DTCViewModel : ObservableObject
                     Description = dtcInfo?.Description ?? GetDTCDescription(dtc.Code),
                     Severity = dtcInfo != null ? GetSeverityString(dtcInfo.Severity) : GetDTCSeverity(dtc.Code),
                     Category = dtcInfo != null ? dtcInfo.Category.ToString() : GetDTCCategory(dtc.Code),
-                    PossibleCauses = dtcInfo?.PossibleCauses ?? []
+                    PossibleCauses = dtcInfo?.PossibleCauses ?? [],
+                    ViewFixCommand = ViewCommunityFixCommand
                 });
             }
 
@@ -160,4 +172,6 @@ public class DTCItem
         : "No diagnostic information available";
 
     public bool HasCauses => PossibleCauses.Length > 0;
+
+    public IRelayCommand<DTCItem>? ViewFixCommand { get; set; }
 }

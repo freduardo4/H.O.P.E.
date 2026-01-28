@@ -1,0 +1,49 @@
+<UserControl x:Class="HOPE.Desktop.Views.MarketplaceView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid Background="#121212">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="CALIBRATION MARKETPLACE" FontSize="24" FontWeight="Bold" Foreground="White" Margin="20"/>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Listings}" Margin="10">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="#1E1E1E" BorderBrush="#333" BorderThickness="1" CornerRadius="8" Margin="10" Padding="15">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="Bold" Foreground="#00AAFF"/>
+                                    <TextBlock Text="{Binding Description}" Foreground="#AAA" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                                    <TextBlock Text="{Binding Version, StringFormat='Version: {0}'}" Foreground="#666" FontSize="10" Margin="0,5,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Price, StringFormat='{}{0:C}'}" Foreground="#FFAA00" FontSize="20" FontWeight="Bold" HorizontalAlignment="Right"/>
+                                    <Button Content="PURCHASE" 
+                                            Command="{Binding DataContext.PurchaseCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}"
+                                            Background="#00AAFF" Foreground="White" Padding="15,8" Margin="0,10,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -536,7 +536,7 @@ Lua mod for BeamNG.drive:
 
 **Timeline: 12-16 weeks | Complexity: Very High**
 
-### 7.1 Digital Experience Platform (DXP)
+### 7.1 Digital Experience Platform (DXP) [COMPLETED]
 
 ---
 
@@ -560,7 +560,11 @@ src/hope-central/
 
 ---
 
-### 7.2-7.4 Marketplace, Knowledge Graph, Asset Management
+### 7.2 Calibration Marketplace [COMPLETED]
+
+Secure B2B/B2C exchange with license generation and hardware locking.
+
+### 7.3-7.4 Knowledge Graph, Asset Management
 
 Extensions to the backend modules created in Phases 2 and 5.
 

@@ -55,6 +55,17 @@ public partial class SettingsViewModel : ObservableObject
             AvailablePorts.Add(port);
         }
 
+        // Add J2534 devices
+        try
+        {
+            var j2534Devices = HOPE.Core.Hardware.J2534Adapter.GetInstalledDevices();
+            foreach (var device in j2534Devices)
+            {
+                AvailablePorts.Add($"J2534:{device.Name}");
+            }
+        }
+        catch { /* Fallback if J2534 not available on system */ }
+
         if (AvailablePorts.Count > 0 && SelectedPort == null)
         {
             SelectedPort = AvailablePorts[0];

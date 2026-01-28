@@ -4,6 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using HOPE.Core.Interfaces;
 using HOPE.Core.Services.Safety;
+using HOPE.Core.Services.Simulation;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -13,6 +15,7 @@ namespace HOPE.Desktop.Tests
     {
         private readonly Mock<IHardwareAdapter> _mockHardware;
         private readonly Mock<CloudSafetyService> _mockCloudSafety;
+        private readonly Mock<SimulationOrchestrator> _mockSimulation;
         private readonly PreFlightService _service;
 
         public PreFlightServiceTests()
@@ -21,8 +24,9 @@ namespace HOPE.Desktop.Tests
             // Mocking a concrete class requires it to have a public constructor (it does)
             // and we rely on virtual methods for behavior override.
             _mockCloudSafety = new Mock<CloudSafetyService>(new HttpClient()); 
+            _mockSimulation = new Mock<SimulationOrchestrator>(new Mock<IBeamNgService>().Object, new Mock<ILogger<SimulationOrchestrator>>().Object);
             
-            _service = new PreFlightService(_mockCloudSafety.Object, _mockHardware.Object);
+            _service = new PreFlightService(_mockCloudSafety.Object, _mockHardware.Object, _mockSimulation.Object);
         }
 
         [Fact]
@@ -88,10 +92,32 @@ namespace HOPE.Desktop.Tests
             _mockCloudSafety.Setup(c => c.ValidateFlashOperationAsync(It.IsAny<string>(), It.IsAny<double>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
+            _mockSimulation.Setup(s => s.ValidateInSimulationAsync(It.IsAny<byte[]>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((true, "Virtual validation successful"));
+
             var result = await _service.RunFullCheckAsync("ECU123");
 
             Assert.True(result.Success);
             Assert.Contains("Safe to proceed", result.Message);
+        }
+
+        [Fact]
+        public async Task RunFullCheck_Fails_WhenSimulationFails()
+        {
+            _mockHardware.Setup(h => h.IsConnected).Returns(true);
+            _mockHardware.Setup(h => h.ReadBatteryVoltageAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(13.5);
+
+            _mockCloudSafety.Setup(c => c.ValidateFlashOperationAsync(It.IsAny<string>(), It.IsAny<double>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            _mockSimulation.Setup(s => s.ValidateInSimulationAsync(It.IsAny<byte[]>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((false, "Engine explosion detected"));
+
+            var result = await _service.RunFullCheckAsync("ECU123");
+
+            Assert.False(result.Success);
+            Assert.Contains("Virtual validation failed: Engine explosion detected", result.Message);
         }
     }
 }

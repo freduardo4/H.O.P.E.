@@ -16,6 +16,9 @@ import { CustomersModule } from './modules/customers';
 import { SafetyLogsModule } from './modules/safety-logs';
 import { TuningModule } from './modules/tuning/tuning.module';
 import { InfraModule } from './modules/infra/infra.module';
+import { WikiFixModule } from './modules/wiki-fix/wiki-fix.module';
+import { CmsModule } from './modules/cms/cms.module';
+import { MarketplaceModule } from './modules/marketplace/marketplace.module';
 import { getDatabaseConfig } from './config';
 
 @Module({
@@ -47,6 +50,9 @@ import { getDatabaseConfig } from './config';
         SafetyLogsModule,
         TuningModule,
         InfraModule,
+        WikiFixModule,
+        CmsModule,
+        MarketplaceModule,
     ],
     controllers: [],
     providers: [],

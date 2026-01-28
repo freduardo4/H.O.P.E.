@@ -9,7 +9,7 @@ public interface ILoggingService
 {
     void Information(string message);
     void Warning(string message);
-    void Error(string message, Exception ex = null);
+    void Error(string message, Exception? ex = null);
 }
 
 public class SerilogLoggingService : ILoggingService
@@ -27,5 +27,5 @@ public class SerilogLoggingService : ILoggingService
 
     public void Information(string message) => Log.Information(message);
     public void Warning(string message) => Log.Warning(message);
-    public void Error(string message, Exception ex = null) => Log.Error(ex, message);
+    public void Error(string message, Exception? ex = null) => Log.Error(ex, message);
 }

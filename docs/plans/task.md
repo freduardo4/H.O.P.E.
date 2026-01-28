@@ -14,6 +14,7 @@
   - [x] J2534 READ_VBATT integration
   - [x] Write-protection threshold logic
   - [x] **[NEW]** Mandatory battery-voltage safety policy (device + cloud)
+  - [x] **[NEW]** Scanmatik 2 PRO high-precision hardware support (Quantized Logic)
   - [x] **[NEW]** Fuzzing for protocol parsers and binary resilience
 
 ## Phase 2: ECU Calibration & Tuning
@@ -60,12 +61,12 @@
   - [x] Visual onboarding journey and health indicators in README
   - [x] Detailed developer and technician guides (ONBOARDING.md)
   - [x] **[NEW]** In-app safety checklist (PreFlightService)
-- [ ] **4.2 Contextual Focus Modes**
-  - [ ] WOT mode implementation
-  - [ ] Dynamic UI reconfiguration
-- [ ] **4.3 Generative AI Reports**
-  - [ ] LLM integration for DTC translation
-  - [ ] Customer-facing PDF generation
+- [x] **4.2 Contextual Focus Modes**
+  - [x] WOT mode implementation
+  - [x] Dynamic UI reconfiguration
+- [x] **4.3 Generative AI Reports**
+  - [x] LLM integration for DTC translation
+  - [x] Customer-facing PDF generation
 
 ## Phase 5: Infrastructure & Ecosystem
 - [x] **5.1 Professional Operations**
@@ -80,28 +81,28 @@
 - [x] **5.3 Developer & Legal Enablement**
   - [x] Dev CLI/PowerShell helper setup
   - [x] Draft ToS, EULA, and Export Control guidance
-- [ ] **5.4 Offline-First Architecture**
-  - [ ] CRDT sync implementation
-  - [ ] SQLite WAL optimization
-- [ ] **5.5 Cryptographic Audit Trails**
-  - [ ] Hash-chained modification logs
-- [ ] **5.6 Wiki-Fix Community Database**
-  - [ ] Stack-Overflow style platform
-  - [ ] NLP-indexed repair patterns
+- [x] **5.4 Offline-First Architecture**
+  - [x] CRDT sync implementation
+  - [x] SQLite WAL optimization
+- [x] **5.5 Cryptographic Audit Trails**
+  - [x] Hash-chained modification logs
+- [x] **5.6 Wiki-Fix Community Database**
+  - [x] Stack-Overflow style platform
+  - [x] NLP-indexed repair patterns
 
 ## Phase 6: Simulation & Digital Twin
-- [ ] **6.1 BeamNG.drive / Automation Integration**
-  - [ ] Bidirectional data bridge
-  - [ ] Simulation orchestrator
-  - [ ] Virtual pre-flight validation
+- [x] **6.1 BeamNG.drive / Automation Integration**
+  - [x] Bidirectional data bridge (BeamNgService)
+  - [x] Simulation orchestrator
+  - [x] Virtual pre-flight validation
 
 ## Phase 7: Cloud Ecosystem (HOPE Central)
-- [ ] **7.1 Digital Experience Platform (DXP)**
-  - [ ] Headless CMS integration
-  - [ ] SSO/OAuth2 identity provider
-- [ ] **7.2 Calibration Marketplace**
-  - [ ] Secure file exchange
-  - [ ] License generation system
+- [x] **7.1 Digital Experience Platform (DXP)**
+  - [x] Headless CMS integration
+  - [x] SSO/OAuth2 identity provider
+- [x] **7.2 Calibration Marketplace**
+  - [x] Secure file exchange
+  - [x] License generation system
 - [ ] **7.3 Wiki-Fix Knowledge Graph**
   - [ ] NLP forum indexing
   - [ ] Machine-readable DTC database

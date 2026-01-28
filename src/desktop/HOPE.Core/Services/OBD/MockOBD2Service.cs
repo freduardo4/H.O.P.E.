@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Reactive.Linq;
 using HOPE.Core.Models;
 
@@ -14,6 +19,8 @@ public class MockOBD2Service : IOBD2Service
     public string AdapterType => "Mock ELM327";
 
     public string? DetectedProtocol => "ISO 15765-4 CAN (11 bit ID, 500 kbaud)";
+
+    public FocusMode CurrentFocusMode { get; private set; } = FocusMode.Standard;
 
     public event EventHandler<bool>? ConnectionStatusChanged;
     public event EventHandler<OBD2Reading>? DataReceived;
@@ -63,7 +70,16 @@ public class MockOBD2Service : IOBD2Service
 
     public IObservable<OBD2Reading> StreamPIDs(IEnumerable<string> pids, int intervalMs = 200, CancellationToken cancellationToken = default)
     {
-        return Observable.Interval(TimeSpan.FromMilliseconds(intervalMs))
+        // Adjust interval based on FocusMode
+        int effectiveInterval = CurrentFocusMode switch
+        {
+            FocusMode.WOT => 20, // 50Hz
+            FocusMode.Economy => 500, // 2Hz
+            FocusMode.Diagnostic => 100, // 10Hz
+            _ => intervalMs
+        };
+
+        return Observable.Interval(TimeSpan.FromMilliseconds(effectiveInterval))
             .SelectMany(_ => pids)
             .Select(GenerateMockReading)
             .Do(reading => DataReceived?.Invoke(this, reading));
@@ -87,6 +103,12 @@ public class MockOBD2Service : IOBD2Service
     public Task<string?> GetECUInfoAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult<string?>("MOCK ECU VERSION 1.0");
+    }
+
+    public Task SetFocusModeAsync(FocusMode mode)
+    {
+        CurrentFocusMode = mode;
+        return Task.CompletedTask;
     }
 
     private OBD2Reading GenerateMockReading(string pid)

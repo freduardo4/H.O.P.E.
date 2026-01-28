@@ -77,11 +77,23 @@
                                                Foreground="#DDDDDD" FontSize="14" 
                                                VerticalAlignment="Center" TextWrapping="Wrap"/>
                                     
-                                    <!-- Severity -->
-                                    <Border Grid.Column="2" Background="{Binding SeverityColor}" 
-                                            CornerRadius="4" Padding="10,4" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Severity}" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
-                                    </Border>
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                        <Button Content="Community Fixes" 
+                                                Command="{Binding ViewFixCommand}" 
+                                                CommandParameter="{Binding}"
+                                                Padding="10,4" Margin="0,0,10,0" FontSize="11" 
+                                                Background="#252525" Foreground="#00AAFF" BorderBrush="#00AAFF" BorderThickness="1">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="4"/>
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                        <Border Background="{Binding SeverityColor}" 
+                                                CornerRadius="4" Padding="10,4" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Severity}" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                        </Border>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
                         </DataTemplate>

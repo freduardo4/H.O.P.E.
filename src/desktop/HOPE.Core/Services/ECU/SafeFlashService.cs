@@ -108,6 +108,11 @@ public class SafeFlashService : IDisposable
             voltageCheck.Status = CheckStatus.Warning;
             voltageCheck.Message = "Unable to read battery voltage; ensure charger is connected";
         }
+        else if (_adapter.HasQuantizedVoltageReporting && voltageReading.Voltage >= 13.7)
+        {
+            voltageCheck.Status = CheckStatus.Warning;
+            voltageCheck.Message = $"Battery voltage reported as 13.7V (Quantized). Precise voltage unknown. Manual verification recommended.";
+        }
         else if (voltageReading.Voltage < MIN_FLASH_VOLTAGE)
         {
             voltageCheck.Status = CheckStatus.Failed;

@@ -1,9 +1,12 @@
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HOPE.Core.Models;
 using HOPE.Core.Services.OBD;
 using HOPE.Core.Services.Database;
 using HOPE.Core.Services.AI;
+using HOPE.Core.Services.Reports;
+using HOPE.Core.Services.Security;
 using System.Collections.ObjectModel;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -18,6 +21,9 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     private readonly IOBD2Service _obdService;
     private readonly IDatabaseService _dbService;
     private readonly IAnomalyService _anomalyService;
+    private readonly IReportService _reportService;
+    private readonly ISyncService _syncService;
+    private readonly IAuditService _auditService;
     private readonly IRULPredictorService? _rulPredictorService;
     private readonly ExplainableAnomalyService? _explainableService;
     private CompositeDisposable _disposables = new();
@@ -106,6 +112,44 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private bool _isComponentHealthPanelExpanded;
 
+    [ObservableProperty]
+    private FocusMode _currentFocusMode = FocusMode.Standard;
+
+    [ObservableProperty]
+    private string _accentColor = "#00FF00"; // Default LimeGreen
+
+    [ObservableProperty]
+    private string _dashboardTitle = "H.O.P.E. DASHBOARD";
+
+    [ObservableProperty]
+    private bool _isPerformanceVisible = true;
+
+    [ObservableProperty]
+    private bool _isEconomyVisible = true;
+
+    [ObservableProperty]
+    private bool _isDiagnosticVisible = true;
+
+    [ObservableProperty]
+    private bool _isGeneratingReport;
+
+    [ObservableProperty]
+    private string _reportStatusText = string.Empty;
+
+    [ObservableProperty]
+    private string _syncStatusText = "Up to date";
+
+    [ObservableProperty]
+    private bool _isSyncing;
+
+    public ObservableCollection<FocusMode> AvailableFocusModes { get; } = new()
+    {
+        FocusMode.Standard,
+        FocusMode.WOT,
+        FocusMode.Economy,
+        FocusMode.Diagnostic
+    };
+
     /// <summary>
     /// Component health predictions
     /// </summary>
@@ -167,16 +211,33 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         IOBD2Service obdService,
         IDatabaseService dbService,
         IAnomalyService anomalyService,
+        IReportService reportService,
+        ISyncService syncService,
+        IAuditService auditService,
         IRULPredictorService? rulPredictorService = null,
         ExplainableAnomalyService? explainableService = null)
     {
         _obdService = obdService;
         _dbService = dbService;
         _anomalyService = anomalyService;
+        _reportService = reportService;
+        _syncService = syncService;
+        _auditService = auditService;
         _rulPredictorService = rulPredictorService;
         _explainableService = explainableService;
+
         _obdService.ConnectionStatusChanged += OnConnectionStatusChanged;
+        _syncService.SyncStatusChanged += (s, e) => 
+        {
+            IsSyncing = e.IsSyncing;
+            SyncStatusText = e.Message;
+        };
+
+        UpdateConnectionStatus();
         IsRulPredictionAvailable = _rulPredictorService != null;
+
+        // Initial sync pull
+        _ = _syncService.PullChangesAsync();
 
         // Initialize main chart series
         ChartSeries = new ISeries[]
@@ -221,6 +282,112 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         };
 
         UpdateConnectionStatus();
+        UpdateUIForFocusMode();
+    }
+
+    partial void OnCurrentFocusModeChanged(FocusMode value)
+    {
+        UpdateUIForFocusMode();
+        
+        // If streaming, we need to restart to apply new frequency/PID set
+        if (IsStreaming)
+        {
+            _ = RestartStreamingAsync();
+        }
+    }
+
+    private void UpdateUIForFocusMode()
+    {
+        switch (CurrentFocusMode)
+        {
+            case FocusMode.WOT:
+                AccentColor = "#FF0000"; // Aggressive Red
+                DashboardTitle = "PERFORMANCE MODE (WOT)";
+                IsPerformanceVisible = true;
+                IsEconomyVisible = false;
+                IsDiagnosticVisible = false;
+                break;
+            case FocusMode.Economy:
+                AccentColor = "#00AAFF"; // Calm Blue
+                DashboardTitle = "ECO MONITORING";
+                IsPerformanceVisible = true;
+                IsEconomyVisible = true;
+                IsDiagnosticVisible = false;
+                break;
+            case FocusMode.Diagnostic:
+                AccentColor = "#FFAA00"; // Warning Orange
+                DashboardTitle = "DEEP DIAGNOSTICS";
+                IsPerformanceVisible = false;
+                IsEconomyVisible = false;
+                IsDiagnosticVisible = true;
+                break;
+            default:
+                AccentColor = "#00FF00"; // Standard Green
+                DashboardTitle = "H.O.P.E. DASHBOARD";
+                IsPerformanceVisible = true;
+                IsEconomyVisible = true;
+                IsDiagnosticVisible = true;
+                break;
+        }
+        
+        _obdService.SetFocusModeAsync(CurrentFocusMode);
+    }
+
+    [RelayCommand]
+    private async Task GenerateReportAsync()
+    {
+        if (_currentSessionId == Guid.Empty) return;
+
+        IsGeneratingReport = true;
+        ReportStatusText = "Generating Report...";
+
+        try
+        {
+            var session = await _dbService.GetSessionAsync(_currentSessionId);
+            if (session != null)
+            {
+                // Populate session with currently mapped anomalies and insights
+                session.AIInsights.AddRange(AnomalyHistory.Select(h => new AIInsight
+                {
+                    Description = h.Description,
+                    Confidence = h.Score,
+                    DetectedAt = DateTime.Now // Simplified
+                }));
+
+                string reportsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "HOPE", "Reports");
+                if (!Directory.Exists(reportsDir)) Directory.CreateDirectory(reportsDir);
+                
+                string fileName = $"HealthReport_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                string fullPath = Path.Combine(reportsDir, fileName);
+
+                await _reportService.GenerateVehicleHealthReportAsync(session, fullPath);
+                
+                // Log audit event
+                await _auditService.LogActivityAsync("ReportGenerated", session.Id, $"Path: {fullPath}");
+
+                ReportStatusText = $"Report saved: {fileName}";
+                
+                // Show file in explorer
+                System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{fullPath}\"");
+            }
+        }
+        catch (Exception ex)
+        {
+            ReportStatusText = "Failed to generate report";
+            // Log error...
+        }
+        finally
+        {
+            await Task.Delay(3000); // Show status for a bit
+            IsGeneratingReport = false;
+            ReportStatusText = string.Empty;
+        }
+    }
+
+    private async Task RestartStreamingAsync()
+    {
+        await StopStreamingAsync();
+        await StartStreamingAsync();
     }
 
     private void OnConnectionStatusChanged(object? sender, bool isConnected)
@@ -275,18 +442,12 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         // Start database session
         _currentSessionId = await _dbService.StartSessionAsync(Guid.Empty); // Mock vehicle ID
 
+        // Log audit event
+        await _auditService.LogActivityAsync("DiagnosticSessionStart", _currentSessionId, "VehicleId: " + Guid.Empty);
+
         IsStreaming = true;
         
-        var pids = new[] { 
-            OBD2PIDs.EngineRPM, 
-            OBD2PIDs.VehicleSpeed, 
-            OBD2PIDs.EngineLoad, 
-            OBD2PIDs.CoolantTemp,
-            OBD2PIDs.MAFSensor,
-            OBD2PIDs.ThrottlePosition,
-            OBD2PIDs.IntakeAirTemp,
-            OBD2PIDs.IntakeManifoldPressure
-        };
+        var pids = GetPIDsForCurrentMode();
         
         _obdService.StreamPIDs(pids)
             .ObserveOn(SynchronizationContext.Current!)
@@ -344,6 +505,51 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
                 }
             })
             .DisposeWith(_disposables);
+    }
+
+    private string[] GetPIDsForCurrentMode()
+    {
+        return CurrentFocusMode switch
+        {
+            FocusMode.WOT => new[]
+            {
+                OBD2PIDs.EngineRPM,
+                OBD2PIDs.ThrottlePosition,
+                OBD2PIDs.EngineLoad,
+                OBD2PIDs.MAFSensor,
+                OBD2PIDs.TimingAdvance,
+                OBD2PIDs.IntakeManifoldPressure
+            },
+            FocusMode.Economy => new[]
+            {
+                OBD2PIDs.EngineRPM,
+                OBD2PIDs.VehicleSpeed,
+                OBD2PIDs.EngineLoad,
+                OBD2PIDs.MAFSensor,
+                OBD2PIDs.ShortTermFuelTrim,
+                OBD2PIDs.LongTermFuelTrim
+            },
+            FocusMode.Diagnostic => new[]
+            {
+                OBD2PIDs.CoolantTemp,
+                OBD2PIDs.IntakeAirTemp,
+                OBD2PIDs.FuelPressure,
+                OBD2PIDs.O2Sensor1Voltage,
+                OBD2PIDs.BarometricPressure,
+                OBD2PIDs.EngineRuntime
+            },
+            _ => new[]
+            {
+                OBD2PIDs.EngineRPM,
+                OBD2PIDs.VehicleSpeed,
+                OBD2PIDs.EngineLoad,
+                OBD2PIDs.CoolantTemp,
+                OBD2PIDs.MAFSensor,
+                OBD2PIDs.ThrottlePosition,
+                OBD2PIDs.IntakeAirTemp,
+                OBD2PIDs.IntakeManifoldPressure
+            }
+        };
     }
     
     private void AddChartPoint(ObservableCollection<ObservableValue> collection, double value)
@@ -674,11 +880,18 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         if (_currentSessionId != Guid.Empty)
         {
             await _dbService.EndSessionAsync(_currentSessionId);
+            
+            // Log audit event
+            await _auditService.LogActivityAsync("DiagnosticSessionEnd", _currentSessionId);
+            
             _currentSessionId = Guid.Empty;
         }
 
         IsStreaming = false;
         AnomalyDescription = "Streaming stopped";
+
+        // Push session data to cloud sync
+        _ = _syncService.PushChangesAsync();
     }
 
     public void Dispose()

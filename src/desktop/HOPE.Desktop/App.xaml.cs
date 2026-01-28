@@ -1,15 +1,23 @@
 ﻿using System.IO;
 using System.Windows;
+using System.Net.Http;
+using HOPE.Core.Services.Marketplace;
 using HOPE.Core.Interfaces;
 using HOPE.Core.Services.OBD;
 using HOPE.Core.Services.Database;
 using HOPE.Core.Protocols;
 using HOPE.Core.Services.ECU;
 using HOPE.Core.Services.AI;
+using HOPE.Core.Services.Security;
+using HOPE.Core.Services.Reports;
 using HOPE.Core.Services.Export;
 using HOPE.Core.Services.Logging;
 using HOPE.Core.Services.Infra;
 using HOPE.Core.Services.Safety;
+using HOPE.Core.Services.Simulation;
+using HOPE.Core.Services.Community;
+using HOPE.Core.Services.Cloud;
+using HOPE.Desktop.ViewModels;
 using HOPE.Desktop.Views;
 using Prism.DryIoc;
 using Prism.Ioc;
@@ -49,6 +57,14 @@ public partial class App : PrismApplication
         containerRegistry.RegisterSingleton<IDatabaseService, SqliteDatabaseService>();
         containerRegistry.RegisterSingleton<CloudSafetyService>();
         containerRegistry.RegisterSingleton<PreFlightService>();
+        containerRegistry.RegisterSingleton<ISsoService, SsoService>();
+        containerRegistry.RegisterSingleton<IFingerprintService, HardwareFingerprintService>();
+        containerRegistry.RegisterSingleton<IMarketplaceService, MarketplaceService>();
+        containerRegistry.RegisterSingleton<HttpClient>();
+        
+        // Simulation & Digital Twin
+        containerRegistry.RegisterSingleton<IBeamNgService, BeamNgService>();
+        containerRegistry.RegisterSingleton<SimulationOrchestrator>();
         
         // Protocol & ECU
         containerRegistry.RegisterSingleton<IDiagnosticProtocol, UDSProtocol>();
@@ -60,12 +76,25 @@ public partial class App : PrismApplication
         // Tuning Optimizer Service - genetic algorithm-based ECU tuning
         containerRegistry.RegisterSingleton<ITuningOptimizerService, TuningOptimizerService>();
 
+        // AI & Report Services for Phase 4.3
+        containerRegistry.RegisterSingleton<ILlmService, MockLlmService>();
+        containerRegistry.RegisterSingleton<IReportService, GenerativeReportService>();
+        
+        // Offline-First Sync Service for Phase 5.4
+        containerRegistry.RegisterSingleton<ISyncService, SyncService>();
+
+        // Cryptographic Audit Service for Phase 5.5
+        containerRegistry.RegisterSingleton<IAuditService, AuditService>();
+
         // RUL Predictor Service - remaining useful life prediction
         containerRegistry.RegisterSingleton<IRULPredictorService, RULPredictorService>();
         
         // Export Services
         containerRegistry.RegisterSingleton<IExportService, ExportService>();
         
+        // Community & Wiki-Fix for Phase 5.6
+        containerRegistry.RegisterSingleton<IWikiFixService, WikiFixService>();
+
         // For development, we'll use the Mock service
         // containerRegistry.RegisterSingleton<IOBD2Service, OBD2Service>();
         containerRegistry.RegisterSingleton<IOBD2Service, MockOBD2Service>();
@@ -82,6 +111,12 @@ public partial class App : PrismApplication
         containerRegistry.RegisterForNavigation<DTCView>();
         containerRegistry.RegisterForNavigation<SettingsView>();
         containerRegistry.RegisterForNavigation<SessionHistoryView>();
+        
+        // Wiki-Fix Navigation
+        containerRegistry.Register<WikiFixViewModel>();
+        containerRegistry.RegisterForNavigation<WikiFixView, WikiFixViewModel>();
+        containerRegistry.RegisterForNavigation<LoginView, LoginViewModel>();
+        containerRegistry.RegisterForNavigation<MarketplaceView, MarketplaceViewModel>();
     }
 
     protected override async void OnInitialized()
@@ -104,7 +139,7 @@ public partial class App : PrismApplication
         }
 
         var regionManager = Container.Resolve<Prism.Regions.IRegionManager>();
-        regionManager.RequestNavigate("MainRegion", "DashboardView");
+        regionManager.RequestNavigate("MainRegion", "LoginView");
     }
 }
 

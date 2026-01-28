@@ -20,9 +20,14 @@ public interface IOBD2Service
     string AdapterType { get; }
 
     /// <summary>
-    /// Gets the detected vehicle protocol
+    /// Gets the current detected vehicle protocol
     /// </summary>
     string? DetectedProtocol { get; }
+
+    /// <summary>
+    /// Gets or sets the current focus mode (Standard, WOT, etc.)
+    /// </summary>
+    FocusMode CurrentFocusMode { get; }
 
     /// <summary>
     /// Connect to OBD2 adapter on specified port
@@ -111,6 +116,12 @@ public interface IOBD2Service
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>ECU info string</returns>
     Task<string?> GetECUInfoAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sets the operational focus mode (WOT, Economy, etc.)
+    /// </summary>
+    /// <param name="mode">Focus mode to apply</param>
+    Task SetFocusModeAsync(FocusMode mode);
 
     /// <summary>
     /// Event raised when connection status changes

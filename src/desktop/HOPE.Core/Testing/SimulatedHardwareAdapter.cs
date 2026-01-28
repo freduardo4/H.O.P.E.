@@ -31,12 +31,13 @@ public class SimulatedHardwareAdapter : IHardwareAdapter
 
     private int _messageCount = 0;
 
-    public HardwareType Type => HardwareType.J2534;
-    public string AdapterName => "Simulated ECU Adapter";
+    public virtual HardwareType Type => HardwareType.J2534;
+    public virtual string AdapterName => "Simulated ECU Adapter";
     public bool IsConnected => _isConnected;
-    public bool SupportsHighFrequency => true;
-    public bool SupportsVoltageMonitoring => true;
-    public bool SupportsBiDirectionalControl => true;
+    public virtual bool SupportsHighFrequency => true;
+    public virtual bool SupportsVoltageMonitoring => true;
+    public virtual bool SupportsBiDirectionalControl => true;
+    public virtual bool HasQuantizedVoltageReporting => false;
 
     public event EventHandler<HardwareConnectionEventArgs>? ConnectionChanged;
     public event EventHandler<HardwareErrorEventArgs>? ErrorOccurred;
@@ -340,6 +341,12 @@ public class SimulatedHardwareAdapter : IHardwareAdapter
     {
         await Task.Delay(10, cancellationToken);
         return true;
+    }
+
+    public Task<bool> SetProgrammingVoltageAsync(int pinNumber, double voltage, CancellationToken cancellationToken = default)
+    {
+        SimulatedVoltage = voltage;
+        return Task.FromResult(true);
     }
 
     public void Dispose()

@@ -12,8 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Polyglot CI workflow for .NET, Node, and Python.
 - Dependabot configuration for automated dependency updates.
 - Documentation restructuring with a new summary README and docs index.
+- Scanmatik 2 PRO professional hardware support (Quantized Voltage Handling).
+- Automated J2534 Pass-Thru device discovery in Desktop UI.
 - Physics-Informed Neural Networks (PINNs) for virtual sensor estimation (EGT).
 - Remaining Useful Life (RUL) forecasting system with modular architecture.
+- Calibration Marketplace with secure encrypted file exchange.
+- License generation and hardware-locking system for ECU files.
 
 ### Changed
 - Moved original README to `docs/README_full.md`.

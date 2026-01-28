@@ -8,6 +8,8 @@ import { User } from './entities/user.entity';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { GithubStrategy } from './strategies/github.strategy';
 
 @Module({
     imports: [
@@ -19,7 +21,7 @@ import { RolesGuard } from './guards/roles.guard';
         }),
     ],
     controllers: [AuthController],
-    providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
+    providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard, GoogleStrategy, GithubStrategy],
     exports: [AuthService, JwtAuthGuard, RolesGuard],
 })
-export class AuthModule {}
+export class AuthModule { }

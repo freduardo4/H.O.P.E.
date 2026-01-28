@@ -191,7 +191,7 @@ public class SafeFlashServiceIntegrationTests : IAsyncLifetime, IDisposable
         var flashResult = await _flashService.FlashAsync(config, keyAlgo);
         Assert.True(flashResult.Success);
         
-        var restoreResult = await _flashService.RestoreFromBackupAsync(flashResult.BackupPath, keyAlgo);
+        var restoreResult = await _flashService.RestoreFromBackupAsync(flashResult.BackupPath!, keyAlgo);
 
         Assert.True(restoreResult.Success);
         Assert.Equal(FlashStage.Complete, restoreResult.Success ? FlashStage.Complete : FlashStage.PreFlight);

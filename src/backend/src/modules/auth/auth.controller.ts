@@ -7,7 +7,10 @@ import {
     UseGuards,
     Get,
     Req,
+    Res,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { Response } from 'express';
 import { AuthService, AuthResponse, AuthTokens } from './auth.service';
 import { RegisterDto, LoginDto } from './dto';
 import { Public } from './decorators/public.decorator';
@@ -57,7 +60,6 @@ export class AuthController {
         return sanitized as Omit<User, 'passwordHash' | 'refreshToken'>;
     }
 
-    @UseGuards(JwtAuthGuard)
     @Post('accept-legal')
     @HttpCode(HttpStatus.OK)
     async acceptLegalTerms(
@@ -66,5 +68,36 @@ export class AuthController {
     ): Promise<{ message: string }> {
         await this.authService.acceptLegalTerms(userId, version);
         return { message: 'Legal terms accepted successfully' };
+    }
+
+    @Public()
+    @Get('google')
+    @UseGuards(AuthGuard('google'))
+    async googleAuth(@Req() req) {
+        // Initiates Google OAuth2 flow
+    }
+
+    @Public()
+    @Get('google/callback')
+    @UseGuards(AuthGuard('google'))
+    async googleAuthRedirect(@Req() req, @Res() res: Response) {
+        const result = await this.authService.validateOAuthUser(req.user);
+        // In a real app, you might redirect to a frontend URL with tokens
+        return res.json(result);
+    }
+
+    @Public()
+    @Get('github')
+    @UseGuards(AuthGuard('github'))
+    async githubAuth(@Req() req) {
+        // Initiates GitHub OAuth2 flow
+    }
+
+    @Public()
+    @Get('github/callback')
+    @UseGuards(AuthGuard('github'))
+    async githubAuthRedirect(@Req() req, @Res() res: Response) {
+        const result = await this.authService.validateOAuthUser(req.user);
+        return res.json(result);
     }
 }

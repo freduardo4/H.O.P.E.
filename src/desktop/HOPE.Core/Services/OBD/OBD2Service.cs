@@ -15,6 +15,8 @@ public class OBD2Service : IOBD2Service, IDisposable
     public string AdapterType => "ELM327";
 
     public string? DetectedProtocol { get; private set; }
+    
+    public FocusMode CurrentFocusMode { get; private set; } = FocusMode.Standard;
 
     public event EventHandler<bool>? ConnectionStatusChanged;
     public event EventHandler<OBD2Reading>? DataReceived;
@@ -222,7 +224,20 @@ public class OBD2Service : IOBD2Service, IDisposable
 
     public IObservable<OBD2Reading> StreamPIDs(IEnumerable<string> pids, int intervalMs = 200, CancellationToken cancellationToken = default)
     {
-        return Observable.Interval(TimeSpan.FromMilliseconds(intervalMs))
+        // Adjust interval based on FocusMode if not explicitly overridden
+        int effectiveInterval = intervalMs;
+        if (intervalMs == 200) // Default value was used
+        {
+            effectiveInterval = CurrentFocusMode switch
+            {
+                FocusMode.WOT => 20,     // 50Hz
+                FocusMode.Economy => 500, // 2Hz
+                FocusMode.Diagnostic => 100, // 10Hz
+                _ => 200
+            };
+        }
+
+        return Observable.Interval(TimeSpan.FromMilliseconds(effectiveInterval))
             .SelectMany(async _ => 
             {
                 var readings = new List<OBD2Reading>();
@@ -340,6 +355,14 @@ public class OBD2Service : IOBD2Service, IDisposable
             ErrorOccurred?.Invoke(this, new OBD2ErrorEventArgs("Failed to get ECU info", OBD2ErrorType.CommunicationError, ex));
             return null;
         }
+    }
+
+    public Task SetFocusModeAsync(FocusMode mode)
+    {
+        CurrentFocusMode = mode;
+        // In a real implementation, we might reconfigure the adapter here
+        // or trigger high-frequency mode for J2534
+        return Task.CompletedTask;
     }
     
     public void Dispose()

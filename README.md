@@ -35,7 +35,7 @@ graph LR
 | Module | Status | Health | Integration |
 | :--- | :--- | :--- | :--- |
 | **Backend API** | ✅ Stable | ⚡ 24ms latency | RDS/S3 Connected |
-| **Desktop Client** | ✅ Stable | 🛠️ J2534 Ready | Local DB Ready |
+| **Desktop Client** | ✅ Stable | 🛠️ Scanmatik 2 PRO Ready | Local DB Ready |
 | **AI Forecaster** | ✅ Trained | 🎯 94% Accuracy | ONNX Verified |
 | **Infrastructure** | ✅ Secure | 🛡️ tfsec Passed | Multi-Zone |
 
@@ -43,13 +43,17 @@ graph LR
 
 - [x] **Status**: ✅ All core AI and diagnostics components verified.
 - **Diagnostics**: UDS/KWP2000 protocol handlers implemented and tested.
-- **Safety**: Voltage-aware HAL and simulated hardware integration complete.
+- **Tuning**: Graphical map diff tool for calibration comparisons.
+- **Safety**: Voltage-aware HAL with specific support for Scanmatik 2 PRO quantized reporting.
 - **AI Analytics**:
   - LSTM Anomaly Detection pipeline functional with 96% test coverage.
   - Physics-Informed Neural Networks (PINNs) for virtual sensors (EGT estimation).
   - Remaining Useful Life (RUL) forecasting for predictive maintenance.
+- **Simulation**: Virtual pre-flight validation via BeamNG.drive digital twin.
+- **Community**: Wiki-Fix database for collaborative repair patterns.
 - **Security**: Mandatory S3 encryption, public access blocks, and ECR scanning enabled.
-- **Tests**: 440+ automated tests passing across Desktop, Backend, and AI.
+- **Marketplace**: Secure calibration file exchange with hardware-locked license generation.
+- **Tests**: 450+ automated tests passing across Desktop, Backend, and AI (including hardware logic).
 
 ## Documentation & Recipes
 

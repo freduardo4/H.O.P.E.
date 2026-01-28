@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using HOPE.Core.Services.OBD;
 using HOPE.Core.Interfaces;
+using HOPE.Core.Services.Simulation;
 
 namespace HOPE.Core.Services.Safety;
 
@@ -10,11 +11,13 @@ public class PreFlightService
 {
     private readonly CloudSafetyService _cloudSafety;
     private readonly IHardwareAdapter _hardware;
+    private readonly SimulationOrchestrator? _simulation;
 
-    public PreFlightService(CloudSafetyService cloudSafety, IHardwareAdapter hardware)
+    public PreFlightService(CloudSafetyService cloudSafety, IHardwareAdapter hardware, SimulationOrchestrator? simulation = null)
     {
         _cloudSafety = cloudSafety ?? throw new ArgumentNullException(nameof(cloudSafety));
         _hardware = hardware ?? throw new ArgumentNullException(nameof(hardware));
+        _simulation = simulation;
     }
 
     public async Task<(bool Success, string Message)> RunFullCheckAsync(string ecuId, CancellationToken ct = default)
@@ -53,6 +56,16 @@ public class PreFlightService
         if (!cloudAllowed)
         {
             return (false, "Cloud safety policy rejected the operation. Check connectivity or battery health.");
+        }
+
+        // 5. Virtual Simulation Check (Digital Twin Validation)
+        if (_simulation != null)
+        {
+            var simResult = await _simulation.ValidateInSimulationAsync(Array.Empty<byte>(), ct);
+            if (!simResult.Success)
+            {
+                return (false, $"Virtual validation failed: {simResult.Message}");
+            }
         }
 
         return (true, "Pre-flight checks passed. Safe to proceed.");

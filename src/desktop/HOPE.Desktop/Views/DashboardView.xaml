@@ -25,10 +25,25 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel>
-                <TextBlock Text="VEHICLE DASHBOARD" Foreground="White" FontSize="32" FontWeight="Bold" FontFamily="Segoe UI Semibold"/>
+                <TextBlock Text="{Binding DashboardTitle}" Foreground="{Binding AccentColor}" FontSize="32" FontWeight="Bold" FontFamily="Segoe UI Semibold"/>
                 <StackPanel Orientation="Horizontal">
                     <Ellipse Width="10" Height="10" Fill="{Binding IsStreaming, Converter={StaticResource BooleanToStatusColorConverter}}" Margin="0,0,8,0"/>
-                    <TextBlock Text="{Binding ConnectionStatus}" Foreground="#AAAAAA" FontSize="14"/>
+                    <TextBlock Text="{Binding ConnectionStatus}" Foreground="#AAAAAA" FontSize="14" Margin="0,0,20,0"/>
+                    
+                    <!-- Focus Mode Selector -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="FOCUS:" Foreground="#666666" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <ComboBox ItemsSource="{Binding AvailableFocusModes}" 
+                                  SelectedItem="{Binding CurrentFocusMode}"
+                                  Background="#252525" Foreground="White" BorderThickness="0"
+                                  Padding="8,2" FontSize="11" Width="100">
+                            <ComboBox.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                </Style>
+                            </ComboBox.Resources>
+                        </ComboBox>
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
 
@@ -210,14 +225,15 @@
         <!-- Gauges Grid -->
         <UniformGrid Grid.Row="1" Columns="4" Rows="2">
             <!-- RPM Gauge -->
-            <Border Margin="6" Background="#1E1E1E" CornerRadius="10">
+            <Border Margin="6" Background="#1E1E1E" CornerRadius="10" 
+                    Visibility="{Binding IsPerformanceVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <TextBlock Text="{Binding EngineRpm, StringFormat={}{0:F0}}" Foreground="#00E676" FontSize="42" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding EngineRpm, StringFormat={}{0:F0}}" Foreground="{Binding AccentColor}" FontSize="42" FontWeight="Bold" HorizontalAlignment="Center"/>
                         <TextBlock Text="RPM" Foreground="#AAAAAA" FontSize="14" HorizontalAlignment="Center"/>
                     </StackPanel>
                     <TextBlock Grid.Row="1" Text="Engine Speed" Foreground="#666666" FontSize="11" HorizontalAlignment="Center" Margin="0,6,0,0"/>
@@ -225,7 +241,8 @@
             </Border>
 
             <!-- Speed Gauge -->
-            <Border Margin="6" Background="#1E1E1E" CornerRadius="10">
+            <Border Margin="6" Background="#1E1E1E" CornerRadius="10"
+                    Visibility="{Binding IsPerformanceVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
@@ -240,7 +257,8 @@
             </Border>
 
             <!-- Load Gauge -->
-            <Border Margin="6" Background="#1E1E1E" CornerRadius="10">
+            <Border Margin="6" Background="#1E1E1E" CornerRadius="10"
+                    Visibility="{Binding IsPerformanceVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
@@ -255,7 +273,8 @@
             </Border>
 
             <!-- Coolant Temp Gauge -->
-            <Border Margin="6" Background="#1E1E1E" CornerRadius="10">
+            <Border Margin="6" Background="#1E1E1E" CornerRadius="10"
+                    Visibility="{Binding IsDiagnosticVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
@@ -270,7 +289,8 @@
             </Border>
 
             <!-- MAF Gauge -->
-            <Border Margin="6" Background="#1E1E1E" CornerRadius="10">
+            <Border Margin="6" Background="#1E1E1E" CornerRadius="10"
+                    Visibility="{Binding IsEconomyVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
@@ -285,7 +305,8 @@
             </Border>
 
             <!-- Throttle Position Gauge -->
-            <Border Margin="6" Background="#1E1E1E" CornerRadius="10">
+            <Border Margin="6" Background="#1E1E1E" CornerRadius="10"
+                    Visibility="{Binding IsPerformanceVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
@@ -300,7 +321,8 @@
             </Border>
 
             <!-- Intake Air Temp Gauge -->
-            <Border Margin="6" Background="#1E1E1E" CornerRadius="10">
+            <Border Margin="6" Background="#1E1E1E" CornerRadius="10"
+                    Visibility="{Binding IsDiagnosticVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
@@ -315,7 +337,8 @@
             </Border>
 
             <!-- Manifold Pressure Gauge -->
-            <Border Margin="6" Background="#1E1E1E" CornerRadius="10">
+            <Border Margin="6" Background="#1E1E1E" CornerRadius="10"
+                    Visibility="{Binding IsPerformanceVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
@@ -355,28 +378,59 @@
         </Border>
 
         <!-- Controls -->
-        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-            <Button Content="{Binding IsChartVisible, Converter={StaticResource ChartButtonTextConverter}}" 
-                    Command="{Binding ToggleChartVisibilityCommand}"
-                    Padding="20,12" FontSize="14" FontWeight="SemiBold"
-                    Background="#2D2D2D" Foreground="#AAAAAA" BorderThickness="0" Margin="0,0,10,0">
-                <Button.Resources>
-                    <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="6"/>
-                    </Style>
-                </Button.Resources>
-            </Button>
-            <Button Content="{Binding IsStreaming, Converter={StaticResource StreamButtonTextConverter}}" 
-                    Command="{Binding ToggleStreamingCommand}"
-                    Padding="30,12" FontSize="16" FontWeight="SemiBold"
-                    Background="{Binding IsStreaming, Converter={StaticResource StreamButtonColorConverter}}"
-                    Foreground="White" BorderThickness="0">
-                <Button.Resources>
-                    <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="6"/>
-                    </Style>
-                </Button.Resources>
-            </Button>
-        </StackPanel>
+        <Grid Grid.Row="3" Margin="0,20,0,0">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="{Binding ReportStatusText}" Foreground="{Binding AccentColor}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBlock Text="{Binding SyncStatusText}" Foreground="#AAAAAA" FontSize="11" VerticalAlignment="Center"/>
+                <Ellipse Width="8" Height="8" Fill="#00AAFF" Margin="8,0,0,0"
+                         Visibility="{Binding IsSyncing, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Ellipse.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.3" Duration="0:0:0.8" AutoReverse="True"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Ellipse.Triggers>
+                </Ellipse>
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="GENERATE REPORT" 
+                        Command="{Binding GenerateReportCommand}"
+                        IsEnabled="{Binding IsGeneratingReport, Converter={StaticResource InverseBooleanConverter}}"
+                        Padding="20,12" FontSize="14" FontWeight="SemiBold"
+                        Background="#333333" Foreground="White" BorderThickness="0" Margin="0,0,10,0">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+                
+                <Button Content="{Binding IsChartVisible, Converter={StaticResource ChartButtonTextConverter}}" 
+                        Command="{Binding ToggleChartVisibilityCommand}"
+                        Padding="20,12" FontSize="14" FontWeight="SemiBold"
+                        Background="#2D2D2D" Foreground="#AAAAAA" BorderThickness="0" Margin="0,0,10,0">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+                <Button Content="{Binding IsStreaming, Converter={StaticResource StreamButtonTextConverter}}" 
+                        Command="{Binding ToggleStreamingCommand}"
+                        Padding="30,12" FontSize="16" FontWeight="SemiBold"
+                        Background="{Binding IsStreaming, Converter={StaticResource StreamButtonColorConverter}}"
+                        Foreground="White" BorderThickness="0">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>

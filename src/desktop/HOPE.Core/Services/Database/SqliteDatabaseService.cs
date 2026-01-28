@@ -35,6 +35,13 @@ public class SqliteDatabaseService : IDatabaseService
         using var connection = new SqliteConnection(_connectionString);
         await connection.OpenAsync();
 
+        // Enable Write-Ahead Logging (WAL) for better concurrency
+        using (var walCommand = connection.CreateCommand())
+        {
+            walCommand.CommandText = "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;";
+            await walCommand.ExecuteNonQueryAsync();
+        }
+
         var createSessionsTable = @"
             CREATE TABLE IF NOT EXISTS Sessions (
                 Id GUID PRIMARY KEY,
@@ -57,11 +64,26 @@ public class SqliteDatabaseService : IDatabaseService
                 FOREIGN KEY(SessionId) REFERENCES Sessions(Id)
             )";
 
+        var createAuditLogsTable = @"
+            CREATE TABLE IF NOT EXISTS AuditLogs (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Timestamp DATETIME,
+                Action TEXT,
+                EntityId GUID,
+                Metadata TEXT,
+                DataHash TEXT,
+                PreviousHash TEXT,
+                RecordHash TEXT
+            )";
+
         using var command = connection.CreateCommand();
         command.CommandText = createSessionsTable;
         await command.ExecuteNonQueryAsync();
         
         command.CommandText = createReadingsTable;
+        await command.ExecuteNonQueryAsync();
+
+        command.CommandText = createAuditLogsTable;
         await command.ExecuteNonQueryAsync();
     }
 
@@ -199,5 +221,103 @@ public class SqliteDatabaseService : IDatabaseService
             });
         }
         return data;
+    }
+
+    public async Task<DiagnosticSession?> GetSessionAsync(Guid sessionId)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT * FROM Sessions WHERE Id = $id";
+        command.Parameters.AddWithValue("$id", sessionId);
+
+        using var reader = await command.ExecuteReaderAsync();
+        if (await reader.ReadAsync())
+        {
+            return new DiagnosticSession
+            {
+                Id = reader.GetGuid(0),
+                VehicleId = reader.GetGuid(1),
+                StartTime = reader.GetDateTime(2),
+                EndTime = reader.IsDBNull(3) ? null : reader.GetDateTime(3),
+                Notes = reader.IsDBNull(4) ? "" : reader.GetString(4)
+            };
+        }
+        return null;
+    }
+
+    public async Task<List<AuditRecord>> GetAuditLogsAsync()
+    {
+        var logs = new List<AuditRecord>();
+        using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT * FROM AuditLogs ORDER BY Id ASC";
+
+        using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            logs.Add(new AuditRecord
+            {
+                Id = reader.GetInt64(0),
+                Timestamp = reader.GetDateTime(1),
+                Action = reader.GetString(2),
+                EntityId = reader.GetGuid(3),
+                Metadata = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                DataHash = reader.GetString(5),
+                PreviousHash = reader.GetString(6),
+                RecordHash = reader.GetString(7)
+            });
+        }
+        return logs;
+    }
+
+    public async Task AddAuditRecordAsync(AuditRecord record)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+            INSERT INTO AuditLogs (Timestamp, Action, EntityId, Metadata, DataHash, PreviousHash, RecordHash)
+            VALUES ($time, $action, $eid, $meta, $dhash, $phash, $rhash)";
+
+        command.Parameters.AddWithValue("$time", record.Timestamp);
+        command.Parameters.AddWithValue("$action", record.Action);
+        command.Parameters.AddWithValue("$eid", record.EntityId);
+        command.Parameters.AddWithValue("$meta", record.Metadata);
+        command.Parameters.AddWithValue("$dhash", record.DataHash);
+        command.Parameters.AddWithValue("$phash", record.PreviousHash);
+        command.Parameters.AddWithValue("$rhash", record.RecordHash);
+
+        await command.ExecuteNonQueryAsync();
+    }
+
+    public async Task<AuditRecord?> GetLastAuditRecordAsync()
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT * FROM AuditLogs ORDER BY Id DESC LIMIT 1";
+
+        using var reader = await command.ExecuteReaderAsync();
+        if (await reader.ReadAsync())
+        {
+            return new AuditRecord
+            {
+                Id = reader.GetInt64(0),
+                Timestamp = reader.GetDateTime(1),
+                Action = reader.GetString(2),
+                EntityId = reader.GetGuid(3),
+                Metadata = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                DataHash = reader.GetString(5),
+                PreviousHash = reader.GetString(6),
+                RecordHash = reader.GetString(7)
+            };
+        }
+        return null;
     }
 }
