@@ -16,7 +16,7 @@ namespace HOPE.Desktop.ViewModels
         {
             _marketplaceService = marketplaceService;
             Listings = new ObservableCollection<ListingItem>();
-            LoadCommand = new DelegateCommand(async () => await LoadListings());
+            LoadCommand = new DelegateCommand(async () => await LoadListingsAsync());
             PurchaseCommand = new DelegateCommand<ListingItem>(async (item) => await PurchaseListing(item));
 
             // Load initial data
@@ -33,7 +33,7 @@ namespace HOPE.Desktop.ViewModels
             set => SetProperty(ref _isLoading, value);
         }
 
-        private async Task LoadListings()
+        public async Task LoadListingsAsync()
         {
             IsLoading = true;
             try
