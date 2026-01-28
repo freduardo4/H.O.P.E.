@@ -17,7 +17,7 @@ import { User } from './entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private readonly authService: AuthService) {}
+    constructor(private readonly authService: AuthService) { }
 
     @Public()
     @Post('register')
@@ -55,5 +55,16 @@ export class AuthController {
     async getCurrentUser(@CurrentUser() user: User): Promise<Omit<User, 'passwordHash' | 'refreshToken'>> {
         const { passwordHash, refreshToken, ...sanitized } = user;
         return sanitized as Omit<User, 'passwordHash' | 'refreshToken'>;
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('accept-legal')
+    @HttpCode(HttpStatus.OK)
+    async acceptLegalTerms(
+        @CurrentUser('id') userId: string,
+        @Body('version') version: string,
+    ): Promise<{ message: string }> {
+        await this.authService.acceptLegalTerms(userId, version);
+        return { message: 'Legal terms accepted successfully' };
     }
 }

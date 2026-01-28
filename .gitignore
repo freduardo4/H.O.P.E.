@@ -38,11 +38,26 @@
 # Test & Build Outputs
 **/TestResults/
 **/test_results*.log
+**/pytest_results.txt
 **/build_vfinal.log
 **/core_build.log
 **/*_error.log
 **/*_errors.txt
+**/*_log.txt
+**/build_error.txt
 **/err.txt
 **/test_err.txt
 **/test_output.txt
 **/detailed_errors.txt
+
+# Compiled output
+**/dist/
+**/bin/
+**/obj/
+**/*.bak
+**/*.txt.bak
+
+# Python
+**/__pycache__/
+**/.pytest_cache/
+**/*.pyc

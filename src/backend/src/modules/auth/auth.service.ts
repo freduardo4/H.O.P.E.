@@ -28,7 +28,7 @@ export class AuthService {
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
         private readonly jwtService: JwtService,
-    ) {}
+    ) { }
 
     async register(dto: RegisterDto): Promise<AuthResponse> {
         const existingUser = await this.userRepository.findOne({
@@ -115,6 +115,10 @@ export class AuthService {
 
     async logout(userId: string): Promise<void> {
         await this.userRepository.update(userId, { refreshToken: null });
+    }
+
+    async acceptLegalTerms(userId: string, version: string): Promise<void> {
+        await this.userRepository.update(userId, { acceptedLegalVersion: version });
     }
 
     async validateUser(payload: TokenPayload): Promise<User | null> {

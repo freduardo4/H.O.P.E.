@@ -1,0 +1,21 @@
+{
+    "dataset_name": "HOPE_Telemetry_Stable_v1",
+    "version": "1.0.0",
+    "source": "Synthetically generated + Captured CAN bus telemetry",
+    "last_updated": "2026-01-28",
+    "provenance": {
+        "source_system": "H.O.P.E. Hardware Emulator",
+        "generation_script": "genetic_optimizer.py --synthetic",
+        "sample_count": 1000,
+        "features": [
+            "RPM",
+            "Load (MAP)",
+            "Actual AFR",
+            "Target AFR"
+        ]
+    },
+    "storage": {
+        "local_path": "src/ai-training/data/",
+        "tracking": "DVC (Planned for S3/Azure Blob)"
+    }
+}

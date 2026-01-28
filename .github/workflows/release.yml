@@ -1,0 +1,56 @@
+name: H.O.P.E. Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    # 1. Build & Package Desktop
+    - name: Restore Desktop
+      run: dotnet restore src/desktop/HOPE.Desktop.sln
+    
+    - name: Build Desktop (Release)
+      run: dotnet build src/desktop/HOPE.Desktop.sln -c Release --no-restore
+
+    # 2. Build Backend
+    - name: Build Backend
+      working-directory: src/backend
+      run: |
+        npm ci
+        npm run build
+
+    # 3. Create Artifacts
+    - name: Package Binaries
+      run: |
+        mkdir dist
+        compress-archive -Path src/desktop/HOPE.Desktop/bin/Release/net8.0-windows/* -DestinationPath dist/HOPE_Desktop_v${{ github.ref_name }}.zip
+        compress-archive -Path src/backend/dist/* -DestinationPath dist/HOPE_Backend_v${{ github.ref_name }}.zip
+
+    # 4. Release
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          dist/*.zip
+        draft: true
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -16,6 +16,7 @@ public class SafeFlashService : IDisposable
     private readonly VoltageMonitor _voltageMonitor;
     private readonly UdsProtocolService _udsService;
     private readonly CalibrationRepository _repository;
+    private readonly HOPE.Core.Services.Safety.CloudSafetyService _cloudSafety;
     private readonly SemaphoreSlim _flashLock = new(1, 1);
 
     private CancellationTokenSource? _flashCts;
@@ -60,12 +61,14 @@ public class SafeFlashService : IDisposable
         IHardwareAdapter adapter,
         VoltageMonitor voltageMonitor,
         UdsProtocolService udsService,
-        CalibrationRepository repository)
+        CalibrationRepository repository,
+        HOPE.Core.Services.Safety.CloudSafetyService cloudSafety)
     {
         _adapter = adapter ?? throw new ArgumentNullException(nameof(adapter));
         _voltageMonitor = voltageMonitor ?? throw new ArgumentNullException(nameof(voltageMonitor));
         _udsService = udsService ?? throw new ArgumentNullException(nameof(udsService));
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _cloudSafety = cloudSafety ?? throw new ArgumentNullException(nameof(cloudSafety));
     }
 
     /// <summary>
@@ -214,6 +217,25 @@ public class SafeFlashService : IDisposable
             securityCheck.Message = "Unable to enter programming session";
         }
         checks.Add(securityCheck);
+
+        // 8. Cloud Safety Policy Check
+        var cloudCheck = new PreFlightCheck { Name = "Cloud Safety Policy", Category = CheckCategory.Security };
+        var canProceed = await _cloudSafety.ValidateFlashOperationAsync(
+            config.Calibration.EcuId, 
+            voltageReading.Voltage ?? 0, 
+            ct);
+            
+        if (canProceed)
+        {
+            cloudCheck.Status = CheckStatus.Passed;
+            cloudCheck.Message = "Operation authorized by cloud policy";
+        }
+        else
+        {
+            cloudCheck.Status = CheckStatus.Failed;
+            cloudCheck.Message = "Operation blocked by cloud safety policy (or cloud unreachable)";
+        }
+        checks.Add(cloudCheck);
 
         result.Checks = checks;
         result.CanProceed = checks.All(c => c.Status != CheckStatus.Failed);
@@ -482,6 +504,24 @@ public class SafeFlashService : IDisposable
             _flashLock.Release();
 
             FlashComplete?.Invoke(this, new FlashCompleteEventArgs(result));
+
+            // Log to cloud
+            _ = Task.Run(async () => 
+            {
+                try 
+                {
+                    await _cloudSafety.LogSafetyEventAsync(new HOPE.Core.Services.Safety.SafetyEvent
+                    {
+                        EventType = "ECU_FLASH",
+                        EcuId = config.Calibration.EcuId,
+                        Voltage = (await _voltageMonitor.ReadBatteryVoltageAsync()).Voltage,
+                        Success = result.Success,
+                        Message = result.Success ? "Flash completed successfully" : (result.FailureReason ?? "Unknown failure"),
+                        Timestamp = DateTime.UtcNow
+                    });
+                }
+                catch { /* ignore background log errors */ }
+            });
         }
 
         return result;

@@ -47,6 +47,9 @@ export class User {
     @Column({ nullable: true })
     lastLoginAt: Date;
 
+    @Column({ default: '1.0.0' })
+    acceptedLegalVersion: string;
+
     @CreateDateColumn()
     createdAt: Date;
 

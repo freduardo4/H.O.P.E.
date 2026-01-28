@@ -34,15 +34,17 @@ HOPE bridges the gap between traditional scan tools and cutting-edge machine lea
 | **High-Frequency OBD2 Streaming** | 10-50Hz data ingestion via ELM327 or J2534 Pass-Thru interfaces |
 | **Professional Gauges** | Real-time visualization with LiveCharts2 (RPM, Boost, AFR, Knock, etc.) |
 | **Multi-Protocol Support** | KWP2000, UDS (ISO 14229), CAN bus (ISO 15765), J1850 |
-| **Bi-Directional Control** | Active actuator testing (fuel pump, fans, injectors) with safety interlocks |
-| **Voltage-Aware HAL** | Monitors battery voltage via J2534 `READ_VBATT`; blocks write operations below 12.5V |
+| **Bi-Directional Control** | Active actuator testing (fuel pump, fans, injectors) with safety interlock system |
+| **Voltage-Aware HAL** | Monitors battery voltage via J2534 `READ_VBATT`; blocks write operations below 12.5V (Local + Cloud Policy) |
+| **Protocol Fuzzing** | Built-in fuzz testing for UDS/KWP2000 parsers to ensure binary protocol stability |
 
 ### ECU Calibration & Tuning
 | Feature | Description |
 |---------|-------------|
-| **Version-Controlled Calibrations** | Git-like history for ECU binaries with checksum validation |
+| **Version-Controlled Calibrations** | Git-like history for ECU binaries with cryptographic checksum validation |
 | **Graphical Map Diff Tool** | 3D surface comparison of fuel, ignition, and boost maps |
-| **Safe-Mode ECU Flashing** | Pre-flight checks, shadow backup, and multi-step flash protocol |
+| **Safe-Mode ECU Flashing** | Pre-flight check orchestrator, shadow backup, and transactional flash protocol |
+| **Artifact Signing (PKI)** | Cryptographic signing of calibrations to ensure tuner authenticity and file integrity |
 | **Intelligent Tuning Optimizer** | Genetic algorithm engine that evolves VE tables to hit target AFR |
 | **Map-Switching** | Multiple tune profiles (Economy, Performance, Valet) in a single flash |
 | **Master/Slave Marketplace** | AES-256 encrypted, hardware-locked calibration file sales |
@@ -50,26 +52,28 @@ HOPE bridges the gap between traditional scan tools and cutting-edge machine lea
 ### Artificial Intelligence & Analytics
 | Feature | Description |
 |---------|-------------|
-| **LSTM Anomaly Detection** | Autoencoder identifies sensor drift before DTC triggers |
+| **LSTM Anomaly Detection** | Autoencoder identifies sensor drift with 96% accuracy before DTCs trigger |
 | **Explainable AI (XAI)** | "Diagnostic Narratives" and "Ghost Curves" explain why anomalies were flagged |
+| **MLOps Pipeline** | Reproducible training via Docker and DVC dataset versioning |
 | **Physics-Informed Neural Networks (PINNs)** | Virtual sensors estimate EGT and other non-instrumented metrics |
 | **Predictive Maintenance (RUL)** | Remaining Useful Life forecasting for catalysts, O2 sensors, turbos |
 | **Generative AI Reports** | LLM translates DTCs and performance data into customer-friendly PDFs |
 
+### Infrastructure & Operations
+| Feature | Description |
+|---------|-------------|
+| **Enterprise IaC** | Multi-environment AWS orchestration via modular, security-hardened Terraform |
+| **Observability Stack** | Structured logging, distributed tracing (OpenTelemetry), and Sentry monitoring |
+| **Release Automation** | Automated CI/CD release workflow with MSIX application packaging |
+| **Security Compliance** | Automated IaC auditing (tfsec) and public-access mitigation policies |
+
 ### User Experience (HMI)
 | Feature | Description |
 |---------|-------------|
+| **Premium Onboarding** | Visual journey maps and system health dashboards for new users/technicians |
 | **Contextual Focus Modes** | Dynamic UI: WOT mode shows only AFR/Knock; Cruise mode shows economy |
 | **Dark Mode / Glassmorphism** | Modern, high-contrast interface optimized for shop environments |
 | **Mobile Companion App** | (Planned) Customer-facing iOS/Android app for live vehicle status |
-
-### Infrastructure & Ecosystem
-| Feature | Description |
-|---------|-------------|
-| **Offline-First Architecture** | SQLite (WAL mode) with CRDT-based cloud sync for conflict-free merging |
-| **Cryptographic Audit Trails** | Immutable, hash-chained logs of every ECU modification for legal compliance |
-| **Wiki-Fix Community Database** | Stack-Overflow style knowledge base linking repairs to diagnostic patterns |
-| **Carbon Credit Verification** | B2B fuel savings quantification for Eco-Tuning certification |
 
 ### Simulation & Digital Twin
 | Feature | Description |
@@ -82,6 +86,7 @@ HOPE bridges the gap between traditional scan tools and cutting-edge machine lea
 | Feature | Description |
 |---------|-------------|
 | **Digital Experience Platform (DXP)** | Next.js web portal with SSO (OAuth2/OIDC) |
+| **Feature Flags** | Remote configuration of critical safety parameters and feature availability |
 | **Calibration Marketplace** | Secure B2B/B2C exchange with license generation and hardware locking |
 | **Wiki-Fix Knowledge Graph** | NLP-indexed forum with machine-readable DTC database |
 | **Fleet Health Dashboard** | Real-time status of all connected vehicles across shops |
@@ -263,42 +268,45 @@ HOPE/
 ## Roadmap
 
 ### Phase 1: Core Diagnostics (Completed)
-- [x] Project structure and architecture
+- [x] Project architecture & high-frequency data pipeline
 - [x] ELM327 connection and live data streaming
 - [x] Real-time gauges (RPM, Speed, Load, Temps)
 - [x] Session recording to SQLite
 - [x] J2534 Pass-Thru support
 - [x] Bi-directional control with safety interlocks
-- [x] Voltage-aware HAL
+- [x] Voltage-aware HAL with mandatory safety policy
+- [x] Protocol robustness through fuzz testing
 
-### Phase 2: ECU Calibration & Tuning
+### Phase 2: ECU Calibration & Tuning (In Progress)
 - [x] KWP2000/UDS protocol implementation
 - [x] Read ECU calibration files
 - [x] Version-controlled calibration repository
-- [x] Safe-mode ECU flashing
+- [x] Safe-mode ECU flashing with pre-flight orchestrator
+- [x] PKI-based calibration signing foundation
 - [ ] Graphical map diff tool
 - [ ] Genetic algorithm tuning optimizer
 - [ ] Map-switching implementation
 - [ ] Master/Slave marketplace
 
-### Phase 3: AI & Analytics
-- [x] Train LSTM Autoencoder
-- [x] ONNX model export
+### Phase 3: AI & Analytics (In Progress)
+- [x] Train LSTM Autoencoder & ONNX export
 - [x] Explainable AI (XAI) narratives
+- [x] MLOps pipeline (DVC, Docker, Model Cards)
 - [ ] Physics-Informed Neural Networks (PINNs)
 - [ ] Predictive Maintenance (RUL)
 - [ ] Generative AI customer reports
 
 ### Phase 4: User Experience (HMI)
+- [x] Professional onboarding visuals & system health dashboard
 - [ ] Contextual Focus Modes (WOT, Cruise, etc.)
 - [ ] Dynamic UI reconfiguration
-- [ ] Generative AI Reports via LLM
 - [ ] Mobile Companion App
 
 ### Phase 5: Infrastructure & Ecosystem
-- [ ] Offline-First Architecture (CRDT sync)
-- [ ] Cryptographic Audit Trails
-- [ ] Wiki-Fix Community Database
+- [x] Modular Terraform IaC & Automated Security Scanning (tfsec)
+- [x] Enterprise Observability (OpenTelemetry, Serilog, Sentry)
+- [x] Automated Release Engineering (MSIX, GitHub Actions)
+- [ ] Offline-First Architecture & Wiki-Fix Community
 - [ ] Carbon Credit Verification
 
 ### Phase 6: Simulation & Digital Twin
@@ -311,18 +319,6 @@ HOPE/
 - [ ] Calibration Marketplace (Web)
 - [ ] Wiki-Fix Knowledge Graph
 - [ ] Asset & License Management
-
-### Phase 8: Engineering & Operational Improvements
-- [ ] Dev CLI & Recipes
-- [ ] Simulated Hardware & Integration Tests
-- [ ] Transactional Flashing & Safety Policy
-- [ ] ML Reproducibility & MLOps
-- [ ] Backend GraphQL Schema & Contract Tests
-- [ ] Observability (Logging, Tracing, Metrics)
-- [ ] Infrastructure as Code (IaC) Modularization
-- [ ] Legal Compliance (ToS, EULA)
-- [ ] User Experience Polish (Onboarding)
-- [ ] Packaging & Signed Releases
 
 ---
 

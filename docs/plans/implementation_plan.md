@@ -578,9 +578,35 @@ Extensions to the backend modules created in Phases 2 and 5.
 
 ### 8.2 Testing, Safety & Reliability
 
+
+### 8.2 Testing, Safety & Reliability
+
 - **Simulated Hardware**: Implement `MockHardwareAdapter` with fault injection.
 - **Flashing Safety**: Add transactional logic, checksums, and battery voltage policy enforcement.
 - **Fuzzing**: Integrate AFL/LibFuzzer for binary parsers.
+
+#### [NEW] [CloudSafetyService.cs](file:///c:/Users/Test/Documents/H.O.P.E/src/desktop/HOPE.Core/Services/Safety/CloudSafetyService.cs)
+
+Service to sync safety telemetry and enforce cloud-side policies.
+
+```csharp
+public class CloudSafetyService
+{
+    public async Task<bool> ValidateFlashOperationAsync(string ecuId, double voltage);
+    public async Task LogSafetyEventAsync(SafetyEvent evt);
+}
+```
+
+#### [MODIFY] [SafeFlashService.cs](file:///c:/Users/Test/Documents/H.O.P.E/src/desktop/HOPE.Core/Services/ECU/SafeFlashService.cs)
+
+- Integrate `CloudSafetyService` into pre-flight checks.
+- Send "Post-Flash" telemetry report to cloud (success/fail, voltage profile).
+
+#### [NEW] [safety-logs.module.ts](file:///c:/Users/Test/Documents/H.O.P.E/src/backend/src/modules/safety-logs)
+
+Backend module to store safety events.
+- `POST /safety/validate`: Check if operation is allowed (e.g. not blacklisted ECU).
+- `POST /safety/telemetry`: Ingest voltage logs and flash results.
 
 ### 8.3 ML & Reproducibility (MLOps)
 
@@ -634,21 +660,20 @@ dotnet test HOPE.Desktop.Tests --logger "console;verbosity=detailed"
 Existing tests:
 - [DatabaseServiceTests.cs](file:///c:/Users/Test/Documents/H.O.P.E/src/desktop/HOPE.Desktop.Tests/DatabaseServiceTests.cs)
 - [OnnxAnomalyServiceTests.cs](file:///c:/Users/Test/Documents/H.O.P.E/src/desktop/HOPE.Desktop.Tests/OnnxAnomalyServiceTests.cs)
+- [SafeFlashServiceTests.cs](file:///c:/Users/Test/Documents/H.O.P.E/src/desktop/HOPE.Desktop.Tests/SafeFlashServiceTests.cs)
 
 New tests to add:
-- `J2534AdapterTests.cs` (mock hardware)
-- `SafetyInterlockTests.cs`
-- `CalibrationRepositoryTests.cs`
+- `CloudSafetyServiceTests.cs` (mock HTTP)
 
 **Backend (NestJS):**
 ```bash
-cd c:\Users\Test\Documents\H.O.P.E\src\backend
+cd c:\Users\Test\Documents\H.O.P.E/src/backend
 npm test
 ```
 
 **AI Training (Python):**
 ```bash
-cd c:\Users\Test\Documents\H.O.P.E\src\ai-training
+cd c:\Users\Test\Documents\H.O.P.E/src/ai-training
 pytest -v
 ```
 
@@ -657,11 +682,15 @@ pytest -v
 > [!CAUTION]
 > **ECU flashing and bi-directional control MUST be tested on a bench ECU or junkyard vehicle first.** Never test write operations on a customer vehicle without prior validation.
 
-1. **J2534 Connection:** Connect J2534 device → Verify connection in HOPE → Read battery voltage
-2. **Gauge Visualization:** Stream live RPM data → Verify smooth gauge animation
-3. **Map Diff Tool:** Load two calibration files → Verify visual diff is accurate
-4. **AI Anomaly:** Inject synthetic anomaly → Verify detection and XAI narrative
-5. **Offline Sync:** Disconnect internet → Make changes → Reconnect → Verify CRDT merge
+1.  **J2534 Connection:** Connect J2534 device → Verify connection in HOPE → Read battery voltage
+2.  **Gauge Visualization:** Stream live RPM data → Verify smooth gauge animation
+3.  **Map Diff Tool:** Load two calibration files → Verify visual diff is accurate
+4.  **AI Anomaly:** Inject synthetic anomaly → Verify detection and XAI narrative
+5.  **Offline Sync:** Disconnect internet → Make changes → Reconnect → Verify CRDT merge
+6.  **Cloud Safety Policy:**
+    -   Attempt flash with correct voltage -> Verify Cloud logs success.
+    -   Simulate low voltage -> Verify Cloud logs failure/attempt (if implemented to log attempts).
+    -   Simulate Cloud "Deny" (mock) -> Verify Desktop aborts pre-flight.
 
 ---
 
