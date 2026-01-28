@@ -14,6 +14,7 @@ import { ECUCalibrationsModule } from './modules/ecu-calibrations';
 import { ReportsModule } from './modules/reports';
 import { CustomersModule } from './modules/customers';
 import { SafetyLogsModule } from './modules/safety-logs';
+import { TuningModule } from './modules/tuning/tuning.module';
 import { InfraModule } from './modules/infra/infra.module';
 import { getDatabaseConfig } from './config';
 
@@ -44,6 +45,7 @@ import { getDatabaseConfig } from './config';
         ReportsModule,
         CustomersModule,
         SafetyLogsModule,
+        TuningModule,
         InfraModule,
     ],
     controllers: [],

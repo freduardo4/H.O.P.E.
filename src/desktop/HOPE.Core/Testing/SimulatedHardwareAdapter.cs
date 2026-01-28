@@ -19,6 +19,7 @@ public class SimulatedHardwareAdapter : IHardwareAdapter
     private readonly byte[] _simulatedMemory = new byte[0x10000]; // 64KB simulated memory
     private uint _lastDownloadAddress;
     private uint _currentTransferOffset;
+    private byte _activeMapId = 1; // Default to Map 1
     
     // Configurable simulation parameters
     public double SimulatedVoltage { get; set; } = 13.5;
@@ -191,6 +192,37 @@ public class SimulatedHardwareAdapter : IHardwareAdapter
                 case 0x21: // ReadDataByLocalIdentifier (KWP)
                     responsePayload = new byte[] { 0x61, data.Length > 1 ? data[data.Length-1] : (byte)0x01, 0x42, 0x43 }; // Dummy
                     break;
+
+                case 0x22: // ReadDataByIdentifier
+                    if (data.Length < 3) return NegativeResponse(serviceId, UdsNrc.IncorrectMessageLengthOrInvalidFormat, isKwp);
+                    
+                    ushort didRead = (ushort)((data[1] << 8) | data[2]);
+                    if (didRead == 0xF1A0) // Active Map ID
+                    {
+                        responsePayload = new byte[] { (byte)(serviceId + 0x40), data[1], data[2], _activeMapId };
+                    }
+                    else
+                    {
+                        // Default behavior for other DIDs (simulate valid read of 00)
+                        responsePayload = new byte[] { (byte)(serviceId + 0x40), data[1], data[2], 0x00 };
+                    }
+                    break;
+
+                case 0x2E: // WriteDataByIdentifier
+                     if (!_securityUnlocked) return NegativeResponse(serviceId, UdsNrc.SecurityAccessDenied, isKwp);
+                     if (data.Length < 4) return NegativeResponse(serviceId, UdsNrc.IncorrectMessageLengthOrInvalidFormat, isKwp);
+
+                     ushort didWrite = (ushort)((data[1] << 8) | data[2]);
+                     if (didWrite == 0xF1A0)
+                     {
+                         _activeMapId = data[3];
+                         responsePayload = new byte[] { (byte)(serviceId + 0x40), data[1], data[2] };
+                     }
+                     else
+                     {
+                         return NegativeResponse(serviceId, UdsNrc.RequestOutOfRange, isKwp);
+                     }
+                     break;
 
                 case UdsServiceId.ReadMemoryByAddress:
                     if (data.Length < (isKwp ? 4 : 8)) return NegativeResponse(serviceId, UdsNrc.IncorrectMessageLengthOrInvalidFormat, isKwp);

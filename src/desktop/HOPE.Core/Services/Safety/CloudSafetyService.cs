@@ -18,7 +18,7 @@ public class CloudSafetyService
     /// <summary>
     /// Validates if a flash operation is allowed by cloud policy
     /// </summary>
-    public async Task<bool> ValidateFlashOperationAsync(string ecuId, double voltage, CancellationToken ct = default)
+    public virtual async Task<bool> ValidateFlashOperationAsync(string ecuId, double voltage, CancellationToken ct = default)
     {
         try
         {
@@ -56,7 +56,7 @@ public class CloudSafetyService
     /// <summary>
     /// Logs a safety-critical event to the cloud
     /// </summary>
-    public async Task LogSafetyEventAsync(SafetyEvent evt, CancellationToken ct = default)
+    public virtual async Task LogSafetyEventAsync(SafetyEvent evt, CancellationToken ct = default)
     {
         try
         {
