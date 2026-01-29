@@ -52,5 +52,5 @@ describe('TuningService', () => {
             console.error('Optimization test failed:', e);
             throw e;
         }
-    }, 10000); // increase timeout for python startup
+    }, 30000); // increase timeout for python startup
 });

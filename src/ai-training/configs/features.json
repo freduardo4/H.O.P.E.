@@ -1,0 +1,16 @@
+{
+  "obd2_features": [
+    "engine_rpm",
+    "vehicle_speed",
+    "engine_load",
+    "coolant_temp",
+    "intake_air_temp",
+    "maf_flow",
+    "throttle_position",
+    "fuel_pressure",
+    "short_term_fuel_trim",
+    "long_term_fuel_trim",
+    "ignition_timing",
+    "egt"
+  ]
+}

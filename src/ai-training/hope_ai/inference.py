@@ -18,14 +18,14 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 import sys
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Remove sys.path hack as we are now part of the package structure
+# sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import numpy as np
 import pandas as pd
 import torch
 
-from hope_ai.config import DEVICE
+from .config import DEVICE
 
 # Configure logging
 logging.basicConfig(

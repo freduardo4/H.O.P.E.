@@ -25,6 +25,7 @@ using HOPE.Desktop.Views;
 using Prism.DryIoc;
 using Prism.Ioc;
 using Sentry;
+using Squirrel;
 
 namespace HOPE.Desktop;
 
@@ -38,10 +39,23 @@ public partial class App : PrismApplication
         // Initialize Sentry
         SentrySdk.Init(options =>
         {
-            options.Dsn = "https://example@sentry.io/123"; // Replace with real DSN
-            options.Debug = true;
             options.TracesSampleRate = 1.0;
         });
+
+        // Handle Squirrel Installation Events
+        SquirrelAwareApp.HandleEvents(
+            onInitialInstall: (v, t) => t.CreateShortcutForThisExe(),
+            onAppUpdate: (v, t) => t.CreateShortcutForThisExe(),
+            onAppUninstall: (v, t) => t.RemoveShortcutForThisExe()
+        );
+
+        // Check for updates in background
+        Task.Run(async () => await CheckForUpdatesAsync());
+
+        // Global Exception Handling
+        DispatcherUnhandledException += OnDispatcherUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+        AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
         base.OnStartup(e);
     }
@@ -157,6 +171,54 @@ public partial class App : PrismApplication
 
         var regionManager = Container.Resolve<Prism.Regions.IRegionManager>();
         regionManager.RequestNavigate("MainRegion", "LoginView");
+    }
+    private void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+    {
+        SentrySdk.CaptureException(e.Exception);
+        // Optional: Resolve logger and log locally
+        // var logger = Container.Resolve<ILoggingService>();
+        // logger.Error("Unhandled Dispatcher Exception", e.Exception);
+        
+        // Prevent default crash if possible
+        e.Handled = true;
+        MessageBox.Show($"An unexpected error occurred: {e.Exception.Message}\n\nThe application will attempt to continue.", "Unexpected Error", MessageBoxButton.OK, MessageBoxImage.Error);
+    }
+
+    private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        SentrySdk.CaptureException(e.Exception);
+        e.SetObserved(); // Prevent process termination
+    }
+
+    private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception ex)
+        {
+            SentrySdk.CaptureException(ex);
+            SentrySdk.FlushAsync(TimeSpan.FromSeconds(2)).Wait();
+        }
+    }
+
+    private async Task CheckForUpdatesAsync()
+    {
+        try
+        {
+            // TODO: Replace with real update URL (e.g. S3 bucket or GitHub Releases)
+            string updateUrl = "https://github.com/Hopetuning/HOPE"; 
+            
+            using var mgr = await UpdateManager.GitHubUpdateManager(updateUrl);
+            var releaseEntry = await mgr.UpdateApp();
+            
+            if (releaseEntry != null)
+            {
+                // Optionally notify user
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log update checks failures nicely (updates often fail due to network, ignore noisy errors)
+            SentrySdk.CaptureException(ex);
+        }
     }
 }
 

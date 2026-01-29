@@ -3,13 +3,22 @@ using CommunityToolkit.Mvvm.Input;
 using HOPE.Core.Data;
 using HOPE.Core.Models;
 using HOPE.Core.Services.OBD;
+using HOPE.Core.Services.Community;
+using Microsoft.Extensions.Logging;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Windows.Data;
+using Prism.Regions;
 
 namespace HOPE.Desktop.ViewModels;
+
 
 public partial class DTCViewModel : ObservableObject
 {
     private readonly IOBD2Service _obdService;
+    private readonly IRegionManager _regionManager;
+    private readonly ILogger<DTCViewModel> _logger;
+    private readonly IWikiFixService _wikiFixService;
 
     [ObservableProperty]
     private ObservableCollection<DTCItem> _diagnosticCodes = new();
@@ -20,20 +29,49 @@ public partial class DTCViewModel : ObservableObject
     [ObservableProperty]
     private string _statusMessage = "Click 'Read DTCs' to scan for codes";
 
-    private readonly WikiFixViewModel _wikiFixViewModel;
-
-    public DTCViewModel(IOBD2Service obdService, WikiFixViewModel wikiFixViewModel)
+    public DTCViewModel(IOBD2Service obdService, IRegionManager regionManager, ILogger<DTCViewModel> logger, IWikiFixService wikiFixService)
     {
         _obdService = obdService;
-        _wikiFixViewModel = wikiFixViewModel;
+        _regionManager = regionManager;
+        _logger = logger;
+        _wikiFixService = wikiFixService;
+
+        // Initialize CollectionView for filtering
+        DiagnosticCodesView = CollectionViewSource.GetDefaultView(DiagnosticCodes);
+        DiagnosticCodesView.Filter = FilterDTCs;
+    }
+
+    [ObservableProperty]
+    private string _searchText = string.Empty;
+
+    partial void OnSearchTextChanged(string value)
+    {
+        DiagnosticCodesView.Refresh();
+    }
+
+    public ICollectionView DiagnosticCodesView { get; }
+
+    private bool FilterDTCs(object obj)
+    {
+        if (obj is not DTCItem item) return false;
+        if (string.IsNullOrWhiteSpace(SearchText)) return true;
+
+        return item.Code.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+               item.Description.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+               item.Category.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
     }
 
     [RelayCommand]
-    private async Task ViewCommunityFixAsync(DTCItem item)
+    private void ViewCommunityFix(DTCItem? item)
     {
         if (item == null) return;
-        await _wikiFixViewModel.LoadDtcFixesAsync(item.Code);
-        // Navigation logic would go here, assuming a simple Tab/View switcher
+        
+        var parameters = new NavigationParameters
+        {
+            { "dtc", item.Code }
+        };
+
+        _regionManager.RequestNavigate("MainRegion", "WikiFixView", parameters);
     }
 
     [RelayCommand]

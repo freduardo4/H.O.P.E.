@@ -410,3 +410,34 @@ class RULPredictor:
             predictor.models[comp] = model
             predictor.trained_components.append(comp)
         return predictor
+
+def train_rul(epochs=50, save_path='models'):
+    """Trains the RUL forecaster for various components."""
+    from pathlib import Path
+    output_dir = Path(save_path)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    predictor = RULPredictor()
+    
+    # Simulate degradation data for training
+    def generate_synthetic_degradation_data(n_samples=1000):
+        base_curve = np.linspace(1.0, 0.3, n_samples)
+        noise = np.random.normal(0, 0.05, n_samples)
+        return np.clip(base_curve + noise, 0.0, 1.0)
+
+    logger.info("Starting RUL Forecaster training...")
+    for component in [
+        ComponentType.CATALYTIC_CONVERTER,
+        ComponentType.O2_SENSOR,
+        ComponentType.BATTERY,
+    ]:
+        logger.info(f"Training for {component.value}...")
+        data = generate_synthetic_degradation_data(1000)
+        predictor.train(component, data, epochs=epochs)
+
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    save_dir = output_dir / f'rul_forecaster_{timestamp}'
+    predictor.save(save_dir)
+    logger.info(f"RUL Forecaster model saved to {save_dir}")
+    return predictor
+

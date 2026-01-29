@@ -59,7 +59,73 @@ def export_to_onnx(detector: AnomalyDetector, output_path: Path):
     except Exception as e:
         logger.error(f"Failed to export ONNX model: {e}")
 
+def train_anomaly_detector(epochs=None, save_dir='models'):
+    """Functional interface for training the anomaly detector."""
+    epochs = epochs or EPOCHS
+    output_dir = Path(save_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Generate or load data
+    data, labels = generate_synthetic_data(n_vehicles=100)
+
+    # Initialize model
+    detector = AnomalyDetector()
+
+    # Prepare sequences
+    logger.info("Preparing sequences...")
+    sequences = detector.prepare_sequences(data, SEQUENCE_LENGTH)
+    
+    # Split into train/validation
+    X_train, X_val = train_test_split(
+        sequences, test_size=VALIDATION_SPLIT, random_state=42
+    )
+
+    logger.info(f"Training samples: {len(X_train)}")
+    logger.info(f"Validation samples: {len(X_val)}")
+
+    # Train
+    logger.info("Starting training...")
+    
+    # MLflow tracking
+    try:
+        import mlflow
+        mlflow.start_run()
+        mlflow.log_params({
+            "epochs": epochs,
+            "batch_size": BATCH_SIZE,
+            "sequence_length": SEQUENCE_LENGTH,
+            "latent_dim": LATENT_DIM
+        })
+    except ImportError:
+        logger.warning("MLflow not installed, skipping tracking.")
+
+    history = detector.fit(
+        X_train,
+        X_val,
+        epochs=epochs,
+        batch_size=BATCH_SIZE,
+    )
+
+    if 'mlflow' in sys.modules:
+        import mlflow
+        for epoch, loss in enumerate(history['loss']):
+            mlflow.log_metric("loss", loss, step=epoch)
+        mlflow.end_run()
+
+    # Save model
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    model_path = output_dir / f'lstm_autoencoder_{timestamp}'
+    detector.save(model_path)
+
+    # Export to ONNX for desktop deployment
+    onnx_path = output_dir / 'onnx' / 'anomaly_detector.onnx'
+    export_to_onnx(detector, onnx_path)
+
+    logger.info("Training complete!")
+    return detector, history
+
 def main():
+
     parser = argparse.ArgumentParser(description='Train LSTM Autoencoder for anomaly detection')
     parser.add_argument('--data_dir', type=str, default='../data/processed',
                         help='Directory containing processed training data')

@@ -1,4 +1,4 @@
-﻿# HOPE AI Training Dependencies - PINNED FOR REPRODUCIBILITY
+# HOPE AI Training Dependencies - PINNED FOR REPRODUCIBILITY
 # Machine Learning and Data Processing
 
 # Deep Learning Framework
@@ -22,3 +22,18 @@ seaborn==0.13.2
 tqdm==4.67.1
 jupyter==1.1.1
 joblib==1.5.3
+
+# Testing and Quality
+pytest==8.0.0
+pytest-cov==4.1.0
+black==24.1.1
+flake8==7.0.0
+
+# MLOps and Traceability
+mlflow==2.10.2
+dvc==3.42.0
+
+# Advanced Explainability
+shap==0.44.1
+lime==0.2.0.1
+

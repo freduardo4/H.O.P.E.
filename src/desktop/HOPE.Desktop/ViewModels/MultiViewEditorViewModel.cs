@@ -28,6 +28,9 @@ public partial class MultiViewEditorViewModel : ObservableObject
     [ObservableProperty]
     private string _mapAddress = "0x8000";
 
+    [ObservableProperty]
+    private string _statusMessage = "Ready";
+
     // --- 3D View Properties ---
     [ObservableProperty]
     private Point3DCollection _surfacePoints = new();
@@ -80,18 +83,18 @@ public partial class MultiViewEditorViewModel : ObservableObject
     {
         try 
         {
+            StatusMessage = $"Loading commit {commitHash}...";
             _logger.LogInformation("Loading calibration commit {CommitHash}", commitHash);
             _currentCalibration = await _repository.GetCalibrationAsync(commitHash);
             
             // TODO: Parse calibration blocks into _mapData
-            // For now, we'll log success. In a real scenario, we'd need a MapParser service.
-            // keeping mock data initialization for UI demo purposes until parser is ready
             InitializeMockData(); 
+            StatusMessage = "Calibration loaded successfully";
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to load calibration {CommitHash}", commitHash);
-            // In a real app, show error dialog
+            StatusMessage = $"Error loading calibration: {ex.Message}";
         }
     }
 
@@ -266,10 +269,12 @@ public partial class MultiViewEditorViewModel : ObservableObject
             await _repository.CommitAsync("Updated map from MultiViewEditor");
             
             _logger.LogInformation("Calibration saved successfully.");
+            StatusMessage = "Calibration saved successfully";
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to save calibration");
+            StatusMessage = $"Error saving: {ex.Message}";
         }
     }
 
@@ -279,31 +284,40 @@ public partial class MultiViewEditorViewModel : ObservableObject
         // In a real app, this would pass the current axes to a dialog service.
         // For simulation, we'll just demonstrate the logic:
         
-        // Simulating user changing X-Axis (rescaling RPMs)
-        var oldAxis = _currentXAxis.ToArray();
-        
-        // New axis: Shifted + Compressed (e.g. user wants more resolution at high RPM)
-        var newAxis = new double[16];
-        for(int i=0; i<16; i++) newAxis[i] = 1000 + (i * 300); // Different spacing
-
-        // Re-interpolate every row
-        int rows = _mapData.GetLength(0);
-        
-        for (int r = 0; r < rows; r++)
+        try
         {
-            // Extract row
-            double[] rowVals = new double[16];
-            for(int c=0; c<16; c++) rowVals[c] = _mapData[r,c];
+            // Simulating user changing X-Axis (rescaling RPMs)
+            var oldAxis = _currentXAxis.ToArray();
+            
+            // New axis: Shifted + Compressed (e.g. user wants more resolution at high RPM)
+            var newAxis = new double[16];
+            for(int i=0; i<16; i++) newAxis[i] = 1000 + (i * 300); // Different spacing
 
-            // Interpolate
-            var newVals = CalibrationRepository.InterpolateMap(oldAxis, rowVals, newAxis);
+            // Re-interpolate every row
+            int rows = _mapData.GetLength(0);
+            
+            for (int r = 0; r < rows; r++)
+            {
+                // Extract row
+                double[] rowVals = new double[16];
+                for(int c=0; c<16; c++) rowVals[c] = _mapData[r,c];
 
-            // Update Map
-            for(int c=0; c<16; c++) _mapData[r,c] = newVals[c];
+                // Interpolate
+                var newVals = CalibrationRepository.InterpolateMap(oldAxis, rowVals, newAxis);
+
+                // Update Map
+                for(int c=0; c<16; c++) _mapData[r,c] = newVals[c];
+            }
+            
+            _currentXAxis = newAxis;
+            
+            RefreshViews();
+            StatusMessage = "Axis rescaled successfully";
         }
-        
-        _currentXAxis = newAxis;
-        
-        RefreshViews();
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to rescale axis");
+            StatusMessage = $"Error rescaling axis: {ex.Message}";
+        }
     }
 }

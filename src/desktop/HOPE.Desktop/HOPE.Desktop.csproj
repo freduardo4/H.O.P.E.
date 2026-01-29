@@ -9,6 +9,7 @@
     <PackageReference Include="Prism.Wpf" Version="8.1.97" />
     <PackageReference Include="QuestPDF" Version="2024.3.0" />
     <PackageReference Include="Sentry" Version="6.0.0" />
+    <PackageReference Include="Clowd.Squirrel" Version="2.11.1" />
   </ItemGroup>
 
   <PropertyGroup>

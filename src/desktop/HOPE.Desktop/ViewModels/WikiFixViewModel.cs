@@ -1,12 +1,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Prism.Regions;
 using HOPE.Core.Models;
 using HOPE.Core.Services.Community;
 using System.Collections.ObjectModel;
 
 namespace HOPE.Desktop.ViewModels;
 
-public partial class WikiFixViewModel : ObservableObject
+public partial class WikiFixViewModel : ObservableObject, INavigationAware
 {
     private readonly IWikiFixService _wikiFixService;
 
@@ -69,5 +70,27 @@ public partial class WikiFixViewModel : ObservableObject
         DtcFilter = dtc;
         SearchQuery = string.Empty;
         await SearchAsync();
+    }
+
+    public void OnNavigatedTo(NavigationContext navigationContext)
+    {
+        if (navigationContext.Parameters.ContainsKey("dtc"))
+        {
+            var dtc = navigationContext.Parameters.GetValue<string>("dtc");
+            if (!string.IsNullOrEmpty(dtc))
+            {
+                _ = LoadDtcFixesAsync(dtc);
+            }
+        }
+    }
+
+    public bool IsNavigationTarget(NavigationContext navigationContext)
+    {
+        return true; 
+    }
+
+    public void OnNavigatedFrom(NavigationContext navigationContext)
+    {
+        // No cleanup needed
     }
 }

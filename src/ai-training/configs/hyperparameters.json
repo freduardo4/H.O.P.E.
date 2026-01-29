@@ -1,0 +1,16 @@
+{
+  "sequence_length": 60,
+  "latent_dim": 16,
+  "encoder_units": 64,
+  "decoder_units": 64,
+  "batch_size": 32,
+  "epochs": 100,
+  "learning_rate": 0.001,
+  "validation_split": 0.2,
+  "physics_weight": 0.1,
+  "egt_normal_max": 950.0,
+  "egt_alarm_temp": 1000.0,
+  "rul_sequence_length": 30,
+  "rul_hidden_size": 64,
+  "rul_num_layers": 2
+}
