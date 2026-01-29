@@ -24,6 +24,13 @@ ECU Calibrations (`.bin`, `.hex`, `.cal`) are critical safety components.
     - The Desktop Flasher Tool verifies the signature against the embedded Public Key before writing to any ECU.
     - If verification fails, the flash is aborted immediately.
 
+### Calibration Ledger (Audit Trail)
+
+Beyond individual file signing, H.O.P.E. maintains an immutable **Calibration Ledger** (`CalibrationLedgerService`). 
+- **Hash-Chaining**: Each calibration change is stored as a block that includes the hash of the *previous* change.
+- **Tamper Detection**: Any alteration to the ledger history (block height, author, data) breaks the chain, which is detected during the `VerifyLedgerAsync` audit.
+- **Shop Accountability**: All changes are signed by the technician's workstation ID, ensuring a verifiable lineage for insurance and compliance.
+
 ## Key Management
 
 - **Root Key**: Stored offline in a Hardware Security Module (HSM) or air-gapped cold storage.
