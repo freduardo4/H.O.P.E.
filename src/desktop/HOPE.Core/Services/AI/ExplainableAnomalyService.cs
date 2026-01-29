@@ -12,14 +12,14 @@ public class ExplainableAnomalyService
 {
     private readonly Dictionary<string, ParameterProfile> _parameterProfiles;
     private readonly List<DiagnosticPattern> _knownPatterns;
-    private readonly ILLMService? _llmService;
+    private readonly ILlmService? _llmService;
 
     /// <summary>
     /// Event raised when a new explanation is generated
     /// </summary>
     public event EventHandler<ExplanationGeneratedEventArgs>? ExplanationGenerated;
 
-    public ExplainableAnomalyService(ILLMService? llmService = null)
+    public ExplainableAnomalyService(ILlmService? llmService = null)
     {
         _llmService = llmService;
         _parameterProfiles = InitializeParameterProfiles();
@@ -737,15 +737,6 @@ Please provide:
 
     #endregion
 }
-
-#region Interfaces
-
-public interface ILLMService
-{
-    Task<string> GenerateAsync(string prompt, CancellationToken ct = default);
-}
-
-#endregion
 
 #region Data Models
 

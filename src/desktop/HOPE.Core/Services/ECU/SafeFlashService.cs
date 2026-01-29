@@ -260,6 +260,23 @@ public class SafeFlashService : IDisposable
         if (!await _flashLock.WaitAsync(0, ct))
             throw new InvalidOperationException("Another flash operation is in progress");
 
+        try
+        {
+            var result = await FlashInternalAsync(config, securityKeyAlgorithm, ct);
+            FlashComplete?.Invoke(this, new FlashCompleteEventArgs(result));
+            return result;
+        }
+        finally
+        {
+            _flashLock.Release();
+        }
+    }
+
+    private async Task<FlashResult> FlashInternalAsync(
+        FlashConfig config,
+        Func<byte[], byte[]> securityKeyAlgorithm,
+        CancellationToken ct = default)
+    {
         _flashCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         var result = new FlashResult { StartTime = DateTime.UtcNow };
         var stopwatch = Stopwatch.StartNew();
@@ -482,8 +499,27 @@ public class SafeFlashService : IDisposable
             result.FailureReason = ex.Message;
             result.FailedAtStage = ex.FailedStage ?? _currentSession?.Stage;
 
-            ReportProgress(_currentSession?.Stage ?? FlashStage.PreFlight, -1,
-                $"Flash failed: {ex.Message}");
+            // Trigger emergency recovery if flash failed during transfer
+            if (result.FailedAtStage == FlashStage.Transfer || result.FailedAtStage == FlashStage.RequestDownload)
+            {
+                ReportProgress(FlashStage.Recovery, 50, "Crticial failure during write. Attempting emergency recovery...");
+                var recoveryResult = await TryEmergencyRecoveryAsync(config, securityKeyAlgorithm, ct);
+                if (recoveryResult.Success)
+                {
+                    result.Success = true;
+                    result.FailureReason = "Recovered from partial flash failure via full restore.";
+                    ReportProgress(FlashStage.Complete, 100, "Emergency recovery successful!");
+                }
+                else
+                {
+                    result.FailureReason += " | RECOVERY FAILED. ECU MAY BE BRICKED. Use manual bootloader tools.";
+                }
+            }
+            else
+            {
+                ReportProgress(_currentSession?.Stage ?? FlashStage.PreFlight, -1,
+                    $"Flash failed: {ex.Message}");
+            }
         }
         catch (OperationCanceledException)
         {
@@ -506,10 +542,6 @@ public class SafeFlashService : IDisposable
             _currentSession = null;
             _flashCts?.Dispose();
             _flashCts = null;
-            _flashLock.Release();
-
-            FlashComplete?.Invoke(this, new FlashCompleteEventArgs(result));
-
             // Log to cloud
             _ = Task.Run(async () => 
             {
@@ -560,7 +592,7 @@ public class SafeFlashService : IDisposable
             SecurityLevel = 1
         };
 
-        return await FlashAsync(config, securityKeyAlgorithm, ct);
+        return await FlashInternalAsync(config, securityKeyAlgorithm, ct);
     }
 
     private async Task<ShadowBackup> CreateShadowBackupAsync(FlashConfig config, CancellationToken ct)
@@ -679,6 +711,70 @@ public class SafeFlashService : IDisposable
         WarningRaised?.Invoke(this, new FlashWarningEventArgs(type, message));
     }
 
+    /// <summary>
+    /// Attempts to recover a "bricked" ECU by forcing it into a programming 
+    /// session and restoring the shadow backup.
+    /// </summary>
+    public async Task<FlashResult> TryEmergencyRecoveryAsync(
+        FlashConfig config,
+        Func<byte[], byte[]> securityKeyAlgorithm,
+        CancellationToken ct = default)
+    {
+        ReportProgress(FlashStage.Recovery, 10, "Starting ECU wake-up sequence...");
+        
+        // 1. Wakeup: Flood with TesterPresent to keep bootloader awake
+        for (int i = 0; i < 20; i++)
+        {
+            await _udsService.TesterPresentAsync(true, ct);
+            await Task.Delay(50, ct);
+        }
+
+        // 2. Try to re-enter session aggressively
+        UdsResponse sessionResp = null;
+        for (int attempt = 0; attempt < 5; attempt++)
+        {
+            sessionResp = await _udsService.DiagnosticSessionControlAsync(UdsSession.Programming, ct);
+            if (sessionResp.IsPositive) break;
+            await Task.Delay(500, ct);
+        }
+
+        if (sessionResp == null || !sessionResp.IsPositive)
+        {
+            return new FlashResult { Success = false, FailureReason = "Recovery: Failed to enter programming session after 5 attempts." };
+        }
+
+        // 3. Find latest backup if not provided
+        var backupPath = _currentSession?.BackupPath;
+        if (string.IsNullOrEmpty(backupPath))
+        {
+            // Search directory
+            var backupsDir = Path.Combine(_repository.RepositoryPath, "backups");
+            if (Directory.Exists(backupsDir))
+            {
+                backupPath = Directory.GetDirectories(backupsDir)
+                    .OrderByDescending(d => d)
+                    .FirstOrDefault();
+            }
+        }
+
+        if (string.IsNullOrEmpty(backupPath))
+        {
+            return new FlashResult { Success = false, FailureReason = "Recovery: No shadow backup found to restore." };
+        }
+
+        ReportProgress(FlashStage.Recovery, 30, "Restoring from shadow backup...");
+        
+        // Disable pre-flight for recovery (ECU might report garbage when bricked)
+        var recoveryConfig = new FlashConfig
+        {
+            Calibration = config.Calibration, // We use the target calibration if restore fails, but usually we want the backup
+            VerifyAfterWrite = true,
+            CreateBackup = false // Don't backup a bricked ECU
+        };
+
+        return await RestoreFromBackupAsync(backupPath, securityKeyAlgorithm, ct);
+    }
+
     public void Dispose()
     {
         _flashCts?.Cancel();
@@ -720,6 +816,7 @@ public enum FlashStage
     Verify,
     Reset,
     PostVerify,
+    Recovery,
     Complete
 }
 

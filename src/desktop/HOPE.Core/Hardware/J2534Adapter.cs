@@ -13,7 +13,7 @@ using Microsoft.Win32;
 
 namespace HOPE.Core.Hardware;
 
-public class J2534Adapter : IHardwareAdapter
+public class J2534Adapter : IHardwareAdapter, IBenchPowerSupply
 {
     private const int J1850VPW = 1;
     private const int J1850PWM = 2;
@@ -370,6 +370,27 @@ public class J2534Adapter : IHardwareAdapter
             return _passThruSetProgrammingVoltage(_deviceId, pinNumber, (int)(voltage * 1000)) == STATUS_NOERROR;
         }
         finally { _semaphore.Release(); }
+    }
+
+    // IBenchPowerSupply Implementation
+    public bool CanControlPower => false; // Standard J2534 usually only controls ignition/programming voltage, not main power.
+
+    public async Task<bool> SetIgnitionAsync(bool on, CancellationToken ct = default)
+    {
+        // For generic J2534, we treat "Ignition" as setting Programming Voltage on Pin 12 (Ford FEPS style)
+        // or potentially Pin 1 (Generic OEM). We default to Pin 12 as it's the most common "switched" pin available via API.
+        // Some specialized J2534 devices (like Scanmatik) map SetProgrammingVoltage to their Bench cable ignition pin.
+        
+        const int IGNITION_PIN = 12; 
+        double voltage = on ? 13.5 : 0.0; // 13.5V for "ON", 0V for "OFF"
+        
+        return await SetProgrammingVoltageAsync(IGNITION_PIN, voltage, ct);
+    }
+
+    public Task<bool> SetPowerAsync(bool on, CancellationToken ct = default)
+    {
+        // Not supported by standard J2534 API
+        return Task.FromResult(false);
     }
 
     private string GetErrorMessage(int errorCode)

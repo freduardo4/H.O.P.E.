@@ -63,6 +63,7 @@ public partial class App : PrismApplication
         containerRegistry.RegisterSingleton<HttpClient>();
         
         // Simulation & Digital Twin
+        containerRegistry.RegisterSingleton<IHiLService, HiLService>();
         containerRegistry.RegisterSingleton<IBeamNgService, BeamNgService>();
         containerRegistry.RegisterSingleton<SimulationOrchestrator>();
         
@@ -79,12 +80,15 @@ public partial class App : PrismApplication
         // AI & Report Services for Phase 4.3
         containerRegistry.RegisterSingleton<ILlmService, MockLlmService>();
         containerRegistry.RegisterSingleton<IReportService, GenerativeReportService>();
+        containerRegistry.RegisterSingleton<DiagnosticNarrativeService>();
+        containerRegistry.RegisterSingleton<ExplainableAnomalyService>();
         
         // Offline-First Sync Service for Phase 5.4
         containerRegistry.RegisterSingleton<ISyncService, SyncService>();
 
         // Cryptographic Audit Service for Phase 5.5
         containerRegistry.RegisterSingleton<IAuditService, AuditService>();
+        containerRegistry.RegisterSingleton<ICalibrationLedgerService, CalibrationLedgerService>();
 
         // RUL Predictor Service - remaining useful life prediction
         containerRegistry.RegisterSingleton<IRULPredictorService, RULPredictorService>();
@@ -101,7 +105,11 @@ public partial class App : PrismApplication
 
         // Register Calibration Repository & Backup
         var repoPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "HOPE", "CalibrationRepo");
-        containerRegistry.RegisterInstance(new CalibrationRepository(repoPath));
+        containerRegistry.RegisterSingleton<CalibrationRepository>(container => 
+        {
+            var ledger = container.Resolve<ICalibrationLedgerService>();
+            return new CalibrationRepository(repoPath, ledger);
+        });
         containerRegistry.RegisterSingleton<IBackupService>(() => new BackupService(repoPath));
 
         // Register Views for Navigation
@@ -117,6 +125,7 @@ public partial class App : PrismApplication
         containerRegistry.RegisterForNavigation<WikiFixView, WikiFixViewModel>();
         containerRegistry.RegisterForNavigation<LoginView, LoginViewModel>();
         containerRegistry.RegisterForNavigation<MarketplaceView, MarketplaceViewModel>();
+        containerRegistry.RegisterForNavigation<HiLSimulationView, HiLSimulationViewModel>();
     }
 
     protected override async void OnInitialized()

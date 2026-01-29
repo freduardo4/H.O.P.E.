@@ -136,43 +136,63 @@ Uses J2534 `READ_VBATT` IOCTL to monitor real-time battery voltage.
 
 ---
 
+
+### 1.4 Robust Connectivity & Hardware Versatility
+
+---
+
+#### [NEW] [BenchControlService.cs](file:///c:/Users/Test/Documents/H.O.P.E/src/desktop/HOPE.Core/Services/Hardware/BenchControlService.cs)
+
+Service to manage bench mode operations (Direct-to-pin, Scanmatik).
+
+```csharp
+public interface IBenchPowerSupply
+{
+    Task<bool> SetIgnitionAsync(bool on, CancellationToken ct = default);
+    Task<bool> SetPowerAsync(bool on, CancellationToken ct = default);
+}
+```
+
+- **Scanmatik Support**: Maps `SetIgnition` to J2534 `SetProgrammingVoltage` (Pin 12) or specific Aux pins.
+- **Safety**: Interlocks to prevent power-off during critical operations.
+
+---
+
+#### [NEW] [FlightRecorderService.cs](file:///c:/Users/Test/Documents/H.O.P.E/src/desktop/HOPE.Core/Services/Diagnostics/FlightRecorderService.cs)
+
+Circular buffer CAN logging ("Black Box") for post-incident analysis.
+
+- **Circular Buffer**: Stores last 10,000 frames in memory.
+- **Auto-Dump**: Writes to disk on `HardwareError` or manual trigger.
+- **Format**: PCAP or raw CSV export.
+
+---
+
 ## Phase 2: ECU Calibration & Tuning
 
 **Timeline: 8-12 weeks | Complexity: Very High**
 
-### 2.1 ECU Calibration Management [COMPLETED]
+
+### 2.1 ECU Calibration Management [IN PROGRESS]
 
 ---
 
-#### [NEW] [CalibrationRepository.cs](file:///c:/Users/Test/Documents/H.O.P.E/src/desktop/HOPE.Core/Services/ECU/CalibrationRepository.cs)
+#### [NEW] [MultiViewEditor.xaml](file:///c:/Users/Test/Documents/H.O.P.E/src/desktop/HOPE.Desktop/Views/MultiViewEditor.xaml)
 
-Git-like version control for ECU binaries:
+Integrated editor with multiple perspectives:
+- **3D Surface**: Existing Viewport3D enhanced with interaction.
+- **Tabular**: DataGrid for precise cell editing with heatmap coloring.
+- **2D Chart**: Line graph (Cross-section) for row/column analysis.
+- **Hex View**: Raw binary inspection using `WpfHexEditorControl`.
 
-```csharp
-public class CalibrationRepository
-{
-    public Task<CalibrationFile> ReadFromECUAsync(IHardwareAdapter adapter);
-    public Task<string> CommitAsync(CalibrationFile file, string message);
-    public Task<CalibrationDiff> DiffAsync(string commitA, string commitB);
-    public Task<bool> ValidateChecksumAsync(CalibrationFile file);
-    public Task RollbackAsync(string commitHash);
-}
-```
+#### [NEW] [AxisEditor.xaml](file:///c:/Users/Test/Documents/H.O.P.E/src/desktop/HOPE.Desktop/Views/AxisEditor.xaml)
 
----
+Dialog for rescaling map axes (e.g., changing RPM breakpoints).
+- Re-interpolates map data to fit new axis points (Linear/Cubic Spline).
+- Validates monotonicity of axis values.
 
-#### [NEW] [MapDiffViewer.xaml](file:///c:/Users/Test/Documents/H.O.P.E/src/desktop/HOPE.Desktop/Views/MapDiffViewer.xaml)
-
-3D surface plot comparison:
-- Side-by-side fuel/ignition map visualization
-- Color-coded deltas (green = lean, red = rich)
-- Export diff report as PDF
-
----
-
-#### [MODIFY] [ecu-calibrations.module.ts](file:///c:/Users/Test/Documents/H.O.P.E/src/backend/src/modules/ecu-calibrations)
-
-Add version history GraphQL queries and S3 storage integration.
+#### [MODIFY] [CalibrationRepository.cs](file:///c:/Users/Test/Documents/H.O.P.E/src/desktop/HOPE.Core/Services/ECU/CalibrationRepository.cs)
+- Add `InterpolateMap` utility for axis rescaling.
 
 ---
 
@@ -207,6 +227,47 @@ Multi-step flash protocol:
 │ 4. Verify each block before proceeding                          │
 │ 5. Exit session and hard reset ECU                              │
 └─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─ Recovery Mode (Brick Protection) ─────────────────────────────┐
+│ 1. Automated "Wake-up" sequence for non-responsive ECUs        │
+│ 2. Forced bootloader entry via TesterPresent (0x3E) flood      │
+│ 3. Checksum-bypass restore for corrupted flash headers         │
+└─────────────────────────────────────────────────────────────────┘
+
+---
+
+#### [NEW] [Formal Verification (TLA+)](file:///c:/Users/Test/Documents/H.O.P.E/docs/specs/SafeFlash.tla)
+
+Formal specification of the ECU Flash State Machine to ensure safety properties:
+- **Liveness**: Flash eventually completes or reverts to backup.
+- **Safety**: ECU never enters "Dead" state without recovery path.
+- **Transactional**: Writes are atomic per block.
+
+```tla
+--------------------------- MODULE SafeFlash ---------------------------
+EXTENDS Integers, Sequences, TLC
+
+VARIABLES 
+    ecu_state,      \* {Default, Programming, Bricked}
+    flash_progress, \* 0..100
+    backup_exists   \* BOOLEAN
+
+TypeOK == 
+    /\ ecu_state \in {"Default", "Programming", "Bricked"}
+    /\ flash_progress \in 0..100
+    /\ backup_exists \in BOOLEAN
+...
+```
+
+---
+
+#### [MODIFY] [SafeFlashService.cs](file:///c:/Users/Test/Documents/H.O.P.E/src/desktop/HOPE.Core/Services/ECU/SafeFlashService.cs)
+
+- Implement `TryEmergencyRecoveryAsync()`
+- Add `TesterPresent` background task during flash to keep session alive
+- Refactor `FlashAsync` into a discrete state machine for better observability and verification.
+
 ```
 
 ---
@@ -217,26 +278,27 @@ Multi-step flash protocol:
 
 #### [NEW] [genetic_optimizer.py](file:///c:/Users/Test/Documents/H.O.P.E/src/ai-training/scripts/genetic_optimizer.py)
 
-Genetic Algorithm for n-dimensional map optimization:
+Genetic Algorithm for n-dimensional map optimization (VE, Ign, AFR).
 
-```python
-class TuneOptimizer:
-    def __init__(self, target_afr: float = 14.7, population_size: int = 50):
-        self.population_size = population_size
-        self.target_afr = target_afr
-    
-    def evolve(self, base_map: np.ndarray, telemetry_log: pd.DataFrame) -> np.ndarray:
-        """Evolve VE table over N generations to minimize AFR error."""
-        pass
-    
-    def crossover(self, parent_a: np.ndarray, parent_b: np.ndarray) -> np.ndarray:
-        """Blend two maps using 2D crossover."""
-        pass
-    
-    def mutate(self, individual: np.ndarray, rate: float = 0.05) -> np.ndarray:
-        """Apply small random perturbations to map cells."""
-        pass
-```
+#### [NEW] [map_classifier.py](file:///c:/Users/Test/Documents/H.O.P.E/src/ai-training/hope_ai/tuning/map_classifier.py)
+
+AI Pattern Recognition to automatically label maps:
+- Features: Gradient analysis, statistical moments, value range mapping.
+- Categories: VE Volumetric Efficiency, Ignition Timing, Target AFR, Boost Target.
+
+#### [NEW] [tuning_auditor.py](file:///c:/Users/Test/Documents/H.O.P.E/src/ai-training/hope_ai/tuning/tuning_auditor.py)
+
+Logic Conflict Warnings (AI Pre-flight Safety):
+- **Smoothness Audit**: Detects non-linear spikes that cause fuel lean-out or knock.
+- **Limit Audit**: Cross-references AFR targets against load to prevent engine melt-down.
+- **Monotonicity Check**: Ensures ignition curves follow physical laws.
+
+#### [NEW] [rl_guided_optimizer.py](file:///c:/Users/Test/Documents/H.O.P.E/src/ai-training/hope_ai/tuning/rl_guided_optimizer.py)
+
+RL-Enhanced GA Hybrid:
+- Uses a Reinforcement Learning agent to dynamically adjust `mutation_rate` and `mutation_strength` based on population diversity and convergence speed.
+- Implements "Emissions Guardrail" as a mandatory policy constraint during evolution.
+
 
 ---
 
@@ -501,7 +563,7 @@ public class CarbonCreditService
 
 **Timeline: 6-8 weeks | Complexity: High**
 
-### 6.1 BeamNG.drive / Automation Integration
+### 6.1 BeamNG.drive / Automation Integration [COMPLETED]
 
 ---
 

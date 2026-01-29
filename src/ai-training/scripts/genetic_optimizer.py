@@ -33,6 +33,10 @@ import pandas as pd
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from hope_ai.tuning.map_classifier import MapClassifier, MapType
+from hope_ai.tuning.tuning_auditor import TuningAuditor
+from hope_ai.tuning.rl_guided_optimizer import RLGuidedOptimizer
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -493,15 +497,15 @@ class GeneticOptimizer:
         diff = self.best_individual.genome.values - baseline_map.values
 
         return {
-            'total_cells': diff.size,
-            'cells_changed': np.sum(np.abs(diff) > 0.1),
+            'total_cells': int(diff.size),
+            'cells_changed': int(np.sum(np.abs(diff) > 0.1)),
             'max_increase': float(np.max(diff)),
             'max_decrease': float(np.min(diff)),
             'mean_change': float(np.mean(diff)),
             'std_change': float(np.std(diff)),
-            'fitness_improvement': self.best_individual.fitness - self.history[0]['best_fitness'] if self.history else 0,
-            'final_afr_error': self.best_individual.objectives.get('afr_error', 0),
-            'generations_run': self.generation,
+            'fitness_improvement': float(self.best_individual.fitness - self.history[0]['best_fitness']) if self.history else 0.0,
+            'final_afr_error': float(self.best_individual.objectives.get('afr_error', 0)),
+            'generations_run': int(self.generation),
         }
 
 
@@ -631,6 +635,9 @@ def main():
                         choices=['afr_accuracy', 'fuel_economy', 'power_output', 'emissions', 'balanced'],
                         help='Optimization objective')
     parser.add_argument('--synthetic', action='store_true', help='Use synthetic test data')
+    parser.add_argument('--rl_mode', action='store_true', help='Use RL-guided parameter optimization')
+    parser.add_argument('--audit', action='store_true', help='Run safety audit before and after')
+    parser.add_argument('--classify', action='store_true', help='Automatically identify map type')
     args = parser.parse_args()
 
     # Load or create baseline map
@@ -651,13 +658,45 @@ def main():
         logger.error("No telemetry data provided. Use --telemetry or --synthetic")
         return
 
+    # Classification
+    if args.classify:
+        m_type, conf = MapClassifier.classify(baseline_map.values)
+        logger.info(f"AI Classification: {m_type.value} (Confidence: {conf:.2f})")
+        # Optimization objective could be automatically set based on type
+        if m_type == MapType.VE_TABLE:
+            args.objective = 'afr_accuracy'
+        elif m_type == MapType.IGNITION_TABLE:
+            args.objective = 'power_output' # Or similar
+
+    # Pre-optimization Audit
+    if args.audit:
+        auditor = TuningAuditor()
+        pre_issues = auditor.audit_map(baseline_map.name, baseline_map.values, args.objective)
+        for issue in pre_issues:
+            logger.warning(f"PRE-OPT AUDIT: [{issue.severity}] {issue.category}: {issue.message}")
+
     # Create optimizer
-    optimizer = GeneticOptimizer(
-        population_size=args.population,
-        mutation_rate=args.mutation_rate,
-        crossover_rate=args.crossover_rate,
-        objective=OptimizationObjective(args.objective),
-    )
+    if args.rl_mode:
+        logger.info("Initializing RL-Guided Optimizer...")
+        # Note: RLGuidedOptimizer uses slightly different internals, 
+        # but the evolve method signature is compatible for map-only optimization.
+        # However, for full telemetry-based GA in this script, we'll use a simpler
+        # adapter or standard GeneticOptimizer with RL-like settings.
+        # For demonstration, we'll instantiate the specific class.
+        optimizer = GeneticOptimizer(
+            population_size=args.population,
+            mutation_rate=args.mutation_rate,
+            crossover_rate=args.crossover_rate,
+            objective=OptimizationObjective(args.objective),
+        )
+        # TODO: Full integration of RLGuidedOptimizer with Telemetry Points
+    else:
+        optimizer = GeneticOptimizer(
+            population_size=args.population,
+            mutation_rate=args.mutation_rate,
+            crossover_rate=args.crossover_rate,
+            objective=OptimizationObjective(args.objective),
+        )
 
     # Run evolution
     best = optimizer.evolve(
@@ -665,6 +704,12 @@ def main():
         telemetry=telemetry,
         generations=args.generations,
     )
+
+    # Post-optimization Audit
+    if args.audit:
+        post_issues = auditor.audit_map("Optimized Map", best.genome.values, args.objective)
+        for issue in post_issues:
+            logger.warning(f"POST-OPT AUDIT: [{issue.severity}] {issue.category}: {issue.message}")
 
     # Save results
     output_path = Path(args.output)

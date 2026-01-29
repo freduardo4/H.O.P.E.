@@ -76,6 +76,7 @@ public class MockOBD2Service : IOBD2Service
             FocusMode.WOT => 20, // 50Hz
             FocusMode.Economy => 500, // 2Hz
             FocusMode.Diagnostic => 100, // 10Hz
+            FocusMode.Panic => 10, // 100Hz (extreme monitoring)
             _ => intervalMs
         };
 

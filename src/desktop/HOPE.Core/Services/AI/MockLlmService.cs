@@ -27,4 +27,10 @@ public class MockLlmService : ILlmService
 
         return Task.FromResult(summary);
     }
+
+    public Task<string> GenerateAsync(string prompt, CancellationToken ct = default)
+    {
+        string response = "Based on the provided telemetry, the engine is exhibiting sporadic ignition timing retard under high load, potentially due to poor fuel quality or a failing knock sensor.";
+        return Task.FromResult(response);
+    }
 }

@@ -317,6 +317,7 @@ HOPE/
 - [x] BeamNG.drive Integration
 - [x] Simulation Orchestrator
 - [x] Virtual Pre-Flight Validation
+- [x] Hardware-in-the-Loop (HiL) Testing Tier
 
 ### Phase 7: Cloud Ecosystem (HOPE Central)
 - [x] Next.js DXP Portal

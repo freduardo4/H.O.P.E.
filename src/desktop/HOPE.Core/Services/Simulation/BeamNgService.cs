@@ -11,14 +11,17 @@ namespace HOPE.Core.Services.Simulation;
 public class BeamNgService : IBeamNgService
 {
     private readonly ILogger<BeamNgService> _logger;
+    private readonly IHiLService? _hilService;
     private readonly Subject<BeamNgTelemetry> _telemetrySubject = new();
     private UdpClient? _udpClient;
     private CancellationTokenSource? _cts;
     private bool _isConnected;
+    private readonly Random _random = new();
 
-    public BeamNgService(ILogger<BeamNgService> logger)
+    public BeamNgService(ILogger<BeamNgService> logger, IHiLService? hilService = null)
     {
         _logger = logger;
+        _hilService = hilService;
     }
 
     public IObservable<BeamNgTelemetry> TelemetryStream => _telemetrySubject.AsObservable();
@@ -55,6 +58,19 @@ public class BeamNgService : IBeamNgService
                 if (result.Buffer.Length > 0)
                 {
                     var telemetry = ParseTelemetry(result.Buffer);
+                    
+                    if (_hilService != null)
+                    {
+                        // Handle PacketLoss fault
+                        var packetLossFault = _hilService.ActiveFaults.FirstOrDefault(f => f.Type == FaultType.PacketLoss);
+                        if (packetLossFault != null && _random.NextDouble() < packetLossFault.Intensity)
+                        {
+                            continue; // Drop packet
+                        }
+
+                        telemetry = _hilService.ProcessTelemetry(telemetry);
+                    }
+
                     _telemetrySubject.OnNext(telemetry);
                 }
             }

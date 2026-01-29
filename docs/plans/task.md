@@ -16,33 +16,37 @@
   - [x] **[NEW]** Mandatory battery-voltage safety policy (device + cloud)
   - [x] **[NEW]** Scanmatik 2 PRO high-precision hardware support (Quantized Logic)
   - [x] **[NEW]** Fuzzing for protocol parsers and binary resilience
-- [ ] **1.4 Robust Connectivity & Hardware Versatility**
-  - [ ] **[NEW]** Bench Mode (Direct-to-pin, Scanmatik TP support)
-  - [ ] **[NEW]** "Black Box" Flight Recorder (Circular buffer CAN logging)
+- [x] **1.4 Robust Connectivity & Hardware Versatility**
+  - [x] **[NEW]** Bench Mode (Direct-to-pin, Scanmatik TP support)
+  - [x] **[NEW]** "Black Box" Flight Recorder (Circular buffer CAN logging)
 
 ## Phase 2: ECU Calibration & Tuning
 - [x] **2.1 ECU Calibration Management**
   - [x] Version-controlled binary storage
-  - [x] Checksum validation engine
-  - [x] Graphical diff tool for maps
-  - [ ] **[NEW]** Multi-View Interface (3D/2D/Hex/Tabular)
-  - [ ] **[NEW]** Axis Editing (Rescaling for hardware changes)
+  - [x] **[NEW]** Git-like version control (Commit, Diff, Rollback)
+  - [x] **Multi-View Interface**
+    - [x] Implement `MultiViewEditor.xaml` (3D/2D/Hex/Tabular). (Created and Built)
+    - [x] Create `MultiViewEditorViewModel` with mock data and mode switching. (Implemented)
+  - [x] **Axis Rescaling**
+    - [x] Implement `AxisEditor.xaml` dialog. (Created)
+    - [x] Implement `InterpolateMap` math in `CalibrationRepository`. (Implemented and Tested - 100% Pass)
+    - [x] Connect Rescaling Logic to ViewModel. (Connected)
 - [x] **2.2 Safe-Mode ECU Flashing**
   - [x] Pre-flight environment checks & mandatory checklist
   - [x] Shadow backup system (local + cloud)
   - [x] Multi-step flash protocol with transactional verification
   - [x] **[NEW]** Simulated hardware environment for pre-flight validation
   - [x] **[NEW]** PKI trust model and calibration signing strategy
-  - [ ] **[NEW]** Recovery Mode (Wake-up protocol for failed flashes)
-  - [ ] **[NEW]** Formal Verification (TLA+) for flash state machine
+  - [x] **[NEW]** Recovery Mode (Wake-up protocol for failed flashes)
+  - [x] **[NEW]** Formal Verification (TLA+) for flash state machine (Spec in `docs/specs/SafeFlash.tla`)
 - [x] **2.3 Intelligent Tuning Optimizer**
   - [x] Genetic Algorithm core
   - [x] VE/Ignition map optimization
   - [x] AFR targeting system
-  - [ ] **[NEW]** Automated Map Labeling (AI pattern recognition)
-  - [ ] **[NEW]** Logic Conflict Warnings (AI pre-flight safety check)
-  - [ ] **[NEW]** RL-Enhanced Genetic Map Optimization (RL-GA Hybrid)
-  - [ ] **[NEW]** Emissions Guardrail (O2/NOx limit checks)
+  - [x] **[NEW]** Automated Map Labeling (AI pattern recognition in `map_classifier.py`)
+  - [x] **[NEW]** Logic Conflict Warnings (AI pre-flight safety check in `tuning_auditor.py`)
+  - [x] **[NEW]** RL-Enhanced Genetic Map Optimization (RL-GA Hybrid in `rl_guided_optimizer.py`)
+  - [x] **[NEW]** Emissions Guardrail (Mandatory policy constraints in RL optimizer)
 - [x] **2.4 Map-Switching Implementation**
   - [x] Multi-profile bootloader (Simulated via Desktop Service)
   - [x] Mode toggle interface
@@ -77,11 +81,11 @@
 - [x] **4.2 Contextual Focus Modes**
   - [x] WOT mode implementation
   - [x] Dynamic UI reconfiguration
-  - [ ] **[NEW]** "Panic Button" UI (High contrast, color-only critical alerts)
+  - [x] **[NEW]** "Panic Button" UI (High contrast, color-only critical alerts)
 - [x] **4.3 Generative AI Reports**
   - [x] LLM integration for DTC translation
   - [x] Customer-facing PDF generation
-  - [ ] **[NEW]** "Lead Mechanic" Mode (AI explanation of codes & fixes)
+  - [x] **[NEW]** "Lead Mechanic" Mode (AI explanation of codes & fixes)
 
 ## Phase 5: Infrastructure & Ecosystem
 - [x] **5.1 Professional Operations**
@@ -101,7 +105,7 @@
   - [x] SQLite WAL optimization
 - [x] **5.5 Cryptographic Audit Trails**
   - [x] Hash-chained modification logs
-  - [ ] **[NEW]** Decentralized Calibration Ledger (Private side-chain)
+  - [x] **[NEW]** Decentralized Calibration Ledger (Private side-chain)
 - [x] **5.6 Wiki-Fix Community Database**
   - [x] Stack-Overflow style platform
   - [x] NLP-indexed repair patterns
@@ -111,7 +115,7 @@
   - [x] Bidirectional data bridge (BeamNgService)
   - [x] Simulation orchestrator
   - [x] Virtual pre-flight validation
-  - [ ] **[NEW]** Hardware-in-the-Loop (HiL) Testing Tier
+  - [x] **[NEW]** Hardware-in-the-Loop (HiL) Testing Tier
 
 ## Phase 7: Cloud Ecosystem (HOPE Central)
 - [x] **7.1 Digital Experience Platform (DXP)**

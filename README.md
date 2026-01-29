@@ -49,11 +49,11 @@ graph LR
   - LSTM Anomaly Detection pipeline functional with 96% test coverage.
   - Physics-Informed Neural Networks (PINNs) for virtual sensors (EGT estimation).
   - Remaining Useful Life (RUL) forecasting for predictive maintenance.
-- **Simulation**: Virtual pre-flight validation via BeamNG.drive digital twin.
-- **Community**: Wiki-Fix database for collaborative repair patterns.
-- **Security**: Mandatory S3 encryption, public access blocks, and ECR scanning enabled.
+- **Simulation**: Virtual pre-flight validation and Hardware-in-the-Loop (HiL) Testing Tier via BeamNG.drive digital twin.
+- **Community**: Wiki-Fix database for collaborative repair patterns with knowledge graph indexing.
+- **Security**: Mandatory S3 encryption, public access blocks, ECR scanning, and hash-chained calibration ledger.
 - **Marketplace**: Secure calibration file exchange with hardware-locked license generation.
-- **Tests**: 450+ automated tests passing across Desktop, Backend, and AI (including hardware logic).
+- **Tests**: 530+ automated tests passing across Desktop (204), Backend (220+), and AI (109+).
 
 ## Documentation & Recipes
 

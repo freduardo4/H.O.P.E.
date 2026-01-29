@@ -17,6 +17,7 @@ public class CalibrationRepository : IDisposable
     private readonly string _refsPath;
     private readonly string _stagingPath;
     private readonly SemaphoreSlim _lock = new(1, 1);
+    private readonly Security.ICalibrationLedgerService? _ledgerService;
 
     private const string HEAD_FILE = "HEAD";
     private const string INDEX_FILE = "index.json";
@@ -32,12 +33,13 @@ public class CalibrationRepository : IDisposable
     /// </summary>
     public string RepositoryPath => _repoPath;
 
-    public CalibrationRepository(string repositoryPath)
+    public CalibrationRepository(string repositoryPath, Security.ICalibrationLedgerService? ledgerService = null)
     {
         _repoPath = repositoryPath ?? throw new ArgumentNullException(nameof(repositoryPath));
         _objectsPath = Path.Combine(_repoPath, "objects");
         _refsPath = Path.Combine(_repoPath, "refs");
         _stagingPath = Path.Combine(_repoPath, "staging");
+        _ledgerService = ledgerService;
     }
 
     /// <summary>
@@ -280,6 +282,15 @@ public class CalibrationRepository : IDisposable
 
             // Update HEAD
             await UpdateHeadAsync(commitHash, ct);
+
+            // Record to Ledger if service is available
+            if (_ledgerService != null)
+            {
+                // Consolidate staged data for ledger (simple implementation: use tree hash as proxy or primary file)
+                // For a true ledger, we might want to record each file, but here we'll record the commit tree
+                var treeContent = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(treeEntries));
+                await _ledgerService.CommmitChangeAsync(Guid.Parse(stagedEntries.First().EcuId), treeContent, author, message);
+            }
 
             // Clear staging
             foreach (var entry in stagedEntries)
@@ -662,6 +673,48 @@ public class CalibrationRepository : IDisposable
         using var sha = SHA256.Create();
         var hash = sha.ComputeHash(data);
         return Convert.ToHexString(hash).ToLower();
+    }
+
+    /// <summary>
+    /// Linearly interpolate map values to a new axis scale.
+    /// </summary>
+    public static double[] InterpolateMap(double[] oldAxis, double[] oldValues, double[] newAxis)
+    {
+        if (oldAxis.Length != oldValues.Length)
+            throw new ArgumentException("Old axis and values must have same length");
+
+        var result = new double[newAxis.Length];
+
+        for (int i = 0; i < newAxis.Length; i++)
+        {
+            double x = newAxis[i];
+            
+            // Extrapolation / Boundary check
+            if (x <= oldAxis[0])
+            {
+                result[i] = oldValues[0];
+                continue;
+            }
+            if (x >= oldAxis[^1])
+            {
+                result[i] = oldValues[^1];
+                continue;
+            }
+
+            // Find segment
+            // We assume monotonic increasing axis for simplicity
+            for (int j = 0; j < oldAxis.Length - 1; j++)
+            {
+               if (x >= oldAxis[j] && x < oldAxis[j + 1])
+               {
+                   double t = (x - oldAxis[j]) / (oldAxis[j + 1] - oldAxis[j]);
+                   result[i] = oldValues[j] + t * (oldValues[j + 1] - oldValues[j]);
+                   break;
+               }
+            }
+        }
+
+        return result;
     }
 
     #endregion
