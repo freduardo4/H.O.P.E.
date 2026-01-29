@@ -61,14 +61,15 @@ HOPE bridges the gap between traditional scan tools and cutting-edge machine lea
 | **Physics-Informed Neural Networks (PINNs)** | Virtual sensors estimate EGT and other non-instrumented metrics |
 | **Predictive Maintenance (RUL)** | Remaining Useful Life forecasting for catalysts, O2 sensors, turbos |
 | **AI Copilots** | "Tuning Copilot" (RAG) for diagnostic Q&A and "Lead Mechanic" for generative repair reports. |
+| **MLOps & Maintainability** | Unified `hope_ai_cli.py` entrypoint, DVC-ready dataset versioning, and standardized `/configs/` for reproducible training cycles. Integrated `TuneOptimizer` for array-based CLI/Backend integration. |
 | **Generative AI Reports** | LLM translates DTCs and performance data into customer-friendly PDFs |
 
 ### Infrastructure & Operations
 | Feature | Description |
 |---------|-------------|
 | **Enterprise IaC** | Multi-environment AWS orchestration via modular, security-hardened Terraform |
-| **Observability Stack** | Structured logging, distributed tracing (OpenTelemetry), and Sentry monitoring |
-| **Release Automation** | Automated CI/CD release workflow with MSIX application packaging |
+| **Observability Stack** | Structured logging (Serilog), distributed tracing (OpenTelemetry), and Sentry monitoring for real-time crash reporting. |
+| **Release Automation** | Automated CI/CD release workflow with MSIX application packaging and Squirrel for seamless auto-updates. |
 | **Security Compliance** | Automated IaC auditing (tfsec) and public-access mitigation policies |
 
 ### User Experience (HMI)
@@ -78,6 +79,7 @@ HOPE bridges the gap between traditional scan tools and cutting-edge machine lea
 | **Contextual Focus Modes** | Dynamic UI: WOT mode shows only AFR/Knock; Cruise mode shows economy |
 | **Dark Mode / Glassmorphism** | Modern, high-contrast interface optimized for shop environments |
 | **Mobile Companion App** | (Planned) Customer-facing iOS/Android app for live vehicle status |
+| **Advanced DTC Management** | Real-time filtering, search, and "Lead Mechanic" AI implementation for rapid diagnostics. |
 
 ### Simulation & Digital Twin
 | Feature | Description |

@@ -42,8 +42,8 @@ graph LR
 ## Project Status
 
 - [x] **Status**: ✅ All core AI and diagnostics components verified.
-- **Diagnostics**: UDS/KWP2000 protocol handlers implemented and tested.
-- **Tuning**: Graphical map diff tool for calibration comparisons.
+- **Diagnostics**: UDS/KWP2000 protocol handlers, Real-time DTC Filtering, and "Lead Mechanic" AI insights.
+- **Tuning**: Graphical map diff tool and "Hit Tracing" Overlay Comparison for calibration analysis.
 - **Safety**: Voltage-aware HAL with specific support for Scanmatik 2 PRO quantized reporting.
 - **AI Analytics**:
   - LSTM Anomaly Detection pipeline functional with 96% test coverage.
@@ -53,7 +53,7 @@ graph LR
 - **Community**: Wiki-Fix database for collaborative repair patterns with knowledge graph indexing.
 - **Security**: Mandatory S3 encryption, public access blocks, ECR scanning, and hash-chained calibration ledger.
 - **Marketplace**: Secure calibration file exchange with hardware-locked license generation.
-- **Tests**: 530+ automated tests passing across Desktop (204), Backend (220+), and AI (109+).
+- **Tests**: 543+ automated tests passing across Desktop (220), Backend (219), and AI (104+).
 
 ## Documentation & Recipes
 

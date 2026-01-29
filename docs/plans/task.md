@@ -78,15 +78,15 @@
 - [x] **3.4 Predictive Maintenance (RUL)**
   - [x] Time-series forecasting
   - [x] Component degradation tracking
-- [ ] **3.5 AI/ML Ops & Maintainability**
-  - [ ] **[NEW]** Centralized Python dependencies (`requirements.txt`)
-  - [ ] **[NEW]** Standardized Experiment Configs (`/configs/` folder)
-  - [ ] **[NEW]** Single entrypoint CLI for Train/Eval/Export
-  - [ ] **[NEW]** Model regression tests (ONNX fixture, Accuracy thresholds)
-  - [ ] **[NEW]** Model versioning (MLflow/DVC) & Model Cards
-  - [ ] **[NEW]** Explainability (SHAP/LIME) & Feedback Loop
-  - [ ] **[NEW]** Documentation: AI Pipeline (`docs/ai-pipeline.md`)
-  - [ ] **[NEW]** Mock Python Service for Backend Tuning Tests
+- [x] **3.5 AI/ML Ops & Maintainability**
+  - [x] **[NEW]** Centralized Python dependencies (`requirements.txt`)
+  - [x] **[NEW]** Standardized Experiment Configs (`/configs/` folder)
+  - [x] **[NEW]** Single entrypoint CLI for Train/Eval/Export
+  - [x] **[NEW]** Model regression tests (ONNX fixture, Accuracy thresholds)
+  - [x] **[NEW]** Model versioning (MLflow/DVC) & Model Cards
+  - [x] **[NEW]** Explainability (SHAP/LIME) & Feedback Loop
+  - [x] **[NEW]** Documentation: AI Pipeline (`docs/ai-pipeline.md`)
+  - [x] **[NEW]** Mock Python Service for Backend Tuning Tests
 
 ## Phase 4: User Experience (HMI)
 - [x] **4.1 Premium Onboarding**
@@ -101,13 +101,13 @@
   - [x] LLM integration for DTC translation
   - [x] Customer-facing PDF generation
   - [x] **[NEW]** "Lead Mechanic" Mode (AI explanation of codes & fixes)
-- [ ] **4.4 Desktop UI/UX & Robustness**
-  - [ ] **[NEW]** Refined Map Editors & DTC Views (Filtering/Search)
-  - [ ] **[NEW]** Graceful Error Handling (Correlation IDs, offline surfaces)
-  - [ ] **[NEW]** MVVM Improvements (Centralized Navigation via Prism)
-  - [ ] **[NEW]** Desktop Auto-Updater (Squirrel)
-  - [ ] **[NEW]** Crash Reporting (Sentry)
-  - [ ] **[NEW]** UI/E2E Tests (Appium)
+- [x] **4.4 Desktop UI/UX & Robustness**
+  - [x] **[NEW]** Refined Map Editors & DTC Views (Filtering/Search)
+  - [x] **[NEW]** Graceful Error Handling (Correlation IDs, offline surfaces)
+  - [x] **[NEW]** MVVM Improvements (Centralized Navigation via Prism)
+  - [x] **[NEW]** Desktop Auto-Updater (Squirrel)
+  - [x] **[NEW]** Crash Reporting (Sentry)
+  - [x] **[NEW]** UI/E2E Tests (Appium)
   - [x] **[NEW]** Refactor ViewModels (MultiViewEditor/Marketplace) with DI & Interfaces
   - [x] **[NEW]** Structured Logging (ILogger) & Review Catch Blocks
 
