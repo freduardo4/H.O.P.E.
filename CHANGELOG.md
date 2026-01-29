@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remaining Useful Life (RUL) forecasting system with modular architecture.
 - Calibration Marketplace with secure encrypted file exchange.
 - License generation and hardware-locking system for ECU files.
+- Hardware-in-the-Loop (HiL) Testing Tier with fault injection engine.
+- AI-driven "Lead Mechanic" mode for plain-English diagnostic narratives.
+- Full Project Verification Sweep (530+ test cases validated).
 
 ### Changed
 - Moved original README to `docs/README_full.md`.

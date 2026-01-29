@@ -321,6 +321,13 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
                 IsEconomyVisible = false;
                 IsDiagnosticVisible = true;
                 break;
+            case FocusMode.Panic:
+                AccentColor = "#FF0000"; // Pure Red
+                DashboardTitle = "CRITICAL ALERT: ENGINE SAFETY";
+                IsPerformanceVisible = true;
+                IsEconomyVisible = false;
+                IsDiagnosticVisible = true;
+                break;
             default:
                 AccentColor = "#00FF00"; // Standard Green
                 DashboardTitle = "H.O.P.E. DASHBOARD";
@@ -608,6 +615,12 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
 
                 // Auto-expand panel on anomaly
                 IsAnomalyPanelExpanded = true;
+
+                // Auto-trigger Panic Mode for critical anomalies
+                if (result.Score > 0.98 && CurrentFocusMode != FocusMode.Panic)
+                {
+                    CurrentFocusMode = FocusMode.Panic;
+                }
             }
             else
             {

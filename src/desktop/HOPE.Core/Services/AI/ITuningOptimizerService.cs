@@ -187,6 +187,21 @@ public class OptimizationOptions
     /// Target fitness to stop early (0.0 to 1.0)
     /// </summary>
     public double TargetFitness { get; set; } = 0.95;
+
+    /// <summary>
+    /// Whether to use RL-guided parameter optimization
+    /// </summary>
+    public bool UseRlGuided { get; set; } = false;
+
+    /// <summary>
+    /// Whether to run safety audit before and after optimization
+    /// </summary>
+    public bool RunSafetyAudit { get; set; } = true;
+
+    /// <summary>
+    /// Whether to automatically identify map type
+    /// </summary>
+    public bool AutoClassifyMap { get; set; } = true;
 }
 
 /// <summary>

@@ -35,18 +35,22 @@ describe('TuningService', () => {
             }
         };
 
-        const result = await service.optimizeMap(request);
+        try {
+            const result = await service.optimizeMap(request);
+            expect(result).toBeDefined();
+            expect(result.status).toBe('success');
+            expect(result.optimized_map).toBeDefined();
+            expect(result.fitness_history).toBeDefined();
+            expect(result.optimized_map.length).toBe(2);
 
-        expect(result).toBeDefined();
-        expect(result.status).toBe('success');
-        expect(result.optimized_map).toBeDefined();
-        expect(result.fitness_history).toBeDefined();
-        expect(result.optimized_map.length).toBe(2);
-
-        // Check if it moved towards 10 (it might not reach it in 5 gens, but should change)
-        const centerVal = result.optimized_map[0][0];
-        console.log('Optimized value:', centerVal);
-        // It should defineitaly be different from 5
-        expect(centerVal).not.toBe(5);
+            // Check if it moved towards 10 (it might not reach it in 5 gens, but should change)
+            const centerVal = result.optimized_map[0][0];
+            console.log('Optimized value:', centerVal);
+            // It should defineitaly be different from 5
+            expect(centerVal).not.toBe(5);
+        } catch (e) {
+            console.error('Optimization test failed:', e);
+            throw e;
+        }
     }, 10000); // increase timeout for python startup
 });

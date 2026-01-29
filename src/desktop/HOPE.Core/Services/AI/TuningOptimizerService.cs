@@ -103,6 +103,10 @@ public class TuningOptimizerService : ITuningOptimizerService
                 args.Append($" --mutation_rate {options.MutationRate.ToString(CultureInfo.InvariantCulture)}");
                 args.Append($" --crossover_rate {options.CrossoverRate.ToString(CultureInfo.InvariantCulture)}");
                 args.Append($" --objective {ObjectiveToString(options.Objective)}");
+                
+                if (options.UseRlGuided) args.Append(" --rl_mode");
+                if (options.RunSafetyAudit) args.Append(" --audit");
+                if (options.AutoClassifyMap) args.Append(" --classify");
 
                 _logger?.LogInformation("Starting genetic optimizer: python {Args}", args);
 

@@ -1,0 +1,26 @@
+{
+    "current_map": [
+        [
+            5,
+            5
+        ],
+        [
+            5,
+            5
+        ]
+    ],
+    "target_map": [
+        [
+            10,
+            10
+        ],
+        [
+            10,
+            10
+        ]
+    ],
+    "config": {
+        "generations": 1,
+        "population_size": 2
+    }
+}

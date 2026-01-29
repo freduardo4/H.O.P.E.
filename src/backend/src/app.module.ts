@@ -19,6 +19,7 @@ import { InfraModule } from './modules/infra/infra.module';
 import { WikiFixModule } from './modules/wiki-fix/wiki-fix.module';
 import { CmsModule } from './modules/cms/cms.module';
 import { MarketplaceModule } from './modules/marketplace/marketplace.module';
+import { AssetsModule } from './modules/assets/assets.module';
 import { getDatabaseConfig } from './config';
 
 @Module({
@@ -53,6 +54,7 @@ import { getDatabaseConfig } from './config';
         WikiFixModule,
         CmsModule,
         MarketplaceModule,
+        AssetsModule,
     ],
     controllers: [],
     providers: [],

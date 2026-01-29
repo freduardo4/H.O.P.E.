@@ -23,5 +23,10 @@ public enum FocusMode
     /// <summary>
     /// Deep diagnostic mode for sensor-level inspection.
     /// </summary>
-    Diagnostic
+    Diagnostic,
+
+    /// <summary>
+    /// High-contrast Panic mode for critical alerts.
+    /// </summary>
+    Panic
 }

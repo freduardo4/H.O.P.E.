@@ -12,8 +12,14 @@ export class TuningService {
 
     async optimizeMap(request: OptimizeRequestDto): Promise<OptimizeResponseDto> {
         return new Promise((resolve, reject) => {
-            // Use 'python' command
-            const pythonProcess = spawn('python', [this.pythonScriptPath]);
+            // Use venv python if possible, relative to this service file
+            // Service is in src/modules/tuning, venv is in src/ai-training/venv
+            const venvPython = path.resolve(__dirname, '../../../../ai-training/venv/Scripts/python.exe');
+            const pythonCommand = require('fs').existsSync(venvPython) ? venvPython : 'python';
+
+            this.logger.log(`Using python: ${pythonCommand} for script: ${this.pythonScriptPath}`);
+
+            const pythonProcess = spawn(pythonCommand, [this.pythonScriptPath]);
 
             let resultData = '';
             let errorData = '';

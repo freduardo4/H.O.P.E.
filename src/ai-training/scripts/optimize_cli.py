@@ -14,8 +14,8 @@ def main():
         # Read input JSON from stdin
         input_data = json.load(sys.stdin)
         
-        current_map = np.array(input_data['current_map'])
-        target_map = np.array(input_data['target_map'])
+        current_map = np.array(input_data['current_map'], dtype=np.float64)
+        target_map = np.array(input_data['target_map'], dtype=np.float64)
         
         # If mask is not provided, assume full optimization (ones)
         if 'datalog_mask' in input_data and input_data['datalog_mask']:

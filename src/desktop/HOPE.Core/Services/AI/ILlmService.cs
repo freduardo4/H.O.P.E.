@@ -21,4 +21,9 @@ public interface ILlmService
     /// <param name="session">The session to summarize</param>
     /// <returns>Markdown-formatted summary</returns>
     Task<string> SummarizeSessionAsync(DiagnosticSession session);
+
+    /// <summary>
+    /// General purpose LLM prompt execution.
+    /// </summary>
+    Task<string> GenerateAsync(string prompt, CancellationToken ct = default);
 }

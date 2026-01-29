@@ -2,14 +2,14 @@ import { NodeSDK } from '@opentelemetry/sdk-node';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
 
-// Using require to bypass persistent TS versioning/type-only conflicts with @opentelemetry/resources
-const { Resource } = require('@opentelemetry/resources');
+import { Resource } from '@opentelemetry/resources';
 
 const traceExporter = new OTLPTraceExporter({
     url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4317',
 });
 
 export const otraceSDK = new NodeSDK({
+    // @ts-ignore
     resource: new Resource({
         'service.name': 'hope-backend',
         'deployment.environment': process.env.NODE_ENV || 'development',

@@ -1,0 +1,57 @@
+{
+  "improvement_report": {
+    "total_cells": 130,
+    "cells_changed": 126,
+    "max_increase": 6.174268952948452,
+    "max_decrease": -5.203240737908757,
+    "mean_change": 0.6867759403198475,
+    "std_change": 2.1811023802751315,
+    "fitness_improvement": 0.009827615823357339,
+    "final_afr_error": 1.3495505542072321,
+    "generations_run": 5
+  },
+  "evolution_history": [
+    {
+      "generation": 1,
+      "best_fitness": 0.34462058704128723,
+      "mean_fitness": 0.33872168871508107,
+      "best_afr_error": 1.3790365871311463
+    },
+    {
+      "generation": 2,
+      "best_fitness": 0.34806660799382516,
+      "mean_fitness": 0.34165531340877386,
+      "best_afr_error": 1.3685807674698136
+    },
+    {
+      "generation": 3,
+      "best_fitness": 0.3523669914613758,
+      "mean_fitness": 0.3442693199805642,
+      "best_afr_error": 1.355710247101293
+    },
+    {
+      "generation": 4,
+      "best_fitness": 0.35429208199282397,
+      "mean_fitness": 0.34767829820153906,
+      "best_afr_error": 1.3500110795085016
+    },
+    {
+      "generation": 5,
+      "best_fitness": 0.35444820286464457,
+      "mean_fitness": 0.3502153206715365,
+      "best_afr_error": 1.3495505542072321
+    }
+  ],
+  "final_objectives": {
+    "afr_error": 1.3495505542072321,
+    "fuel_consumption": 15.207786229938735,
+    "power_estimate": 177327.418655179
+  },
+  "parameters": {
+    "generations": 5,
+    "population_size": 50,
+    "mutation_rate": 0.1,
+    "crossover_rate": 0.7,
+    "objective": "afr_accuracy"
+  }
+}

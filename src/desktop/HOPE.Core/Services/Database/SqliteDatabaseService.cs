@@ -76,6 +76,19 @@ public class SqliteDatabaseService : IDatabaseService
                 RecordHash TEXT
             )";
 
+        var createCalibrationLedgerTable = @"
+            CREATE TABLE IF NOT EXISTS CalibrationLedger (
+                BlockHeight INTEGER PRIMARY KEY,
+                Timestamp DATETIME,
+                CalibrationId GUID,
+                Author TEXT,
+                ChangeSummary TEXT,
+                BinaryHash TEXT,
+                PreviousBlockHash TEXT,
+                BlockHash TEXT,
+                DigitalSignature TEXT
+            )";
+
         using var command = connection.CreateCommand();
         command.CommandText = createSessionsTable;
         await command.ExecuteNonQueryAsync();
@@ -84,6 +97,9 @@ public class SqliteDatabaseService : IDatabaseService
         await command.ExecuteNonQueryAsync();
 
         command.CommandText = createAuditLogsTable;
+        await command.ExecuteNonQueryAsync();
+
+        command.CommandText = createCalibrationLedgerTable;
         await command.ExecuteNonQueryAsync();
     }
 
@@ -316,6 +332,86 @@ public class SqliteDatabaseService : IDatabaseService
                 DataHash = reader.GetString(5),
                 PreviousHash = reader.GetString(6),
                 RecordHash = reader.GetString(7)
+            };
+        }
+        return null;
+    }
+
+    // --- Calibration Ledger Implementation ---
+
+    public async Task<IEnumerable<Security.LedgerEntry>> GetLedgerEntriesAsync()
+    {
+        var entries = new List<Security.LedgerEntry>();
+        using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT * FROM CalibrationLedger ORDER BY BlockHeight ASC";
+
+        using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            entries.Add(new Security.LedgerEntry
+            {
+                BlockHeight = reader.GetInt64(0),
+                Timestamp = reader.GetDateTime(1),
+                CalibrationId = reader.GetGuid(2),
+                Author = reader.GetString(3),
+                ChangeSummary = reader.GetString(4),
+                BinaryHash = reader.GetString(5),
+                PreviousBlockHash = reader.GetString(6),
+                BlockHash = reader.GetString(7),
+                DigitalSignature = reader.GetString(8)
+            });
+        }
+        return entries;
+    }
+
+    public async Task AddLedgerEntryAsync(Security.LedgerEntry entry)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+            INSERT INTO CalibrationLedger (BlockHeight, Timestamp, CalibrationId, Author, ChangeSummary, BinaryHash, PreviousBlockHash, BlockHash, DigitalSignature)
+            VALUES ($height, $time, $cid, $author, $summary, $bhash, $phash, $rhash, $sig)";
+
+        command.Parameters.AddWithValue("$height", entry.BlockHeight);
+        command.Parameters.AddWithValue("$time", entry.Timestamp);
+        command.Parameters.AddWithValue("$cid", entry.CalibrationId);
+        command.Parameters.AddWithValue("$author", entry.Author);
+        command.Parameters.AddWithValue("$summary", entry.ChangeSummary);
+        command.Parameters.AddWithValue("$bhash", entry.BinaryHash);
+        command.Parameters.AddWithValue("$phash", entry.PreviousBlockHash);
+        command.Parameters.AddWithValue("$rhash", entry.BlockHash);
+        command.Parameters.AddWithValue("$sig", entry.DigitalSignature);
+
+        await command.ExecuteNonQueryAsync();
+    }
+
+    public async Task<Security.LedgerEntry?> GetLastLedgerEntryAsync()
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT * FROM CalibrationLedger ORDER BY BlockHeight DESC LIMIT 1";
+
+        using var reader = await command.ExecuteReaderAsync();
+        if (await reader.ReadAsync())
+        {
+            return new Security.LedgerEntry
+            {
+                BlockHeight = reader.GetInt64(0),
+                Timestamp = reader.GetDateTime(1),
+                CalibrationId = reader.GetGuid(2),
+                Author = reader.GetString(3),
+                ChangeSummary = reader.GetString(4),
+                BinaryHash = reader.GetString(5),
+                PreviousBlockHash = reader.GetString(6),
+                BlockHash = reader.GetString(7),
+                DigitalSignature = reader.GetString(8)
             };
         }
         return null;

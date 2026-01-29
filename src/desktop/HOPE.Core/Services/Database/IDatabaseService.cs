@@ -17,4 +17,9 @@ public interface IDatabaseService
     Task<List<AuditRecord>> GetAuditLogsAsync();
     Task AddAuditRecordAsync(AuditRecord record);
     Task<AuditRecord?> GetLastAuditRecordAsync();
+
+    // Calibration Ledger
+    Task<IEnumerable<Security.LedgerEntry>> GetLedgerEntriesAsync();
+    Task AddLedgerEntryAsync(Security.LedgerEntry entry);
+    Task<Security.LedgerEntry?> GetLastLedgerEntryAsync();
 }
