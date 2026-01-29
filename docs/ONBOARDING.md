@@ -35,9 +35,10 @@ cd H.O.P.E
 
 ## 4. Next Steps
 
-- **Tuning**: Learn how to use the [Map Diff Tool](docs/features/MAP_DIFF.md).
+- **Tuning**: Learn how to use the [Map Diff Tool](docs/features/MAP_DIFF.md) and [Calibration Ledger](docs/security/signing.md).
+- **Simulation**: Conduct virtual pre-flight tests using the [HiL Testing Tier](docs/plans/walkthrough_hiL.md).
+- **Quality**: Review the [Verification Report](docs/plans/walkthrough_verification.md) for current system stability.
 - **AI Training**: Check the [MLOps Guide](docs/ml/MLOPS.md) to retrain models on your own telemetry.
-- **Compliance**: Review the [Legal Framework](docs/legal/EULA.md) before performing any ECU flashing operations.
 
 ---
 *For support, visit our [Wiki-Fix Community](docs/community/WIKI.md).*

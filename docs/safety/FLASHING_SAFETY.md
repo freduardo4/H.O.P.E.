@@ -15,4 +15,6 @@ To prevent catastrophic failure during flashing:
 Every calibration must pass the following automated checks before being unlocked for flashing:
 - **Global Limits**: No table values exceeding physical sensor limits.
 - **Sanity Check**: Spark advance tables must be monotonic (mostly).
-- **Signature**: File must be signed by a trusted key (see [Code Signing](../security/signing.md)).
+- **Virtual Validation**: Calibration must pass simulation in the [HiL Testing Tier](../plans/walkthrough_hiL.md).
+- **Ledger Record**: Change must be committed to the [Calibration Ledger](../security/signing.md) for hash-chain integrity.
+- **Signature**: File must be signed by a trusted key.
