@@ -33,8 +33,7 @@ export class SafetyLog {
     @Column({ type: 'text', nullable: true })
     metadata: string;
 
-    @Field()
-    @Index()
-    @CreateDateColumn()
+    @Field({ nullable: true })
+    @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
     timestamp: Date;
 }

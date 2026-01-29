@@ -170,8 +170,8 @@ public class RULPredictorServiceTests
             SensorData = GenerateDegradationData(0.9, 0.7, 100)
         }).ToList();
 
-        // Cancel very quickly
-        cts.CancelAfter(1);
+        // Cancel immediately to ensure deterministic behavior
+        cts.Cancel();
 
         // Act
         var result = await service.PredictMaintenanceAsync(

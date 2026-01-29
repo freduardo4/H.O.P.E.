@@ -195,6 +195,36 @@ describe('VehiclesService', () => {
             );
         });
 
+        it('should filter by customerId', async () => {
+            mockQueryBuilder.getCount.mockResolvedValue(1);
+            mockQueryBuilder.getMany.mockResolvedValue([mockVehicle as Vehicle]);
+
+            await service.findAll({
+                tenantId: 'tenant-uuid',
+                customerId: 'customer-uuid',
+            });
+
+            expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+                'vehicle.customerId = :customerId',
+                { customerId: 'customer-uuid' },
+            );
+        });
+
+        it('should filter by licensePlate', async () => {
+            mockQueryBuilder.getCount.mockResolvedValue(1);
+            mockQueryBuilder.getMany.mockResolvedValue([mockVehicle as Vehicle]);
+
+            await service.findAll({
+                tenantId: 'tenant-uuid',
+                licensePlate: 'ABC-1234',
+            });
+
+            expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+                'LOWER(vehicle.licensePlate) LIKE LOWER(:licensePlate)',
+                { licensePlate: '%ABC-1234%' },
+            );
+        });
+
         it('should handle pagination correctly', async () => {
             mockQueryBuilder.getCount.mockResolvedValue(100);
             mockQueryBuilder.getMany.mockResolvedValue([mockVehicle as Vehicle]);

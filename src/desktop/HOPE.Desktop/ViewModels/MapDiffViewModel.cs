@@ -8,11 +8,12 @@ using System.Windows.Media;
 using System.IO;
 using HOPE.Core.Services.Export;
 
-namespace HOPE.Desktop.ViewModels;
+using HOPE.Core.Interfaces;
+using HOPE.Desktop.ViewModels;
 
 public partial class MapDiffViewModel : ObservableObject
 {
-    private readonly CalibrationRepository? _calibrationRepository;
+    private readonly ICalibrationRepository? _calibrationRepository;
 
     [ObservableProperty]
     private Point3DCollection _baseSurfacePoints = new();
@@ -35,12 +36,12 @@ public partial class MapDiffViewModel : ObservableObject
     public ObservableCollection<CalibrationCommitItem> AvailableCommits { get; } = new();
 
     [ObservableProperty]
-    private string _statusMessage = "Select comits to compare";
+    private string _statusMessage = "Select commits to compare";
 
     private readonly IExportService? _exportService;
     private CalibrationDiff? _currentDiff;
 
-    public MapDiffViewModel(CalibrationRepository? calibrationRepository = null, IExportService? exportService = null)
+    public MapDiffViewModel(ICalibrationRepository? calibrationRepository = null, IExportService? exportService = null)
     {
         _calibrationRepository = calibrationRepository;
         _exportService = exportService;

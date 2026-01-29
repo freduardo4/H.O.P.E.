@@ -9,8 +9,6 @@ using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
 using HOPE.Core.Services.ECU;
-
-using HOPE.Core.Services.ECU;
 using Microsoft.Extensions.Logging;
 using HOPE.Core.Interfaces;
 namespace HOPE.Desktop.ViewModels;
@@ -92,9 +90,7 @@ public partial class MultiViewEditorViewModel : ObservableObject
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to load calibration {CommitHash}", commitHash);
-            StatusMessage = $"Error loading calibration: {ex.Message}";
         }
-    }
     }
 
     private void InitializeMockData()
@@ -275,7 +271,6 @@ public partial class MultiViewEditorViewModel : ObservableObject
             _logger.LogError(ex, "Failed to save calibration");
             StatusMessage = $"Error saving: {ex.Message}";
         }
-    }
     }
 
     [RelayCommand]

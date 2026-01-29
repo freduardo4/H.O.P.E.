@@ -8,6 +8,11 @@ import { join } from 'path';
 export class MarketplaceController {
     constructor(private readonly marketplaceService: MarketplaceService) { }
 
+    @Get('listings')
+    async findAllListings() {
+        return this.marketplaceService.findAllListings();
+    }
+
     @Get('download/:licenseKey')
     async downloadFile(
         @Param('licenseKey') licenseKey: string,

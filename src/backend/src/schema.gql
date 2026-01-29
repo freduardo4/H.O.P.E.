@@ -1,0 +1,199 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type CalibrationListing {
+  checksum: String!
+  compatibility: String!
+  createdAt: DateTime!
+  description: String!
+  fileUrl: String!
+  id: ID!
+  licenses: [License!]
+  price: Float!
+  reviews: [Review!]
+  title: String!
+  updatedAt: DateTime!
+  version: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+enum EdgeType {
+  CAUSED_BY
+  PART_OF
+  REPLACES
+  SOLVED_BY
+  SYMPTOM_OF
+}
+
+enum FuelType {
+  DIESEL
+  ELECTRIC
+  GASOLINE
+  HYBRID
+  LPG
+}
+
+type KnowledgeEdge {
+  id: ID!
+  relation: EdgeType!
+  sourceNode: KnowledgeNode!
+  targetNode: KnowledgeNode!
+  weight: Float
+}
+
+type KnowledgeNode {
+  createdAt: DateTime!
+  description: String
+  embedding: [Float!]
+  id: ID!
+  inEdges: [ID!]
+  name: String!
+  outEdges: [ID!]
+  type: NodeType!
+  updatedAt: DateTime!
+}
+
+type License {
+  createdAt: DateTime!
+  hardwareId: String!
+  id: ID!
+  isActive: Boolean!
+  licenseKey: String!
+  listing: CalibrationListing!
+  user: User!
+}
+
+type Mutation {
+  addKnowledgeRelation(relation: EdgeType!, sourceId: ID!, targetId: ID!): KnowledgeEdge!
+  purchaseCalibration(hardwareId: String!, listingId: String!): License!
+}
+
+enum NodeType {
+  DTC
+  PART
+  REPAIR_STEP
+  SYMPTOM
+  VEHICLE_SYSTEM
+}
+
+type PaginatedVehicles {
+  items: [Vehicle!]!
+  limit: Int!
+  page: Int!
+  total: Int!
+  totalPages: Int!
+}
+
+type Query {
+  calibrationListing(id: String!): CalibrationListing!
+  calibrationListings: [CalibrationListing!]!
+  relatedFixes(nodeId: ID!): [KnowledgeNode!]!
+  searchKnowledge(query: String!): [KnowledgeNode!]!
+  vehicle(id: ID!): Vehicle
+  vehicles(options: VehicleSearchInput): PaginatedVehicles!
+  verifyLicense(hardwareId: String!, licenseKey: String!): Boolean!
+}
+
+type RepairPattern {
+  confidenceScore: Float!
+  dtc: String!
+  id: ID!
+  minAnomalyScore: Float
+  post: WikiPost!
+  postId: String!
+  sensorCriteria: String
+}
+
+type Review {
+  comment: String
+  createdAt: DateTime!
+  id: ID!
+  listing: CalibrationListing!
+  rating: Int!
+  updatedAt: DateTime!
+  user: User!
+}
+
+enum TransmissionType {
+  AUTOMATIC
+  CVT
+  DSG
+  MANUAL
+}
+
+type User {
+  acceptedLegalVersion: String!
+  createdAt: DateTime!
+  email: String!
+  firstName: String!
+  fullName: String!
+  id: ID!
+  isActive: Boolean!
+  lastLoginAt: DateTime
+  lastName: String!
+  role: UserRole!
+  tenantId: String
+  updatedAt: DateTime!
+}
+
+enum UserRole {
+  ADMIN
+  SHOP_OWNER
+  TECHNICIAN
+  VIEWER
+}
+
+type Vehicle {
+  createdAt: DateTime!
+  customerId: String
+  displayName: String!
+  ecuSoftwareVersion: String
+  ecuType: String
+  engineCode: String
+  engineDisplacement: Float
+  enginePower: Int
+  fuelType: FuelType
+  id: ID!
+  isActive: Boolean!
+  licensePlate: String
+  make: String!
+  mileage: Int
+  model: String!
+  notes: String
+  tenantId: String!
+  transmission: TransmissionType
+  updatedAt: DateTime!
+  variant: String
+  vin: String
+  year: Int!
+}
+
+input VehicleSearchInput {
+  customerId: String
+  licensePlate: String
+  limit: Int
+  make: String
+  model: String
+  page: Int
+  vin: String
+  year: Int
+}
+
+type WikiPost {
+  author: User!
+  authorId: String!
+  content: String!
+  createdAt: DateTime!
+  downvotes: Int!
+  id: ID!
+  patterns: [RepairPattern!]
+  tags: [String!]!
+  title: String!
+  updatedAt: DateTime!
+  upvotes: Int!
+}

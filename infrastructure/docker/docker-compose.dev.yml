@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ../../src/backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: hope-backend-dev
+    command: npm run start:dev
+    volumes:
+      - ../../src/backend:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=database
+      - AWS_S3_ENDPOINT=http://localstack:4566
+    env_file:
+      - ../../src/backend/.env
+    depends_on:
+      - database
+      - localstack
+    networks:
+      - hope-network
+
+  hope-central:
+    build:
+      context: ../../src/hope-central
+      dockerfile: Dockerfile
+      target: development
+    container_name: hope-central-dev
+    command: npm run dev
+    volumes:
+      - ../../src/hope-central:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+    depends_on:
+      - backend
+    networks:
+      - hope-network
+
+  # Infrastructure Services
+  database:
+    image: timescale/timescaledb:latest-pg16
+    container_name: hope-timescaledb
+    restart: always
+    environment:
+      - POSTGRES_USER=hope_admin
+      - POSTGRES_PASSWORD=hope_secure_password
+      - POSTGRES_DB=hope_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    networks:
+      - hope-network
+
+  localstack:
+    image: localstack/localstack:latest
+    container_name: hope-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - localstack_data_dev:/var/lib/localstack
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - hope-network
+
+networks:
+  hope-network:
+    driver: bridge
+
+volumes:
+  postgres_data_dev:
+  localstack_data_dev:

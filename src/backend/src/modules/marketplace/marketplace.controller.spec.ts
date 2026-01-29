@@ -60,7 +60,7 @@ describe('MarketplaceController', () => {
             await expect(controller.downloadFile('valid-license', 'hw-id', {} as any)).rejects.toThrow(NotFoundException);
         });
 
-        it.skip('should return StreamableFile if validation passes', async () => {
+        it('should return StreamableFile if validation passes', async () => {
             mockMarketplaceService.validateLicense.mockResolvedValue(true);
             mockMarketplaceService.findListingByLicense.mockResolvedValue({
                 title: 'Test Tune',
@@ -68,8 +68,9 @@ describe('MarketplaceController', () => {
                 fileUrl: 'test.bin',
             });
 
-            // Mock file exists to false to trigger dummy content generation (easier to test)
-            (fs.existsSync as jest.Mock).mockReturnValue(false);
+            // Mock file exists to true to hit the header setting path
+            (fs.existsSync as jest.Mock).mockReturnValue(true);
+            (fs.createReadStream as jest.Mock).mockReturnValue('mock-stream');
 
             const res = { set: jest.fn() } as any;
             const result = await controller.downloadFile('valid-license', 'hw-id', res);

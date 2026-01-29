@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ../../src/backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: hope-backend-prod
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=database
+      - AWS_S3_ENDPOINT=http://localstack:4566
+    env_file:
+      - ../../src/backend/.env.docker
+    depends_on:
+      - database
+      - localstack
+    networks:
+      - hope-network
+
+  hope-central:
+    build:
+      context: ../../src/hope-central
+      dockerfile: Dockerfile
+      target: runner
+    container_name: hope-central-prod
+    restart: always
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    depends_on:
+      - backend
+    networks:
+      - hope-network
+
+  # Infrastructure Services
+  database:
+    image: timescale/timescaledb:latest-pg16
+    container_name: hope-timescaledb-prod
+    restart: always
+    environment:
+      - POSTGRES_USER=hope_admin
+      - POSTGRES_PASSWORD=hope_secure_password
+      - POSTGRES_DB=hope_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    networks:
+      - hope-network
+
+  localstack:
+    image: localstack/localstack:latest
+    container_name: hope-localstack-prod
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+    volumes:
+      - localstack_data_prod:/var/lib/localstack
+    networks:
+      - hope-network
+
+networks:
+  hope-network:
+    driver: bridge
+
+volumes:
+  postgres_data_prod:
+  localstack_data_prod:

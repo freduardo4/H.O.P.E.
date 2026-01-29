@@ -6,11 +6,11 @@ import { JwtAuthGuard, CurrentUser } from '../auth';
 import { User } from '../auth/entities/user.entity';
 
 @Controller('wiki-fix')
-@UseGuards(JwtAuthGuard)
 export class WikiFixController {
     constructor(private readonly wikiFixService: WikiFixService) { }
 
     @Post('posts')
+    @UseGuards(JwtAuthGuard)
     async createPost(
         @CurrentUser() user: User,
         @Body() dto: CreateWikiPostDto,
@@ -29,6 +29,7 @@ export class WikiFixController {
     }
 
     @Post('posts/:id/upvote')
+    @UseGuards(JwtAuthGuard)
     async upvote(@Param('id', ParseUUIDPipe) id: string): Promise<WikiPost> {
         return this.wikiFixService.upvote(id);
     }

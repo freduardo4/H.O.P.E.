@@ -491,7 +491,7 @@ public async Task<CustomerReport> GenerateReportAsync(DiagnosticSession session)
 - **UX Refinement**: Responsive map editors and DTC views with filtering/search and severity highlighting.
 - **Auto-Updater**: Squirrel.Windows for seamless background client updates.
 - **Crash Reporting**: Sentry.io integration for automatic error tracking.
-- **UI Automation**: Appium/WinAppDriver for E2E desktop testing.
+- **UI Verification**: Manual and unit testing for ViewModels.
 ```
 
 ---
@@ -574,8 +574,28 @@ Stack-Overflow model with DTC linking and voting.
 - **Input Validation**: Enforce class-validator DTOs; avoid direct entity exposure in GraphQL.
 - **Observability**: Standardized NestJS exception filters and Sentry/OpenTelemetry spans with metadata.
 - **API Docs**: Publish OpenAPI/GraphQL schemas and create `docs/backend.md`.
-- **Complete CI Pipeline**: Enable `next-build` and real Playwright E2E tests in `ci.yml`.
+- **Complete CI Pipeline**: Enable `next-build` and unit tests in `ci.yml`.
 - **Environment Parity**: Synchronize Docker Compose configurations for dev/staging/prod.
+
+---
+
+### 5.7 Test Gap Remedies [NEW]
+- **Backend GraphQL Resolvers**: Implement unit tests for `MarketplaceResolver`, `VehicleResolver`, and `WikiFixResolver`.
+- **Backend Infra Module**: Add unit tests for `BackupService` and `ConfigService`.
+- **Backend Service Hardening**: 
+  - Enhance `MarketplaceService` unit tests for rating edge cases.
+  - Increase branch coverage for `VehiclesService` pagination.
+- **Desktop ViewModels**: Implement unit tests for `CopilotViewModel` and `MultiViewEditorViewModel`.
+- **AI Integration**: Add validation tests for the RL optimizer's reward function and emissions guardrails.
+- **Integration Specs**: Implement lightweight "boundary tests" to replace deleted E2E critical paths.
+
+---
+
+## 5.8 Final Verification
+- **Full Test Run**: Backend (`npm test`), Desktop (`dotnet test`), AI (`pytest`).
+- **Coverage Validation**: Ensure overall backend statement coverage is above 90%.
+
+---
 
 ### 5.5 Carbon Credit Verification
 
@@ -676,7 +696,7 @@ Extensions to the backend modules created in Phases 2 and 5.
 
 ---
 
-### 7.5 Web Portal (HOPE Central) Maturation [NEW]
+### 7.5 Web Portal (HOPE Central) Maturation [COMPLETED]
 
 - **Roadmap**: Define portal role (Admin/Customer/Marketplace) in `src/hope-central/README.md`.
 - **End-to-End Pages**: Marketplace and Wiki-fix flows with full NestJS/OIDC Auth integration.

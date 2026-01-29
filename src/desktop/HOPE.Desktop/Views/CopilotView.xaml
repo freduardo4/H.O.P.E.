@@ -1,0 +1,118 @@
+<UserControl x:Class="HOPE.Desktop.Views.CopilotView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="400">
+    <UserControl.Resources>
+        <!-- Simple Bool to Visibility Converter (Mocked for brevity, assume direct usage or std converter) -->
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        
+        <Style x:Key="ChatBubble" TargetType="Border">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="Margin" Value="5,2"/>
+            <Setter Property="MaxWidth" Value="300"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="#1E1E1E">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Background="#252526" Padding="10">
+            <TextBlock Text="Tuning Copilot" 
+                       Foreground="White" 
+                       FontWeight="Bold" 
+                       HorizontalAlignment="Center"/>
+        </Border>
+
+        <!-- Chat History -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding ChatHistory}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Bot Message (Left) -->
+                            <Border Grid.Column="0" Grid.ColumnSpan="2" 
+                                    Style="{StaticResource ChatBubble}"
+                                    Background="#333333"
+                                    HorizontalAlignment="Left"
+                                    Visibility="{Binding IsUser, Converter={StaticResource BoolToVis}, ConverterParameter=Inverse}">
+                                <StackPanel>
+                                     <TextBlock Text="Copilot" Foreground="#007ACC" FontSize="10" FontWeight="Bold"/>
+                                     <TextBlock Text="{Binding Message}" Foreground="#D4D4D4" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- User Message (Right) -->
+                            <Border Grid.Column="1" Grid.ColumnSpan="2" 
+                                    Style="{StaticResource ChatBubble}"
+                                    Background="#007ACC"
+                                    HorizontalAlignment="Right"
+                                    Visibility="{Binding IsUser, Converter={StaticResource BoolToVis}}">
+                                <StackPanel>
+                                     <TextBlock Text="You" Foreground="White" FontSize="10" FontWeight="Bold" HorizontalAlignment="Right"/>
+                                     <TextBlock Text="{Binding Message}" Foreground="White" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Input Area -->
+        <Border Grid.Row="2" Background="#252526" Padding="10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBox Text="{Binding CurrentQuery, UpdateSourceTrigger=PropertyChanged}"
+                         Padding="5"
+                         VerticalContentAlignment="Center"
+                         Background="#3C3C3C"
+                         Foreground="White"
+                         BorderThickness="0">
+                      <TextBox.InputBindings>
+                          <KeyBinding Key="Enter" Command="{Binding SendQueryCommand}"/>
+                      </TextBox.InputBindings>
+                </TextBox>
+
+                <Button Grid.Column="1" 
+                        Command="{Binding SendQueryCommand}"
+                        Content="Send"
+                        Margin="5,0,0,0"
+                        Padding="10,5"
+                        Background="#007ACC"
+                        Foreground="White"/>
+            </Grid>
+        </Border>
+
+        <!-- Busy Indicator -->
+        <Border Grid.RowSpan="3" 
+                Background="#80000000" 
+                Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
+            <TextBlock Text="Thinking..." 
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Center" 
+                       Foreground="White" 
+                       FontSize="16"/>
+        </Border>
+    </Grid>
+</UserControl>

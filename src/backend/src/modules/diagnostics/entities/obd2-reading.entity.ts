@@ -5,35 +5,46 @@ import {
     CreateDateColumn,
     Index,
 } from 'typeorm';
+import { ObjectType, Field, ID, Float } from '@nestjs/graphql';
 
+@ObjectType()
 @Entity('obd2_readings')
 @Index(['sessionId', 'timestamp'])
 @Index(['sessionId', 'pid'])
 export class OBD2Reading {
+    @Field(() => ID)
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
+    @Field()
     @Column()
     sessionId: string;
 
-    @Column({ type: 'timestamp' })
+    @Field()
+    @Column({ type: 'datetime' })
     timestamp: Date;
 
+    @Field()
     @Column()
     pid: string;
 
+    @Field()
     @Column()
     name: string;
 
-    @Column({ type: 'decimal', precision: 12, scale: 4 })
+    @Field(() => Float)
+    @Column({ type: 'float' })
     value: number;
 
+    @Field()
     @Column()
     unit: string;
 
+    @Field({ nullable: true })
     @Column({ type: 'text', nullable: true })
     rawResponse: string;
 
+    @Field()
     @CreateDateColumn()
     createdAt: Date;
 }

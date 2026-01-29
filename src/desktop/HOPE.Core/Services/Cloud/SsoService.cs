@@ -12,8 +12,8 @@ namespace HOPE.Core.Services.Cloud
 {
     public interface ISsoService
     {
-        Task<AuthResponse> LoginWithGoogleAsync();
-        Task<AuthResponse> LoginWithGithubAsync();
+        Task<AuthResponse?> LoginWithGoogleAsync();
+        Task<AuthResponse?> LoginWithGithubAsync();
     }
 
     public class SsoService : ISsoService
@@ -26,17 +26,17 @@ namespace HOPE.Core.Services.Cloud
             _httpClient = new HttpClient();
         }
 
-        public async Task<AuthResponse> LoginWithGoogleAsync()
+        public async Task<AuthResponse?> LoginWithGoogleAsync()
         {
             return await InitiateOAuthFlow("google");
         }
 
-        public async Task<AuthResponse> LoginWithGithubAsync()
+        public async Task<AuthResponse?> LoginWithGithubAsync()
         {
             return await InitiateOAuthFlow("github");
         }
 
-        private async Task<AuthResponse> InitiateOAuthFlow(string provider)
+        private async Task<AuthResponse?> InitiateOAuthFlow(string provider)
         {
             // In a real desktop app, we'd start a local HTTP listener to receive the callback
             // For this implementation, we'll simulate the flow by opening the browser to the backend SSO endpoint

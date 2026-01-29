@@ -7,6 +7,8 @@ using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
 
 namespace HOPE.Desktop.Tests.ViewModels;
 
@@ -74,7 +76,6 @@ public class MultiViewEditorViewModelTests
 
         // Assert
         // Verify logger error was called
-        // Since ILogger extension methods are static, we verify Log with specialized setup
         _mockLogger.Verify(
             x => x.Log(
                 LogLevel.Error,
@@ -83,5 +84,38 @@ public class MultiViewEditorViewModelTests
                 It.IsAny<Exception>(),
                 It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
             Times.Once);
+    }
+
+    [Fact]
+    public async Task OpenAxisEditorCommand_ShouldRescaleMapAndCleanStatus()
+    {
+        // Arrange
+        var viewModel = new MultiViewEditorViewModel(_mockRepo.Object, _mockLogger.Object);
+        await viewModel.LoadAsync("dummy"); // Initialize mock data
+
+        // Act
+        viewModel.OpenAxisEditorCommand.Execute(null);
+
+        // Assert
+        Assert.Equal("Axis rescaled successfully", viewModel.StatusMessage);
+        // Verify some views were updated (e.g. TabularData)
+        Assert.NotNull(viewModel.TabularData);
+    }
+
+    [Fact]
+    public async Task OnSelectedRowChanged_ShouldUpdateChartSeries()
+    {
+        // Arrange
+        var viewModel = new MultiViewEditorViewModel(_mockRepo.Object, _mockLogger.Object);
+        await viewModel.LoadAsync("dummy");
+
+        // Act
+        viewModel.SelectedRow = viewModel.AxisRows[1];
+
+        // Assert
+        Assert.NotEmpty(viewModel.ChartSeries);
+        var series = viewModel.ChartSeries[0] as LineSeries<double>;
+        Assert.NotNull(series);
+        Assert.Equal(16, series.Values.Count());
     }
 }

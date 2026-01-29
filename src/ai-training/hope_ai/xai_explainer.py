@@ -1,7 +1,5 @@
 import numpy as np
 import pandas as pd
-import torch
-import shap
 import json
 import logging
 from pathlib import Path
@@ -61,7 +59,6 @@ class XAIExplainer:
             _, scores = self.detector.predict(x_reshaped)
             return scores
 
-<<<<<<< HEAD
         background_flat = background_data.reshape(background_data.shape[0], -1)
         self.shap_explainer = shap.KernelExplainer(predict_score, background_flat)
         logger.info("SHAP explainer initialized with background data.")

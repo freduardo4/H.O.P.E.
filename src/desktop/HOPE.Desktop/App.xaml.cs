@@ -109,6 +109,7 @@ public partial class App : PrismApplication
         containerRegistry.RegisterSingleton<IReportService, GenerativeReportService>();
         containerRegistry.RegisterSingleton<DiagnosticNarrativeService>();
         containerRegistry.RegisterSingleton<ExplainableAnomalyService>();
+        containerRegistry.RegisterSingleton<ITuningCopilotService, TuningCopilotService>();
         
         // Offline-First Sync Service for Phase 5.4
         containerRegistry.RegisterSingleton<ISyncService, SyncService>();
@@ -148,6 +149,7 @@ public partial class App : PrismApplication
         containerRegistry.RegisterForNavigation<LoginView, LoginViewModel>();
         containerRegistry.RegisterForNavigation<MarketplaceView, MarketplaceViewModel>();
         containerRegistry.RegisterForNavigation<HiLSimulationView, HiLSimulationViewModel>();
+        containerRegistry.RegisterForNavigation<CopilotView, CopilotViewModel>();
     }
 
     protected override async void OnInitialized()

@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CalibrationListing } from './entities/calibration-listing.entity';
 import { License } from './entities/license.entity';
 import { User } from '../auth/entities/user.entity';
+import { Review } from './entities/review.entity';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -13,10 +14,22 @@ export class MarketplaceService {
         private listingRepository: Repository<CalibrationListing>,
         @InjectRepository(License)
         private licenseRepository: Repository<License>,
+        @InjectRepository(Review)
+        private reviewRepository: Repository<Review>,
     ) { }
 
-    async findAllListings(): Promise<CalibrationListing[]> {
-        return this.listingRepository.find();
+    async findAllListings(): Promise<any[]> {
+        const listings = await this.listingRepository.find({ relations: ['reviews'] });
+        return listings.map(l => {
+            const avgRating = l.reviews && l.reviews.length > 0
+                ? l.reviews.reduce((acc, r) => acc + r.rating, 0) / l.reviews.length
+                : 0;
+            return {
+                ...l,
+                rating: parseFloat(avgRating.toFixed(1)),
+                reviewCount: l.reviews?.length || 0
+            };
+        });
     }
 
     async findListingById(id: string): Promise<CalibrationListing> {

@@ -26,8 +26,14 @@ def main():
         config = input_data.get('config', {})
         generations = config.get('generations', 20)
         pop_size = config.get('population_size', 50)
+        mutation_rate = config.get('mutation_rate', 0.1)
+        mutation_strength = config.get('mutation_strength', 0.1)
         
-        optimizer = TuneOptimizer(population_size=pop_size)
+        optimizer = TuneOptimizer(
+            population_size=pop_size, 
+            mutation_rate=mutation_rate, 
+            mutation_strength=mutation_strength
+        )
         
         best_map, history = optimizer.evolve(current_map, datalog_mask, target_map, generations=generations)
         

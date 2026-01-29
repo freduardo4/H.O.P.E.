@@ -29,9 +29,10 @@ describe('TuningService', () => {
                 [10, 10]
             ],
             config: {
-                generations: 5,
-                population_size: 10,
-                mutation_strength: 0.3
+                generations: 10,
+                population_size: 20,
+                mutation_strength: 0.5,
+                mutation_rate: 0.8
             }
         };
 

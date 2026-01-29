@@ -5,6 +5,7 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
 } from 'typeorm';
+import { ObjectType, Field, ID, Int, registerEnumType } from '@nestjs/graphql';
 
 export enum ReportType {
     DIAGNOSTIC = 'diagnostic',
@@ -20,45 +21,63 @@ export enum ReportStatus {
     FAILED = 'failed',
 }
 
+registerEnumType(ReportType, { name: 'ReportType' });
+registerEnumType(ReportStatus, { name: 'ReportStatus' });
+
+@ObjectType()
 @Entity('reports')
 export class Report {
+    @Field(() => ID)
+    @Field(() => ID)
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
+    @Field()
     @Column()
     tenantId: string;
 
+    @Field()
     @Column()
     vehicleId: string;
 
+    @Field({ nullable: true })
     @Column({ nullable: true })
     customerId: string;
 
+    @Field({ nullable: true })
     @Column({ nullable: true })
     diagnosticSessionId: string;
 
-    @Column({ type: 'enum', enum: ReportType })
+    @Field(() => ReportType)
+    @Column({ type: 'simple-enum', enum: ReportType })
     reportType: ReportType;
 
-    @Column({ type: 'enum', enum: ReportStatus, default: ReportStatus.PENDING })
+    @Field(() => ReportStatus)
+    @Column({ type: 'simple-enum', enum: ReportStatus, default: ReportStatus.PENDING })
     status: ReportStatus;
 
+    @Field()
     @Column()
     title: string;
 
+    @Field({ nullable: true })
     @Column({ type: 'text', nullable: true })
     description: string;
 
+    @Field({ nullable: true })
     @Column({ nullable: true })
     s3Key: string;
 
+    @Field({ nullable: true })
     @Column({ nullable: true })
     s3Bucket: string;
 
-    @Column({ type: 'bigint', nullable: true })
+    @Field(() => Int, { nullable: true })
+    @Column({ type: 'int', nullable: true })
     fileSize: number;
 
-    @Column({ type: 'jsonb', nullable: true })
+    @Field(() => String, { nullable: true })
+    @Column({ type: 'simple-json', nullable: true })
     data: {
         // Diagnostic report data
         dtcCodes?: string[];
@@ -77,18 +96,23 @@ export class Report {
         [key: string]: any;
     };
 
+    @Field({ nullable: true })
     @Column({ nullable: true })
     generatedBy: string;
 
-    @Column({ nullable: true })
+    @Field({ nullable: true })
+    @Column({ type: 'datetime', nullable: true })
     generatedAt: Date;
 
+    @Field({ nullable: true })
     @Column({ type: 'text', nullable: true })
     errorMessage: string;
 
+    @Field()
     @CreateDateColumn()
     createdAt: Date;
 
+    @Field()
     @UpdateDateColumn()
     updatedAt: Date;
 }

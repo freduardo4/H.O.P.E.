@@ -81,11 +81,11 @@ export class Vehicle {
     enginePower: number;
 
     @Field(() => FuelType, { nullable: true })
-    @Column({ type: 'enum', enum: FuelType, nullable: true })
+    @Column({ type: 'simple-enum', enum: FuelType, nullable: true })
     fuelType: FuelType;
 
     @Field(() => TransmissionType, { nullable: true })
-    @Column({ type: 'enum', enum: TransmissionType, nullable: true })
+    @Column({ type: 'simple-enum', enum: TransmissionType, nullable: true })
     transmission: TransmissionType;
 
     @Field({ nullable: true })
