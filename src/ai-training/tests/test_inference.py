@@ -58,7 +58,7 @@ class TestInferenceDetector:
 
     def test_load_model_pytorch(self, saved_model_path):
         """Test loading a PyTorch model."""
-        from inference import AnomalyDetector
+        from hope_ai.inference import AnomalyDetector
 
         # Remove ONNX to force PyTorch loading
         onnx_path = saved_model_path / 'onnx' / 'anomaly_detector.onnx'
@@ -76,7 +76,7 @@ class TestInferenceDetector:
     )
     def test_load_model_onnx(self, saved_model_path):
         """Test loading an ONNX model."""
-        from inference import AnomalyDetector
+        from hope_ai.inference import AnomalyDetector
 
         detector = AnomalyDetector(str(saved_model_path))
 
@@ -85,7 +85,7 @@ class TestInferenceDetector:
 
     def test_preprocess_scales_data(self, saved_model_path):
         """Test that preprocessing scales data correctly."""
-        from inference import AnomalyDetector
+        from hope_ai.inference import AnomalyDetector
 
         detector = AnomalyDetector(str(saved_model_path))
 
@@ -102,7 +102,7 @@ class TestInferenceDetector:
 
     def test_predict_returns_reconstructions_and_scores(self, saved_model_path):
         """Test that predict returns correct outputs."""
-        from inference import AnomalyDetector
+        from hope_ai.inference import AnomalyDetector
 
         detector = AnomalyDetector(str(saved_model_path))
 
@@ -117,7 +117,7 @@ class TestInferenceDetector:
 
     def test_detect_anomalies_returns_boolean_array(self, saved_model_path):
         """Test that detect_anomalies returns boolean anomaly flags."""
-        from inference import AnomalyDetector
+        from hope_ai.inference import AnomalyDetector
 
         detector = AnomalyDetector(str(saved_model_path))
 
@@ -132,7 +132,7 @@ class TestInferenceDetector:
 
     def test_detect_anomalies_with_custom_threshold(self, saved_model_path):
         """Test anomaly detection with custom threshold."""
-        from inference import AnomalyDetector
+        from hope_ai.inference import AnomalyDetector
 
         detector = AnomalyDetector(str(saved_model_path))
 
@@ -148,7 +148,7 @@ class TestInferenceDetector:
 
     def test_analyze_anomaly_returns_feature_contributions(self, saved_model_path):
         """Test that analyze_anomaly identifies contributing features."""
-        from inference import AnomalyDetector
+        from hope_ai.inference import AnomalyDetector
 
         detector = AnomalyDetector(str(saved_model_path))
 
@@ -178,7 +178,7 @@ class TestSequenceCreation:
 
     def test_create_sequences_basic(self):
         """Test basic sequence creation."""
-        from inference import create_sequences
+        from hope_ai.inference import create_sequences
 
         data = np.arange(100).reshape(100, 1)
         sequences = create_sequences(data, sequence_length=10)
@@ -193,7 +193,7 @@ class TestSequenceCreation:
 
     def test_create_sequences_multi_feature(self):
         """Test sequence creation with multiple features."""
-        from inference import create_sequences
+        from hope_ai.inference import create_sequences
 
         data = np.random.randn(100, 5)
         sequences = create_sequences(data, sequence_length=20)
@@ -202,7 +202,7 @@ class TestSequenceCreation:
 
     def test_create_sequences_preserves_values(self):
         """Test that sequence creation preserves data values."""
-        from inference import create_sequences
+        from hope_ai.inference import create_sequences
 
         data = np.random.randn(50, 3)
         sequences = create_sequences(data, sequence_length=10)
@@ -216,7 +216,7 @@ class TestDataLoading:
 
     def test_load_test_data_npy(self):
         """Test loading data from .npy file."""
-        from inference import load_test_data
+        from hope_ai.inference import load_test_data
 
         with tempfile.TemporaryDirectory() as tmpdir:
             file_path = Path(tmpdir) / 'test_data.npy'
@@ -232,7 +232,7 @@ class TestDataLoading:
 
     def test_load_test_data_csv(self):
         """Test loading data from .csv file."""
-        from inference import load_test_data
+        from hope_ai.inference import load_test_data
         import pandas as pd
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -254,7 +254,7 @@ class TestDataLoading:
 
     def test_load_test_data_invalid_format(self):
         """Test that invalid format raises error."""
-        from inference import load_test_data
+        from hope_ai.inference import load_test_data
 
         with tempfile.TemporaryDirectory() as tmpdir:
             file_path = Path(tmpdir) / 'test_data.txt'
@@ -270,7 +270,7 @@ class TestBatchInference:
     @pytest.fixture
     def inference_detector(self, saved_model_path):
         """Create detector for inference tests."""
-        from inference import AnomalyDetector
+        from hope_ai.inference import AnomalyDetector
         return AnomalyDetector(str(saved_model_path))
 
     @pytest.fixture
