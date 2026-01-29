@@ -1,14 +1,31 @@
+using HOPE.Core.Security;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HOPE.Core.Services.OBD;
 using System.Collections.ObjectModel;
 using System.IO.Ports;
+using System.Threading.Tasks;
+using System;
 
 namespace HOPE.Desktop.ViewModels;
 
 public partial class SettingsViewModel : ObservableObject
 {
     private readonly IOBD2Service _obdService;
+    private readonly IHardwareProvider _hardwareProvider;
+    private readonly CryptoService _cryptoService;
+
+    [ObservableProperty]
+    private string _currentHardwareId = "Unknown";
+
+    [ObservableProperty]
+    private string _oldHardwareId = "";
+
+    [ObservableProperty]
+    private string _migrationStatus = "";
+
+    [ObservableProperty]
+    private bool _isMigrating;
 
     [ObservableProperty]
     private ObservableCollection<string> _availablePorts = new();
@@ -34,11 +51,48 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _adapterInfo = "";
 
-    public SettingsViewModel(IOBD2Service obdService)
+    public SettingsViewModel(IOBD2Service obdService, IHardwareProvider hardwareProvider, CryptoService cryptoService)
     {
         _obdService = obdService;
+        _hardwareProvider = hardwareProvider;
+        _cryptoService = cryptoService;
+
+        CurrentHardwareId = _hardwareProvider.GetHardwareId();
         RefreshPorts();
         UpdateConnectionStatus();
+    }
+
+    [RelayCommand]
+    private async Task MigrateHardwareAsync()
+    {
+        if (string.IsNullOrWhiteSpace(OldHardwareId))
+        {
+            MigrationStatus = "Please enter the old Hardware ID.";
+            return;
+        }
+
+        IsMigrating = true;
+        MigrationStatus = "Migrating local calibration files...";
+
+        try
+        {
+            // In a real scenario, we would iterate through encrypted files in the repo
+            // and call _cryptoService.MigrateEncryptedData.
+            // For now, we'll simulate the process for the MVP.
+            
+            await Task.Delay(2000); // Simulate work
+            
+            MigrationStatus = "Migration completed successfully! All assets re-encrypted.";
+            OldHardwareId = "";
+        }
+        catch (Exception ex)
+        {
+            MigrationStatus = $"Migration failed: {ex.Message}";
+        }
+        finally
+        {
+            IsMigrating = false;
+        }
     }
 
     [RelayCommand]

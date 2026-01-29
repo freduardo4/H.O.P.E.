@@ -9,7 +9,7 @@ namespace HOPE.Core.Services.Protocols;
 /// Unified Diagnostic Services (UDS) protocol handler - ISO 14229.
 /// Provides standardized diagnostic communication with vehicle ECUs.
 /// </summary>
-public class UdsProtocolService : IDisposable
+public class UdsProtocolService : IUdsProtocolService, IDisposable
 {
     private readonly IHardwareAdapter _adapter;
     private readonly Subject<UdsResponse> _responseSubject = new();

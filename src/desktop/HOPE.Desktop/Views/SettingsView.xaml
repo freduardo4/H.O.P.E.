@@ -101,12 +101,65 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Security & Hardware ID Section -->
+                <Border Background="#1E1E1E" CornerRadius="10" Padding="20" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="Security" Foreground="White" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,15"/>
+                        
+                        <TextBlock Text="Current Hardware ID" Foreground="#AAAAAA" FontSize="12" Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding CurrentHardwareId, Mode=OneWay}" IsReadOnly="True" 
+                                 Background="#252525" Foreground="#2979FF" BorderThickness="0"
+                                 Padding="10,8" FontSize="14" FontWeight="Bold" Margin="0,0,0,15">
+                            <TextBox.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                </Style>
+                            </TextBox.Resources>
+                        </TextBox>
+
+                        <TextBlock Text="Hardware Migration" Foreground="White" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <TextBlock Text="If you have moved your HOPE installation or changed major hardware, enter your old Hardware ID to migrate your encrypted files." 
+                                   Foreground="#888888" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,15"/>
+
+                        <TextBlock Text="Old Hardware ID" Foreground="#AAAAAA" FontSize="12" Margin="0,0,0,5"/>
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Text="{Binding OldHardwareId, UpdateSourceTrigger=PropertyChanged}"
+                                     Background="#252525" Foreground="White" BorderThickness="0"
+                                     Padding="10,8" FontSize="14">
+                                <TextBox.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="4"/>
+                                    </Style>
+                                </TextBox.Resources>
+                            </TextBox>
+                            <Button Grid.Column="1" Content="Migrate" Command="{Binding MigrateHardwareCommand}"
+                                    Background="#FF9800" Foreground="Black" BorderThickness="0"
+                                    Padding="15,8" FontWeight="SemiBold" Margin="10,0,0,0"
+                                    IsEnabled="{Binding IsMigrating, Converter={StaticResource InverseBooleanConverter}}">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="4"/>
+                                    </Style>
+                                </Button.Resources>
+                            </Button>
+                        </Grid>
+
+                        <TextBlock Text="{Binding MigrationStatus}" Foreground="#FFEB3B" FontSize="13" 
+                                   Visibility="{Binding MigrationStatus, Converter={StaticResource StringToVisibilityConverter}}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
                 <!-- About Section -->
                 <Border Background="#1E1E1E" CornerRadius="10" Padding="20">
                     <StackPanel>
                         <TextBlock Text="About" Foreground="White" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,15"/>
                         <TextBlock Text="H.O.P.E - High-Output Performance Engineering" Foreground="#AAAAAA" FontSize="13"/>
-                        <TextBlock Text="Version 1.0.0" Foreground="#666666" FontSize="12" Margin="0,5,0,0"/>
+                        <TextBlock Text="Version 1.1.0 (Hardware-Aware)" Foreground="#666666" FontSize="12" Margin="0,5,0,0"/>
                     </StackPanel>
                 </Border>
             </StackPanel>

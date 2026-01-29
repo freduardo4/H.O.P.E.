@@ -1,6 +1,7 @@
 using HOPE.Core.Services.ECU;
 using HOPE.Core.Services.AI;
 using HOPE.Desktop.ViewModels;
+using HOPE.Core.Services.Diagnostics; // For LogDataPoint
 using Moq;
 using Xunit;
 
@@ -307,6 +308,27 @@ public class MapVisualizationViewModelTests
 
         // Assert
         Assert.Equal("Load a map first before optimizing", _viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task LogReplay_UpdatesActiveCell_HitTracing()
+    {
+        // Arrange
+        await _viewModel.ReadEcuMapCommand.ExecuteAsync(null);
+        // Map created has:
+        // RPM Axis: 800 (Idx 0), 1300 (Idx 1), 1800 (Idx 2)...
+        // Load Axis: 0 (Idx 0), 12.5 (Idx 1), 25.0 (Idx 2)...
+
+        // Act
+        // Simulate Replay Event: RPM 1300 (Index 1), Load 25.0 (Index 2)
+        var point = new LogDataPoint { Rpm = 1300, Load = 25.0 };
+        _viewModel.LogReplay.ProcessPoint(point);
+
+        // Assert
+        Assert.Equal(1300, _viewModel.CurrentRpm);
+        Assert.Equal(25.0, _viewModel.CurrentLoad);
+        Assert.Equal(1, _viewModel.ActiveCellRow);
+        Assert.Equal(2, _viewModel.ActiveCellCol);
     }
 
     private static double[,] CreateSampleMap()

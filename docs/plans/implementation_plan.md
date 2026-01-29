@@ -166,6 +166,16 @@ Circular buffer CAN logging ("Black Box") for post-incident analysis.
 - **Auto-Dump**: Writes to disk on `HardwareError` or manual trigger.
 - **Format**: PCAP or raw CSV export.
 
+#### [NEW] Security & Hardware ID Abstraction
+- **Abstract GetHardwareId**: Refactor `CryptoService` to bind to a logical ID rather than raw hardware string.
+- **Migration Mode**: Graceful fallback allowing database re-encryption with a master password on hardware change.
+
+#### [NEW] Advanced Communication & Service Refactoring
+- **Service Refactoring**: Clearly separate `CloudSafetyService`, `J2534Adapter`, and `SafeFlashService` for testability.
+- **Unit Tests**: Add tests around safety limits (invalid tuning values, rollback behavior).
+- **Integration Tests**: Full-stack OBD communication flow tests using `SimulatedHardwareAdapter`.
+- **Hardware-in-the-Loop (HiL)**: Simulations for deterministic protocol timing.
+
 ---
 
 ## Phase 2: ECU Calibration & Tuning
@@ -407,7 +417,17 @@ class PINNVirtualSensor:
 
 ---
 
-### 3.4 Predictive Maintenance (RUL Estimation) [COMPLETED]
+- **Turbo shaft play (boost stability variance)**
+
+### 3.5 AI/ML Ops & Maintainability [NEW]
+
+- **Centralized Dependencies**: Provide a single `requirements.txt` or `pyproject.toml` for all Python components.
+- **Standardized Config**: Move JSON configs to `src/ai-training/configs/` with shared schemas.
+- **CLI Entrypoint**: Unified script for training, evaluation, and ONNX export.
+- **Regression Tests**: Pytest tests to run fixture batches through ONNX models and verify accuracy thresholds.
+- **Model Traceability**: MLflow/DVC for versioning, and standardized Model Cards (documentation).
+- **Explainability**: SHAP/LIME integration for diagnostic narratives.
+- **Documentation**: Create `docs/ai-pipeline.md` covering ingestion, training, and export.
 
 ---
 
@@ -463,6 +483,16 @@ public async Task<CustomerReport> GenerateReportAsync(DiagnosticSession session)
         RecommendedActions = ExtractActions(narrative)
     };
 }
+
+### 4.4 Desktop UI/UX & Robustness [NEW]
+
+- **Service Refactoring**: Centralize business logic in services; lean ViewModels.
+- **Navigation**: Centralize view switching using Prism's navigation framework.
+- **Error Handling**: Graceful surfaces for connection loss and model failure using Correlation IDs.
+- **UX Refinement**: Responsive map editors and DTC views with filtering/search and severity highlighting.
+- **Auto-Updater**: Squirrel.Windows for seamless background client updates.
+- **Crash Reporting**: Sentry.io integration for automatic error tracking.
+- **UI Automation**: Appium/WinAppDriver for E2E desktop testing.
 ```
 
 ---
@@ -539,7 +569,16 @@ Stack-Overflow model with DTC linking and voting.
 
 ---
 
-### 5.4 Carbon Credit Verification
+### 5.4 Backend Quality & API Governance [NEW]
+
+- **Testing Coverage**: Jest tests for Security, Marketplace licensing, and Wiki-fix mutations.
+- **Input Validation**: Enforce class-validator DTOs; avoid direct entity exposure in GraphQL.
+- **Observability**: Standardized NestJS exception filters and Sentry/OpenTelemetry spans with metadata.
+- **API Docs**: Publish OpenAPI/GraphQL schemas and create `docs/backend.md`.
+- **Complete CI Pipeline**: Enable `next-build` and real Playwright E2E tests in `ci.yml`.
+- **Environment Parity**: Synchronize Docker Compose configurations for dev/staging/prod.
+
+### 5.5 Carbon Credit Verification
 
 ---
 
@@ -590,7 +629,12 @@ Bidirectional data bridge:
 Lua mod for BeamNG.drive:
 - WebSocket server for HOPE communication
 - Apply tune parameters to Jbeam vehicle data
-- Stream telemetry (torque, thermal stress, crash g-forces)
+- [x] Stream telemetry (torque, thermal stress, crash g-forces)
+
+### 6.2 Resilience & Chaos Engineering [NEW]
+
+- **Fault Injection**: Randomly simulate adapter disconnects or high latency to test system resilience.
+- **Resilient Recovery**: Verify automated restoration of diagnostic sessions after communication failure or data dropouts.
 
 ---
 
@@ -633,84 +677,15 @@ Extensions to the backend modules created in Phases 2 and 5.
 
 ---
 
-## Phase 8: Engineering & Operational Improvements
+### 7.5 Web Portal (HOPE Central) Maturation [NEW]
 
-**Timeline: Ongoing | Complexity: Variable**
-
-### 8.1 Developer Experience
-
-- **Dev CLI**: Create a PowerShell/Makefile helper for one-command setup, testing, and linting.
-- **Recipes**: Provide living examples for calibration, OBD sessions, and local scripts.
-
-### 8.2 Testing, Safety & Reliability
-
-
-### 8.2 Testing, Safety & Reliability
-
-- **Simulated Hardware**: Implement `MockHardwareAdapter` with fault injection.
-- **Flashing Safety**: Add transactional logic, checksums, and battery voltage policy enforcement.
-- **Fuzzing**: Integrate AFL/LibFuzzer for binary parsers.
-
-#### [NEW] [CloudSafetyService.cs](file:///c:/Users/Test/Documents/H.O.P.E/src/desktop/HOPE.Core/Services/Safety/CloudSafetyService.cs)
-
-Service to sync safety telemetry and enforce cloud-side policies.
-
-```csharp
-public class CloudSafetyService
-{
-    public async Task<bool> ValidateFlashOperationAsync(string ecuId, double voltage);
-    public async Task LogSafetyEventAsync(SafetyEvent evt);
-}
-```
-
-#### [MODIFY] [SafeFlashService.cs](file:///c:/Users/Test/Documents/H.O.P.E/src/desktop/HOPE.Core/Services/ECU/SafeFlashService.cs)
-
-- Integrate `CloudSafetyService` into pre-flight checks.
-- Send "Post-Flash" telemetry report to cloud (success/fail, voltage profile).
-
-#### [NEW] [safety-logs.module.ts](file:///c:/Users/Test/Documents/H.O.P.E/src/backend/src/modules/safety-logs)
-
-Backend module to store safety events.
-- `POST /safety/validate`: Check if operation is allowed (e.g. not blacklisted ECU).
-- `POST /safety/telemetry`: Ingest voltage logs and flash results.
-
-### 8.3 ML & Reproducibility (MLOps)
-
-- **Environment**: Pin dependencies and verify with Docker.
-- **Data Lineage**: Implement DVC for dataset versioning and Model Cards for exports.
-- **Testing**: Add regression tests for the Genetic Optimizer and ONNX smoke tests.
-
-### 8.4 Backend & API Reliability
-
-- **GraphQL**: Publish schema and generate strict TypeScript types.
-- **Integrity**: Add database migrations and seeder tools.
-- **Contract Tests**: Verify Backend-Frontend compatibility.
-
-### 8.5 Observability & Operations
-
-- **Telemetry**: Integrate OpenTelemetry and Prometheus/Grafana.
-- **Error Tracking**: Set up Sentry for client-side crash reporting.
-- **Backups**: Implement automated strategy for DB and ECU dumps.
-
-### 8.6 Infrastructure & Security
-
-- **IaC**: Modularize Terraform stacks and add security scanning (tfsec).
-- **Policy**: Enforce strict IAM and network policies.
-
-### 8.7 Compliance & Legal
-
-- **Documents**: Draft EULA, Privacy Policy, and ToS specific to tuning liabilities.
-- **Controls**: Document export restrictions and PKI strategy for signed calibrations.
-
-### 8.8 Product & UX Polish
-
-- **Onboarding**: Create "Zero to Hero" guide and demo assets.
-- **Safety UX**: Add mandatory pre-flash checklists and feature flags.
-
-### 8.9 Packaging & Releases
-
-- **Distribution**: Build signed MSIX installers for Desktop.
-- **Supply Chain**: Sign all artifacts and provide verification tools.
+- **Roadmap**: Define portal role (Admin/Customer/Marketplace) in `src/hope-central/README.md`.
+- **End-to-End Pages**: Marketplace and Wiki-fix flows with full NestJS/OIDC Auth integration.
+- **Design System**: Small system for buttons, cards, and tables for branding consistency.
+- **Testing/Linting**: Playwright/Cypress smoke tests for login and core navigation.
+- **Marketplace Governance**: KYC, revenue sharing, star ratings, and review systems.
+- **Community Tools**: Data export (CSV/JSON) and vehicle profile management.
+- **Load Testing**: Performance benchmarking for Marketplace and API concurrency.
 
 ---
 

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace HOPE.Core.Security
 {
-    public class HardwareLockService
+    public class HardwareLockService : IHardwareProvider
     {
         private string? _cachedHardwareId;
 
@@ -35,6 +35,14 @@ namespace HOPE.Core.Security
             }
 
             return _cachedHardwareId;
+        }
+
+        /// <summary>
+        /// Validates if the current hardware matches the expected ID.
+        /// </summary>
+        public bool IsHardwareMatch(string expectedId)
+        {
+            return string.Equals(GetHardwareId(), expectedId, StringComparison.OrdinalIgnoreCase);
         }
 
         private string GetWmiProperty(string className, string propertyName)

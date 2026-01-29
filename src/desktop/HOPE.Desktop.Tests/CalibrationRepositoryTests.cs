@@ -98,6 +98,33 @@ public class CalibrationRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task GetCalibrationAsync_ReturnsHistoricalVersion()
+    {
+        // Arrange
+        await _repository.InitializeAsync();
+        
+        // Commit 1: Original Data
+        var cal1 = CreateTestCalibration("ECU001", new byte[] { 0xAA, 0xBB });
+        await _repository.StageAsync(cal1);
+        var hash1 = await _repository.CommitAsync("Commit 1");
+
+        // Commit 2: Changed Data
+        var cal2 = CreateTestCalibration("ECU001", new byte[] { 0xFF, 0xFF });
+        await _repository.StageAsync(cal2);
+        var hash2 = await _repository.CommitAsync("Commit 2");
+
+        // Act
+        var loadedCal = await _repository.GetCalibrationAsync(hash1);
+
+        // Assert
+        Assert.NotNull(loadedCal);
+        Assert.Equal(cal1.EcuId, loadedCal.EcuId);
+        Assert.Equal(cal1.Blocks[0].Data.Length, loadedCal.Blocks[0].Data.Length);
+        Assert.Equal(cal1.Blocks[0].Data, loadedCal.Blocks[0].Data); // 0xAA 0xBB
+        Assert.NotEqual(cal2.Blocks[0].Data, loadedCal.Blocks[0].Data); // Should not be 0xFF 0xFF
+    }
+
+    [Fact]
     public async Task ValidateChecksum_ReturnsTrueForValidCalibration()
     {
         // Arrange

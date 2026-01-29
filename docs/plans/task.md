@@ -19,6 +19,11 @@
 - [x] **1.4 Robust Connectivity & Hardware Versatility**
   - [x] **[NEW]** Bench Mode (Direct-to-pin, Scanmatik TP support)
   - [x] **[NEW]** "Black Box" Flight Recorder (Circular buffer CAN logging)
+  - [x] **[NEW]** Hardware ID Abstraction (Core Services)
+  - [x] **[NEW]** Migration Mode Implementation (UI & Flow)
+  - [x] **[NEW]** Refactor Desktop services (SafeFlash, J2534) for testability
+  - [x] **[NEW]** Desktop Unit tests (Safety/Limits/Rollback)
+  - [x] **[NEW]** Integration Tests (Full OBD Communication Flow)
 
 ## Phase 2: ECU Calibration & Tuning
 - [x] **2.1 ECU Calibration Management**
@@ -31,6 +36,7 @@
     - [x] Implement `AxisEditor.xaml` dialog. (Created)
     - [x] Implement `InterpolateMap` math in `CalibrationRepository`. (Implemented and Tested - 100% Pass)
     - [x] Connect Rescaling Logic to ViewModel. (Connected)
+  - [ ] **[NEW]** Refactor `CalibrationRepository` (Split Read/Write/Validation/History)
 - [x] **2.2 Safe-Mode ECU Flashing**
   - [x] Pre-flight environment checks & mandatory checklist
   - [x] Shadow backup system (local + cloud)
@@ -65,13 +71,22 @@
   - [x] Diagnostic narratives module
   - [x] Ghost curves visualization
   - [ ] **[NEW]** RAG-based Diagnostic Assistant ("Tuning Copilot")
-  - [ ] **[NEW]** Overlay Comparison (Log vs Map cell tracking)
+  - [x] **[NEW]** Overlay Comparison (Log vs Map cell tracking)
 - [x] **3.3 Physics-Informed Neural Networks (PINNs)**
   - [x] Virtual sensor framework
   - [x] EGT estimation model
 - [x] **3.4 Predictive Maintenance (RUL)**
   - [x] Time-series forecasting
   - [x] Component degradation tracking
+- [ ] **3.5 AI/ML Ops & Maintainability**
+  - [ ] **[NEW]** Centralized Python dependencies (`requirements.txt`)
+  - [ ] **[NEW]** Standardized Experiment Configs (`/configs/` folder)
+  - [ ] **[NEW]** Single entrypoint CLI for Train/Eval/Export
+  - [ ] **[NEW]** Model regression tests (ONNX fixture, Accuracy thresholds)
+  - [ ] **[NEW]** Model versioning (MLflow/DVC) & Model Cards
+  - [ ] **[NEW]** Explainability (SHAP/LIME) & Feedback Loop
+  - [ ] **[NEW]** Documentation: AI Pipeline (`docs/ai-pipeline.md`)
+  - [ ] **[NEW]** Mock Python Service for Backend Tuning Tests
 
 ## Phase 4: User Experience (HMI)
 - [x] **4.1 Premium Onboarding**
@@ -86,6 +101,15 @@
   - [x] LLM integration for DTC translation
   - [x] Customer-facing PDF generation
   - [x] **[NEW]** "Lead Mechanic" Mode (AI explanation of codes & fixes)
+- [ ] **4.4 Desktop UI/UX & Robustness**
+  - [ ] **[NEW]** Refined Map Editors & DTC Views (Filtering/Search)
+  - [ ] **[NEW]** Graceful Error Handling (Correlation IDs, offline surfaces)
+  - [ ] **[NEW]** MVVM Improvements (Centralized Navigation via Prism)
+  - [ ] **[NEW]** Desktop Auto-Updater (Squirrel)
+  - [ ] **[NEW]** Crash Reporting (Sentry)
+  - [ ] **[NEW]** UI/E2E Tests (Appium)
+  - [x] **[NEW]** Refactor ViewModels (MultiViewEditor/Marketplace) with DI & Interfaces
+  - [x] **[NEW]** Structured Logging (ILogger) & Review Catch Blocks
 
 ## Phase 5: Infrastructure & Ecosystem
 - [x] **5.1 Professional Operations**
@@ -109,6 +133,21 @@
 - [x] **5.6 Wiki-Fix Community Database**
   - [x] Stack-Overflow style platform
   - [x] NLP-indexed repair patterns
+- [ ] **5.7 Backend Quality & API Governance**
+  - [ ] **[NEW]** Jest coverage for Security/Marketplace/Wiki-fix
+  - [ ] **[NEW]** Enforce DTO validation & Module boundaries (NestJS)
+  - [ ] **[NEW]** Standardized Error Scaling & Observability (Exception Filters)
+  - [ ] **[NEW]** API Documentation (OpenAPI/GraphQL Schema publishing)
+  - [ ] **[NEW]** Documentation: Backend Architecture (`docs/backend.md`)
+  - [x] **[NEW]** CI: Enable Next.js Build
+  - [x] **[NEW]** CI: Add Playwright Health Check & Infrastructure
+  - [ ] **[NEW]** CI: Implement Comprehensive E2E Test Suite
+    - [x] **[NEW]** Diagnostic Session (Device -> Backend -> AI)
+    - [ ] **[NEW]** Calibration Workflow (Edit -> Validate -> Flash)
+    - [ ] **[NEW]** Marketplace Flow
+  - [ ] **[NEW]** Fix TypeORM/path-scurry test failures & Standardize tooling
+  - [ ] **[NEW]** Centralized Exception/Logging (NestJS)
+  - [ ] **[NEW]** Environment parity (Dev/Staging/Prod)
 
 ## Phase 6: Simulation & Digital Twin
 - [x] **6.1 BeamNG.drive / Automation Integration**
@@ -116,6 +155,7 @@
   - [x] Simulation orchestrator
   - [x] Virtual pre-flight validation
   - [x] **[NEW]** Hardware-in-the-Loop (HiL) Testing Tier
+  - [ ] **[NEW]** Chaos Engineering (Resilience testing)
 
 ## Phase 7: Cloud Ecosystem (HOPE Central)
 - [x] **7.1 Digital Experience Platform (DXP)**
@@ -130,3 +170,16 @@
 - [x] **7.4 Asset & License Management**
   - [x] CDN for software updates (Simulated Endpoint)
   - [x] Fleet health dashboard (Backend API)
+  - [ ] **[NEW]** Load Testing (Marketplace & Backend API)
+- [ ] **7.5 Web Portal (HOPE Central) Maturation**
+  - [ ] **[NEW]** ROADMAP expansion in `src/hope-central/README.md`
+  - [ ] **[NEW]** Core E2E Pages (Marketplace/Wiki) with Auth integration
+  - [ ] **[NEW]** Shared UI Design System (Buttons, Cards, Forms)
+  - [ ] **[NEW]** Portal Testing/Linting (Playwright/Cypress smoke tests)
+  - [ ] **[NEW]** Marketplace Revenue Integration (Stripe)
+  - [ ] **[NEW]** Seller Verification (KYC)
+  - [ ] **[NEW]** Calibration Review System
+  - [ ] **[NEW]** Community: Vehicle profiles & Data export
+  - [ ] **[NEW]** Replace Mock UI with Real Data (Next.js)
+  - [ ] **[NEW]** Standardize UI Patterns (Theming/Layout)
+

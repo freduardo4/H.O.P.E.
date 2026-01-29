@@ -3,6 +3,8 @@ using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.Linq;
 
+using Microsoft.Extensions.Logging;
+
 namespace HOPE.Desktop.ViewModels;
 
 public partial class AxisEditorViewModel : ObservableObject
@@ -17,9 +19,15 @@ public partial class AxisEditorViewModel : ObservableObject
     private bool _shouldInterpolate = true;
 
     private double[] _originalDoubles = Array.Empty<double>();
+    private readonly ILogger<AxisEditorViewModel> _logger;
 
     public event Action<double[], bool>? ApplyRequested;
     public event Action? CancelRequested;
+
+    public AxisEditorViewModel(ILogger<AxisEditorViewModel> logger)
+    {
+        _logger = logger;
+    }
 
     public void LoadAxis(double[] axisValues)
     {
@@ -50,9 +58,10 @@ public partial class AxisEditorViewModel : ObservableObject
 
             ApplyRequested?.Invoke(newDoubles, ShouldInterpolate);
         }
-        catch
+        catch (Exception ex)
         {
-            // Handle parsing error
+            _logger.LogError(ex, "Failed to parse axis values");
+            // Ideally notify user via IDialogService
         }
     }
 

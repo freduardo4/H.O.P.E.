@@ -13,10 +13,10 @@ namespace HOPE.Core.Services.ECU;
 public class SafeFlashService : IDisposable
 {
     private readonly IHardwareAdapter _adapter;
-    private readonly VoltageMonitor _voltageMonitor;
-    private readonly UdsProtocolService _udsService;
-    private readonly CalibrationRepository _repository;
-    private readonly HOPE.Core.Services.Safety.CloudSafetyService _cloudSafety;
+    private readonly IVoltageMonitor _voltageMonitor;
+    private readonly IUdsProtocolService _udsService;
+    private readonly ICalibrationRepository _repository;
+    private readonly ICloudSafetyService _cloudSafety;
     private readonly SemaphoreSlim _flashLock = new(1, 1);
 
     private CancellationTokenSource? _flashCts;
@@ -59,10 +59,10 @@ public class SafeFlashService : IDisposable
 
     public SafeFlashService(
         IHardwareAdapter adapter,
-        VoltageMonitor voltageMonitor,
-        UdsProtocolService udsService,
-        CalibrationRepository repository,
-        HOPE.Core.Services.Safety.CloudSafetyService cloudSafety)
+        IVoltageMonitor voltageMonitor,
+        IUdsProtocolService udsService,
+        ICalibrationRepository repository,
+        ICloudSafetyService cloudSafety)
     {
         _adapter = adapter ?? throw new ArgumentNullException(nameof(adapter));
         _voltageMonitor = voltageMonitor ?? throw new ArgumentNullException(nameof(voltageMonitor));

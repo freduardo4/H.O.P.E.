@@ -7,6 +7,8 @@ namespace HOPE.Core.Security
 {
     public class CryptoService
     {
+        private readonly IHardwareProvider _hardwareProvider;
+
         // Key derivation parameters
         private const int SaltSize = 16; // 128 bit
         private const int KeySize = 32; // 256 bit
@@ -14,12 +16,20 @@ namespace HOPE.Core.Security
         private const int TagSize = 16; // 128 bit (standard for GCM)
         private const int Iterations = 100000; // PBKDF2 iterations
 
+        public CryptoService(IHardwareProvider hardwareProvider)
+        {
+            _hardwareProvider = hardwareProvider ?? throw new ArgumentNullException(nameof(hardwareProvider));
+        }
+
         /// <summary>
         /// Encrypts data using AES-256-GCM.
         /// Derives key from password and optional hardware ID.
         /// </summary>
         public byte[] EncryptFile(byte[] data, string password, string? hardwareId = null)
         {
+            // If hardwareId is null, we use the default from provider
+            hardwareId ??= _hardwareProvider.GetHardwareId();
+
             // 1. Generate random salt
             byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
 
@@ -31,10 +41,6 @@ namespace HOPE.Core.Security
 
             // 4. Encrypt
             using var aes = new AesGcm(key);
-            
-            // Output buffer: Salt (16) + Nonce (12) + Tag (16) + Ciphertext (n)
-            // Note: AesGcm puts tag separately in .NET APIs usually, but we need to store it.
-            // Actually, AesGcm.Encrypt takes separate buffers.
             
             byte[] ciphertext = new byte[data.Length];
             byte[] tag = new byte[TagSize];
@@ -71,6 +77,8 @@ namespace HOPE.Core.Security
             byte[] ciphertext = reader.ReadBytes((int)(ms.Length - ms.Position));
 
             // 2. Derive key
+            // If currentHardwareId is null, we use the default from provider
+            currentHardwareId ??= _hardwareProvider.GetHardwareId();
             byte[] key = DeriveKey(password, currentHardwareId, salt);
 
             // 3. Decrypt
@@ -83,7 +91,27 @@ namespace HOPE.Core.Security
             }
             catch (CryptographicException)
             {
+                // Here we could implement the migration mode check
                 throw new CryptographicException("Decryption failed. Invalid password or hardware mismatch.");
+            }
+        }
+
+        /// <summary>
+        /// Re-encrypts data for a new hardware ID if the old one is known (e.g., via a migration flow).
+        /// </summary>
+        public byte[] MigrateEncryptedData(byte[] encryptedData, string password, string oldHardwareId)
+        {
+            try
+            {
+                // 1. Decrypt with old hardware ID
+                byte[] plaintext = DecryptFile(encryptedData, password, oldHardwareId);
+
+                // 2. Re-encrypt with CURRENT hardware ID
+                return EncryptFile(plaintext, password);
+            }
+            catch (Exception ex)
+            {
+                throw new CryptographicException("Migration failed. Verify old hardware ID and password.", ex);
             }
         }
 

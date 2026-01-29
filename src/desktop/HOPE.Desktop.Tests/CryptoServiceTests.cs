@@ -2,6 +2,8 @@ using System;
 using System.Text;
 using Xunit;
 using HOPE.Core.Security;
+using HOPE.Core.Interfaces;
+using Moq;
 
 namespace HOPE.Desktop.Tests
 {
@@ -10,7 +12,9 @@ namespace HOPE.Desktop.Tests
         [Fact]
         public void EncryptDecrypt_WithCorrectPassword_Succeeds()
         {
-            var service = new CryptoService();
+            var mockHardware = new Mock<IHardwareProvider>();
+            mockHardware.Setup(x => x.GetHardwareId()).Returns("DEFAULT_ID");
+            var service = new CryptoService(mockHardware.Object);
             string password = "SecretPassword123";
             byte[] data = Encoding.UTF8.GetBytes("Hello World");
 
@@ -23,7 +27,9 @@ namespace HOPE.Desktop.Tests
         [Fact]
         public void EncryptDecrypt_WithWrongPassword_ThrowsException()
         {
-            var service = new CryptoService();
+            var mockHardware = new Mock<IHardwareProvider>();
+            mockHardware.Setup(x => x.GetHardwareId()).Returns("DEFAULT_ID");
+            var service = new CryptoService(mockHardware.Object);
             string password = "SecretPassword123";
             byte[] data = Encoding.UTF8.GetBytes("Hello World");
 
@@ -38,7 +44,9 @@ namespace HOPE.Desktop.Tests
         [Fact]
         public void HardwareLock_PreventsDecryptionOnDifferentHardware()
         {
-            var service = new CryptoService();
+            var mockHardware = new Mock<IHardwareProvider>();
+            mockHardware.Setup(x => x.GetHardwareId()).Returns("DEFAULT_ID");
+            var service = new CryptoService(mockHardware.Object);
             string password = "SecretPassword123";
             byte[] data = Encoding.UTF8.GetBytes("Locked Content");
             string hardwareIdA = "DEVICE_A_ID";

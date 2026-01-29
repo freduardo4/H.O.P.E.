@@ -74,30 +74,64 @@ jobs:
         pip install pytest
         pytest
 
-  # Next.js build job commented out as verifying project location
-  # next-build:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #   - name: Use Node.js
-  #     uses: actions/setup-node@v4
-  #     with:
-  #       node-version: '20.x'
-  #       cache: 'npm'
-  #       cache-dependency-path: '**/package-lock.json' 
-  #   - name: Install dependencies
-  #     run: echo "Next.js project not found in expected location."
+  next-build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: src/hope-central/package-lock.json
+    - name: Install dependencies
+      working-directory: src/hope-central
+      run: npm ci
+    - name: Build portal
+      working-directory: src/hope-central
+      run: npm run build
 
   e2e-test:
-    needs: [dotnet-test, node-test, python-test]
+    needs: [dotnet-test, node-test, python-test, next-build]
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: hope_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup E2E Environment
-        run: echo "Setting up E2E environment (Postgres, Backend, Simulated Desktop)..."
-      - name: Run Integration Tests
-        run: echo "Running integration tests... (Placeholder)"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+      - name: Install Backend Dependencies
+        working-directory: src/backend
+        run: npm ci
+      - name: Start Backend (Background)
+        working-directory: src/backend
+        run: npm run start:dev &
+        env:
+          DATABASE_URL: postgresql://user:password@localhost:5432/hope_db
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+      - name: Run E2E Health Check
+        run: |
+          # Basic health check using curl as a placeholder for a full Playwright test
+          # till the playwright test suite is fully implemented.
+          for i in {1..10}; do
+            curl -s http://localhost:3000/health && break || sleep 5
+          done
 
   schema-publish:
     needs: node-test

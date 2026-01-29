@@ -10,7 +10,7 @@ namespace HOPE.Core.Services.ECU;
 /// Git-like version control repository for ECU calibration files.
 /// Provides versioning, diffing, and rollback capabilities.
 /// </summary>
-public class CalibrationRepository : IDisposable
+public class CalibrationRepository : ICalibrationRepository, IDisposable
 {
     private readonly string _repoPath;
     private readonly string _objectsPath;
@@ -469,6 +469,22 @@ public class CalibrationRepository : IDisposable
             await StageAsync(calibration, ct);
 
             return calibration;
+        }
+        finally
+        {
+            _lock.Release();
+        }
+    }
+
+    /// <summary>
+    /// Get a specific calibration file from a commit hash
+    /// </summary>
+    public async Task<CalibrationFile> GetCalibrationAsync(string commitHash, CancellationToken ct = default)
+    {
+        await _lock.WaitAsync(ct);
+        try
+        {
+            return await LoadCalibrationFromCommitAsync(commitHash, ct);
         }
         finally
         {

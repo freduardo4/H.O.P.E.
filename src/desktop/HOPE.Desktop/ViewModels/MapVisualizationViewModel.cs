@@ -6,6 +6,9 @@ using HOPE.Desktop.Converters;
 using System.Collections.ObjectModel;
 using HOPE.Core.Models;
 
+using HOPE.Desktop.ViewModels;
+using HOPE.Core.Services.Diagnostics; // For LogReplayService
+
 namespace HOPE.Desktop.ViewModels;
 
 public partial class MapVisualizationViewModel : ObservableObject
@@ -93,6 +96,21 @@ public partial class MapVisualizationViewModel : ObservableObject
     [ObservableProperty]
     private string _selectedCommitB = string.Empty;
 
+    // Overlay / Hit Tracing Properties
+    [ObservableProperty]
+    private double _currentRpm;
+
+    [ObservableProperty]
+    private double _currentLoad;
+
+    [ObservableProperty]
+    private int _activeCellRow = -1;
+
+    [ObservableProperty]
+    private int _activeCellCol = -1;
+
+    public LogReplayService LogReplay { get; } = new LogReplayService(); // Instantiated directly for simplicity as it's a new localized service for now
+
     /// <summary>
     /// Standard map data for single view mode
     /// </summary>
@@ -139,6 +157,10 @@ public partial class MapVisualizationViewModel : ObservableObject
 
             IsDiffMode = false;
             StatusMessage = "Map Loaded Successfully";
+
+            // Subscribe to LogReplay if not already
+            LogReplay.DataPointReplayed -= OnLogDataReplayed;
+            LogReplay.DataPointReplayed += OnLogDataReplayed;
         }
         catch (Exception ex)
         {
@@ -212,6 +234,60 @@ public partial class MapVisualizationViewModel : ObservableObject
     {
         IsDiffMode = false;
         StatusMessage = "Single Map View";
+    }
+
+    private void OnLogDataReplayed(LogDataPoint point)
+    {
+        CurrentRpm = point.Rpm;
+        CurrentLoad = point.Load;
+        UpdateActiveCell();
+    }
+
+    private void UpdateActiveCell()
+    {
+        if (_baseMapData == null) return;
+        
+        // Simple linear search logic to find closest cell
+        // Rows = RPM (800 + i*500)
+        // Cols = Load (j * 12.5)
+        
+        int rows = _baseMapData.GetLength(0);
+        int cols = _baseMapData.GetLength(1);
+
+        // Find row (RPM)
+        int bestRow = 0;
+        double minDiffRow = double.MaxValue;
+        for(int i=0; i<rows; i++)
+        {
+            double axisRpm = 800 + i * 500;
+            double diff = Math.Abs(CurrentRpm - axisRpm);
+            if(diff < minDiffRow)
+            {
+                minDiffRow = diff;
+                bestRow = i;
+            }
+        }
+
+        // Find col (Load)
+        int bestCol = 0;
+        double minDiffCol = double.MaxValue;
+        for(int j=0; j<cols; j++)
+        {
+            double axisLoad = j * 12.5;
+            double diff = Math.Abs(CurrentLoad - axisLoad);
+            if(diff < minDiffCol)
+            {
+                minDiffCol = diff;
+                bestCol = j;
+            }
+        }
+
+        // Only update if changed to avoid UI thrashing
+        if(ActiveCellRow != bestRow || ActiveCellCol != bestCol)
+        {
+            ActiveCellRow = bestRow;
+            ActiveCellCol = bestCol;
+        }
     }
 
     [RelayCommand(CanExecute = nameof(CanOptimize))]

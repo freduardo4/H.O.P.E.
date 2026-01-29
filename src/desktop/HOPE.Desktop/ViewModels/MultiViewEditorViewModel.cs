@@ -10,11 +10,17 @@ using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
 using HOPE.Core.Services.ECU;
 
+using HOPE.Core.Services.ECU;
+using Microsoft.Extensions.Logging;
+using HOPE.Core.Interfaces;
+
 namespace HOPE.Desktop.ViewModels;
 
 public partial class MultiViewEditorViewModel : ObservableObject
 {
-    private readonly CalibrationRepository? _repository;
+    private readonly ICalibrationRepository _repository;
+    private readonly ILogger<MultiViewEditorViewModel> _logger;
+    private CalibrationFile? _currentCalibration;
 
     [ObservableProperty]
     private string _mapName = "Fuel Map (High Octane)";
@@ -63,10 +69,30 @@ public partial class MultiViewEditorViewModel : ObservableObject
     private double[] _currentYAxis = new double[] { 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160 };
     private double[,] _mapData = new double[16, 16]; // [Row, Col]
 
-    public MultiViewEditorViewModel(CalibrationRepository? repository = null)
+    public MultiViewEditorViewModel(ICalibrationRepository repository, ILogger<MultiViewEditorViewModel> logger)
     {
         _repository = repository;
-        InitializeMockData();
+        _logger = logger;
+        // InitializeMockData(); // Mocks removed, use LoadAsync
+    }
+
+    public async Task LoadAsync(string commitHash)
+    {
+        try 
+        {
+            _logger.LogInformation("Loading calibration commit {CommitHash}", commitHash);
+            _currentCalibration = await _repository.GetCalibrationAsync(commitHash);
+            
+            // TODO: Parse calibration blocks into _mapData
+            // For now, we'll log success. In a real scenario, we'd need a MapParser service.
+            // keeping mock data initialization for UI demo purposes until parser is ready
+            InitializeMockData(); 
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load calibration {CommitHash}", commitHash);
+            // In a real app, show error dialog
+        }
     }
 
     private void InitializeMockData()
@@ -223,9 +249,28 @@ public partial class MultiViewEditorViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void Save()
+    private async Task Save()
     {
-        // In real app, this would write back to the repo/hardware
+        try
+        {
+            if (_currentCalibration == null) 
+            {
+                 // Create dummy if missing (for demo)
+                 _currentCalibration = new CalibrationFile { EcuId = "DEMO_ECU", Blocks = new List<CalibrationBlock>() };
+            }
+
+            // Update _currentCalibration with _mapData (would need serialization logic)
+            _logger.LogInformation("Saving calibration...");
+            
+            await _repository.StageAsync(_currentCalibration);
+            await _repository.CommitAsync("Updated map from MultiViewEditor");
+            
+            _logger.LogInformation("Calibration saved successfully.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to save calibration");
+        }
     }
 
     [RelayCommand]

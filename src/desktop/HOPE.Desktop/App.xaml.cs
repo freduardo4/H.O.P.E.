@@ -6,9 +6,12 @@ using HOPE.Core.Interfaces;
 using HOPE.Core.Services.OBD;
 using HOPE.Core.Services.Database;
 using HOPE.Core.Protocols;
+using HOPE.Core.Services.Protocols;
 using HOPE.Core.Services.ECU;
 using HOPE.Core.Services.AI;
 using HOPE.Core.Services.Security;
+using HOPE.Core.Security;
+using HOPE.Core.Hardware;
 using HOPE.Core.Services.Reports;
 using HOPE.Core.Services.Export;
 using HOPE.Core.Services.Logging;
@@ -55,10 +58,19 @@ public partial class App : PrismApplication
         
         // Register Services
         containerRegistry.RegisterSingleton<IDatabaseService, SqliteDatabaseService>();
-        containerRegistry.RegisterSingleton<CloudSafetyService>();
+        containerRegistry.RegisterSingleton<ICalibrationRepository>(container => 
+        {
+            var ledger = container.Resolve<ICalibrationLedgerService>();
+            var repoPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "HOPE", "CalibrationRepo");
+            return new CalibrationRepository(repoPath, ledger);
+        });
+        containerRegistry.RegisterSingleton<ICloudSafetyService, CloudSafetyService>();
+        containerRegistry.RegisterSingleton<IVoltageMonitor, VoltageMonitor>();
         containerRegistry.RegisterSingleton<PreFlightService>();
         containerRegistry.RegisterSingleton<ISsoService, SsoService>();
         containerRegistry.RegisterSingleton<IFingerprintService, HardwareFingerprintService>();
+        containerRegistry.RegisterSingleton<IHardwareProvider, HardwareLockService>();
+        containerRegistry.RegisterSingleton<CryptoService>();
         containerRegistry.RegisterSingleton<IMarketplaceService, MarketplaceService>();
         containerRegistry.RegisterSingleton<HttpClient>();
         
@@ -69,6 +81,7 @@ public partial class App : PrismApplication
         
         // Protocol & ECU
         containerRegistry.RegisterSingleton<IDiagnosticProtocol, UDSProtocol>();
+        containerRegistry.RegisterSingleton<IUdsProtocolService, UdsProtocolService>();
         containerRegistry.RegisterSingleton<IECUService, ECUService>();
         
         // AI Services - use ONNX-based anomaly detection for production
@@ -103,13 +116,8 @@ public partial class App : PrismApplication
         // containerRegistry.RegisterSingleton<IOBD2Service, OBD2Service>();
         containerRegistry.RegisterSingleton<IOBD2Service, MockOBD2Service>();
 
-        // Register Calibration Repository & Backup
+        // Register Calibration Backup
         var repoPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "HOPE", "CalibrationRepo");
-        containerRegistry.RegisterSingleton<CalibrationRepository>(container => 
-        {
-            var ledger = container.Resolve<ICalibrationLedgerService>();
-            return new CalibrationRepository(repoPath, ledger);
-        });
         containerRegistry.RegisterSingleton<IBackupService>(() => new BackupService(repoPath));
 
         // Register Views for Navigation

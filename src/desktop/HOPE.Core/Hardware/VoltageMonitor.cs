@@ -8,7 +8,7 @@ namespace HOPE.Core.Hardware;
 /// Monitors vehicle battery voltage via J2534 adapter.
 /// Critical for safe ECU operations - prevents writes during low voltage conditions.
 /// </summary>
-public class VoltageMonitor : IDisposable
+public class VoltageMonitor : IVoltageMonitor, IDisposable
 {
     /// <summary>Minimum voltage for safe write operations (engine running or external charger)</summary>
     public const double SAFE_WRITE_THRESHOLD = 13.0;

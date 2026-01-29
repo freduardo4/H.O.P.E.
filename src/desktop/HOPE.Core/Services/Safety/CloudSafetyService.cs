@@ -5,7 +5,7 @@ using HOPE.Core.Services.ECU;
 
 namespace HOPE.Core.Services.Safety;
 
-public class CloudSafetyService
+public class CloudSafetyService : HOPE.Core.Interfaces.ICloudSafetyService
 {
     private readonly HttpClient _httpClient;
     private const string BASE_URL = "http://localhost:3000/safety"; // TODO: Move to config

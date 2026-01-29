@@ -5,16 +5,20 @@ using HOPE.Core.Services.Marketplace;
 using Prism.Commands;
 using Prism.Mvvm;
 
+using Microsoft.Extensions.Logging;
+
 namespace HOPE.Desktop.ViewModels
 {
     public class MarketplaceViewModel : BindableBase
     {
         private readonly IMarketplaceService _marketplaceService;
+        private readonly ILogger<MarketplaceViewModel> _logger;
         private bool _isLoading;
 
-        public MarketplaceViewModel(IMarketplaceService marketplaceService)
+        public MarketplaceViewModel(IMarketplaceService marketplaceService, ILogger<MarketplaceViewModel> logger)
         {
             _marketplaceService = marketplaceService;
+            _logger = logger;
             Listings = new ObservableCollection<ListingItem>();
             LoadCommand = new DelegateCommand(async () => await LoadListingsAsync());
             PurchaseCommand = new DelegateCommand<ListingItem>(async (item) => await PurchaseListing(item));
@@ -38,8 +42,7 @@ namespace HOPE.Desktop.ViewModels
             IsLoading = true;
             try
             {
-                // In a real app, fetch from IMarketplaceService
-                // Mocking for now
+                _logger.LogInformation("Loading marketplace listings...");
                 Listings.Clear();
                 var items = await _marketplaceService.GetListingsAsync();
                 foreach (var item in items)
@@ -53,6 +56,11 @@ namespace HOPE.Desktop.ViewModels
                         Version = item.Version
                     });
                 }
+                _logger.LogInformation("Loaded {Count} listings.", items.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load listings");
             }
             finally
             {
@@ -63,10 +71,24 @@ namespace HOPE.Desktop.ViewModels
         private async Task PurchaseListing(ListingItem item)
         {
             if (item == null) return;
-            var success = await _marketplaceService.PurchaseAndDownloadAsync(item.Id);
-            if (success)
+            
+            try 
             {
-                // Show success message or navigate
+                _logger.LogInformation("Purchasing listing {ListingId}", item.Id);
+                var success = await _marketplaceService.PurchaseAndDownloadAsync(item.Id);
+                if (success)
+                {
+                    _logger.LogInformation("Purchase successful for {ListingId}", item.Id);
+                    // Show success message or navigate
+                }
+                else
+                {
+                    _logger.LogWarning("Purchase failed for {ListingId}", item.Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error purchasing listing {ListingId}", item.Id);
             }
         }
     }

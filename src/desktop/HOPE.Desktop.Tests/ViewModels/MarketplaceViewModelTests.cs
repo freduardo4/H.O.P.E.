@@ -12,11 +12,13 @@ namespace HOPE.Desktop.Tests.ViewModels
     public class MarketplaceViewModelTests
     {
         private readonly Mock<IMarketplaceService> _mockService;
+        private readonly Mock<Microsoft.Extensions.Logging.ILogger<MarketplaceViewModel>> _mockLogger;
 
 
         public MarketplaceViewModelTests()
         {
             _mockService = new Mock<IMarketplaceService>();
+            _mockLogger = new Mock<Microsoft.Extensions.Logging.ILogger<MarketplaceViewModel>>();
         }
 
         [Fact]
@@ -32,7 +34,7 @@ namespace HOPE.Desktop.Tests.ViewModels
             _mockService.Setup(s => s.GetListingsAsync())
                 .ReturnsAsync(mockListings);
 
-            var viewModel = new MarketplaceViewModel(_mockService.Object);
+            var viewModel = new MarketplaceViewModel(_mockService.Object, _mockLogger.Object);
 
             // Act
             // Direct async call to ensure completion for test
@@ -60,7 +62,7 @@ namespace HOPE.Desktop.Tests.ViewModels
             _mockService.Setup(s => s.PurchaseAndDownloadAsync("1"))
                 .ReturnsAsync(true);
 
-            var viewModel = new MarketplaceViewModel(_mockService.Object);
+            var viewModel = new MarketplaceViewModel(_mockService.Object, _mockLogger.Object);
 
             // Act
             viewModel.PurchaseCommand.Execute(item);

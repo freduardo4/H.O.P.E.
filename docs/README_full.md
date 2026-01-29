@@ -295,6 +295,7 @@ HOPE/
 ### Phase 3: AI & Analytics (Completed)
 - [x] Train LSTM Autoencoder & ONNX export
 - [x] Explainable AI (XAI) narratives
+- [x] Overlay Comparison (Log vs Map cell tracking)
 - [x] MLOps pipeline (DVC, Docker, Model Cards)
 - [x] Physics-Informed Neural Networks (PINNs)
 - [x] Predictive Maintenance (RUL)
