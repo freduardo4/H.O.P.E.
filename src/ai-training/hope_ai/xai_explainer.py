@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import torch
+import shap
 import json
 import logging
 from pathlib import Path
@@ -18,7 +19,6 @@ try:
     import lime.lime_tabular
 except ImportError:
     lime = None
-
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -61,6 +61,7 @@ class XAIExplainer:
             _, scores = self.detector.predict(x_reshaped)
             return scores
 
+<<<<<<< HEAD
         background_flat = background_data.reshape(background_data.shape[0], -1)
         self.shap_explainer = shap.KernelExplainer(predict_score, background_flat)
         logger.info("SHAP explainer initialized with background data.")
@@ -213,8 +214,6 @@ class XAIExplainer:
             narrative += "Action recommended: Monitor multiple related systems for intermittent faults."
             
         return narrative
-
-
 if __name__ == "__main__":
     # Test stub (would require a loaded model)
     pass

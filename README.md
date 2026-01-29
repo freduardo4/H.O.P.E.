@@ -53,7 +53,7 @@ graph LR
 - **Community**: Wiki-Fix database for collaborative repair patterns with knowledge graph indexing.
 - **Security**: Mandatory S3 encryption, public access blocks, ECR scanning, and hash-chained calibration ledger.
 - **Marketplace**: Secure calibration file exchange with hardware-locked license generation.
-- **Tests**: 543+ automated tests passing across Desktop (220), Backend (219), and AI (104+).
+- **Tests**: 549+ automated tests passing across Desktop (220), Backend (220+), and AI (109+).
 
 ## Documentation & Recipes
 

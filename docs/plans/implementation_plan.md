@@ -175,7 +175,6 @@ Circular buffer CAN logging ("Black Box") for post-incident analysis.
 - **Unit Tests**: Add tests around safety limits (invalid tuning values, rollback behavior).
 - **Integration Tests**: Full-stack OBD communication flow tests using `SimulatedHardwareAdapter`.
 - **Hardware-in-the-Loop (HiL)**: Simulations for deterministic protocol timing.
-
 ---
 
 ## Phase 2: ECU Calibration & Tuning

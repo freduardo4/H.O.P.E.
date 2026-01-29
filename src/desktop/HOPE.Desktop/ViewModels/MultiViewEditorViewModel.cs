@@ -13,7 +13,6 @@ using HOPE.Core.Services.ECU;
 using HOPE.Core.Services.ECU;
 using Microsoft.Extensions.Logging;
 using HOPE.Core.Interfaces;
-
 namespace HOPE.Desktop.ViewModels;
 
 public partial class MultiViewEditorViewModel : ObservableObject
@@ -30,7 +29,6 @@ public partial class MultiViewEditorViewModel : ObservableObject
 
     [ObservableProperty]
     private string _statusMessage = "Ready";
-
     // --- 3D View Properties ---
     [ObservableProperty]
     private Point3DCollection _surfacePoints = new();
@@ -96,6 +94,7 @@ public partial class MultiViewEditorViewModel : ObservableObject
             _logger.LogError(ex, "Failed to load calibration {CommitHash}", commitHash);
             StatusMessage = $"Error loading calibration: {ex.Message}";
         }
+    }
     }
 
     private void InitializeMockData()
@@ -276,6 +275,7 @@ public partial class MultiViewEditorViewModel : ObservableObject
             _logger.LogError(ex, "Failed to save calibration");
             StatusMessage = $"Error saving: {ex.Message}";
         }
+    }
     }
 
     [RelayCommand]
