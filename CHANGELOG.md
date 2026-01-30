@@ -8,19 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Standard community health files (CONTRIBUTING, CODE_OF_CONDUCT, templates).
+- Standard community health files (CONTRIBUTING, CODE_OF_CONDUCT).
 - Polyglot CI workflow for .NET, Node, and Python.
-- Dependabot configuration for automated dependency updates.
-- Documentation restructuring with a new summary README and docs index.
-- Scanmatik 2 PRO professional hardware support (Quantized Voltage Handling).
-- Automated J2534 Pass-Thru device discovery in Desktop UI.
+- Generic OBD2 hardware integration using ELM327/Serial adapters.
+- AI-driven "Lead Mechanic" mode for plain-English diagnostic narratives.
 - Physics-Informed Neural Networks (PINNs) for virtual sensor estimation (EGT).
 - Remaining Useful Life (RUL) forecasting system with modular architecture.
-- Calibration Marketplace with secure encrypted file exchange.
-- License generation and hardware-locking system for ECU files.
-- Hardware-in-the-Loop (HiL) Testing Tier with fault injection engine.
-- AI-driven "Lead Mechanic" mode for plain-English diagnostic narratives.
-- Full Project Verification Sweep (530+ test cases validated).
+- Full Project Verification Sweep (600+ test cases validated).
 
 ### Changed
-- Moved original README to `docs/README_full.md`.
+- Refactored project focus to Core Diagnostics and AI Analytics.
+- Streamlined backend to use Google OAuth exclusively.
+- Updated documentation architecture for improved clarity.
+- Removed hardcoded security dummies for production parity.

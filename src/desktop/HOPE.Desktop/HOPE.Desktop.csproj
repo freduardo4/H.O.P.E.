@@ -20,7 +20,7 @@
     <UseWPF>true</UseWPF>
     <StartupObject>HOPE.Desktop.Program</StartupObject>
     <AssemblyTitle>HOPE Desktop</AssemblyTitle>
-    <Description>HOPE Desktop Application - Professional vehicle diagnostics, ECU tuning, AI-powered anomaly detection, and digital twin simulation</Description>
+    <Description>HOPE Desktop Application - Professional vehicle diagnostics and AI-powered engine analytics</Description>
     <Company>HOPE Tuning</Company>
     <Product>High-Output Performance Engineering</Product>
     <Copyright>Copyright © 2026 HOPE Tuning</Copyright>

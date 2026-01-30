@@ -18,11 +18,11 @@ export const getDatabaseConfig = (): TypeOrmModuleOptions => {
 
     return {
         type: 'postgres',
-        host: process.env.DB_HOST || 'localhost',
+        host: process.env.DB_HOST,
         port: parseInt(process.env.DB_PORT || '5432', 10),
-        username: process.env.DB_USERNAME || 'hope',
-        password: process.env.DB_PASSWORD || 'hope_password',
-        database: process.env.DB_DATABASE || 'hope_db',
+        username: process.env.DB_USERNAME,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_DATABASE,
         autoLoadEntities: true,
         synchronize: false, // Transitioned to migrations for Phase 8.4
         logging: process.env.NODE_ENV === 'development',

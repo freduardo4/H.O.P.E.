@@ -19,13 +19,13 @@ export default function Home() {
         </h1>
 
         <p className="text-gray-400 text-xl md:text-2xl mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
-          The ultimate cloud ecosystem for ECU tuners and automotive engineers. Secure calibrations, AI-powered diagnostics, and community-driven repair patterns.
+          The ultimate cloud ecosystem for automotive engineers. Professional diagnostics, AI-powered analytics, and community-driven repair patterns.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-6 justify-center">
-          <Link href="/marketplace">
+          <Link href="/telemetry">
             <Button size="lg" className="w-full sm:w-auto px-12 text-lg uppercase tracking-widest shadow-2xl shadow-primary/40">
-              Browse Marketplace
+              View Analytics
             </Button>
           </Link>
           <Link href="/wiki">
@@ -46,13 +46,7 @@ export default function Home() {
           <p className="text-gray-400 leading-relaxed font-medium">LSTM-based anomaly detection and Ghost Curve visualizations for precise mechanical insights.</p>
         </div>
 
-        <div className="p-8 text-left glass rounded-3xl hover:border-primary/50 transition-colors">
-          <div className="text-primary mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20" /><path d="m17 5-5-3-5 3" /><path d="m17 19-5 3-5-3" /><path d="M2 12h20" /><path d="m5 7-3 5 3 5" /><path d="m19 7 3 5-3 5" /></svg>
-          </div>
-          <h3 className="text-2xl font-bold text-white mb-4">Secure Exchange</h3>
-          <p className="text-gray-400 leading-relaxed font-medium">AES-256 encrypted calibration delivery with full hardware-level fingerprinting and licensing.</p>
-        </div>
+
 
         <div className="p-8 text-left glass rounded-3xl hover:border-primary/50 transition-colors">
           <div className="text-primary mb-6">

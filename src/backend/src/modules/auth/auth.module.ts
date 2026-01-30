@@ -9,7 +9,6 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { GoogleStrategy } from './strategies/google.strategy';
-import { GithubStrategy } from './strategies/github.strategy';
 
 @Module({
     imports: [
@@ -21,7 +20,7 @@ import { GithubStrategy } from './strategies/github.strategy';
         }),
     ],
     controllers: [AuthController],
-    providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard, GoogleStrategy, GithubStrategy],
+    providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard, GoogleStrategy],
     exports: [AuthService, JwtAuthGuard, RolesGuard],
 })
 export class AuthModule { }

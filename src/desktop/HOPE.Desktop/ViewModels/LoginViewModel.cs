@@ -29,14 +29,12 @@ namespace HOPE.Desktop.ViewModels
             _eventAggregator = eventAggregator;
 
             LoginWithGoogleCommand = new DelegateCommand(async () => await LoginWithGoogle());
-            LoginWithGithubCommand = new DelegateCommand(async () => await LoginWithGithub());
             LoginWithEmailCommand = new DelegateCommand<object>(LoginWithEmail);
         }
 
         public ICommand LoginWithEmailCommand { get; }
 
         public ICommand LoginWithGoogleCommand { get; }
-        public ICommand LoginWithGithubCommand { get; }
 
         private async Task LoginWithGoogle()
         {
@@ -54,21 +52,7 @@ namespace HOPE.Desktop.ViewModels
             }
         }
 
-        private async Task LoginWithGithub()
-        {
-            try
-            {
-                var response = await _ssoService.LoginWithGithubAsync();
-                if (response != null)
-                {
-                    NavigateToDashboard();
-                }
-            }
-            catch (Exception ex)
-            {
-                // Log and show error
-            }
-        }
+
 
         private void LoginWithEmail(object passwordBox)
         {

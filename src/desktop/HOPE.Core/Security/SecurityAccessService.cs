@@ -10,8 +10,7 @@ public class SecurityAccessService
 
     public SecurityAccessService()
     {
-        // Default providers
-        RegisterProvider(new MockSecurityProvider());
+        // Providers will be registered externally or added here
     }
 
     public void RegisterProvider(ISecurityAccessProvider provider)

@@ -10,15 +10,11 @@ import { HealthModule } from './health';
 import { AuthModule } from './modules/auth';
 import { VehiclesModule } from './modules/vehicles';
 import { DiagnosticsModule } from './modules/diagnostics';
-import { ECUCalibrationsModule } from './modules/ecu-calibrations';
 import { ReportsModule } from './modules/reports';
 import { CustomersModule } from './modules/customers';
 import { SafetyLogsModule } from './modules/safety-logs';
-import { TuningModule } from './modules/tuning/tuning.module';
 import { InfraModule } from './modules/infra/infra.module';
 import { WikiFixModule } from './modules/wiki-fix/wiki-fix.module';
-import { CmsModule } from './modules/cms/cms.module';
-import { MarketplaceModule } from './modules/marketplace/marketplace.module';
 import { AssetsModule } from './modules/assets/assets.module';
 import { getDatabaseConfig } from './config';
 
@@ -45,15 +41,11 @@ import { getDatabaseConfig } from './config';
         AuthModule,
         VehiclesModule,
         DiagnosticsModule,
-        ECUCalibrationsModule,
         ReportsModule,
         CustomersModule,
         SafetyLogsModule,
-        TuningModule,
         InfraModule,
         WikiFixModule,
-        CmsModule,
-        MarketplaceModule,
         AssetsModule,
     ],
     controllers: [],

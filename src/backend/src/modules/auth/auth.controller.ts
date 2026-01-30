@@ -85,19 +85,4 @@ export class AuthController {
         // In a real app, you might redirect to a frontend URL with tokens
         return res.json(result);
     }
-
-    @Public()
-    @Get('github')
-    @UseGuards(AuthGuard('github'))
-    async githubAuth(@Req() req) {
-        // Initiates GitHub OAuth2 flow
-    }
-
-    @Public()
-    @Get('github/callback')
-    @UseGuards(AuthGuard('github'))
-    async githubAuthRedirect(@Req() req, @Res() res: Response) {
-        const result = await this.authService.validateOAuthUser(req.user);
-        return res.json(result);
-    }
 }

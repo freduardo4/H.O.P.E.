@@ -85,85 +85,37 @@ public partial class App : PrismApplication
 
     protected override void RegisterTypes(IContainerRegistry containerRegistry)
     {
-        // Security Access (UnlockECU integration)
-        containerRegistry.RegisterSingleton<SecurityAccessService>();
-        
         // Register Logging First
         containerRegistry.RegisterSingleton<ILoggingService, SerilogLoggingService>();
         
         // Register Services
         containerRegistry.RegisterSingleton<IDatabaseService, SqliteDatabaseService>();
-        containerRegistry.RegisterSingleton<ICalibrationRepository>(container => 
-        {
-            var ledger = container.Resolve<ICalibrationLedgerService>();
-            var repoPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "HOPE", "CalibrationRepo");
-            return new CalibrationRepository(repoPath, ledger);
-        });
-        containerRegistry.RegisterSingleton<ICloudSafetyService, CloudSafetyService>();
         containerRegistry.RegisterSingleton<IVoltageMonitor, VoltageMonitor>();
         containerRegistry.RegisterSingleton<PreFlightService>();
         containerRegistry.RegisterSingleton<ISsoService, SsoService>();
         containerRegistry.RegisterSingleton<IFingerprintService, HardwareFingerprintService>();
-        containerRegistry.RegisterSingleton<IHardwareProvider, HardwareLockService>();
-        containerRegistry.RegisterSingleton<CryptoService>();
-        containerRegistry.RegisterSingleton<IMarketplaceService, MarketplaceService>();
         containerRegistry.RegisterSingleton<HttpClient>();
-        
-        // Simulation & Digital Twin
-        containerRegistry.RegisterSingleton<IHiLService, HiLService>();
-        containerRegistry.RegisterSingleton<IBeamNgService, BeamNgService>();
-        containerRegistry.RegisterSingleton<SimulationOrchestrator>();
-        
-        // Protocol & ECU
-        containerRegistry.RegisterSingleton<IDiagnosticProtocol, UDSProtocol>();
-        containerRegistry.RegisterSingleton<IUdsProtocolService, UdsProtocolService>();
-        containerRegistry.RegisterSingleton<IECUService, ECUService>();
         
         // AI Services - use ONNX-based anomaly detection for production
         containerRegistry.RegisterSingleton<IAnomalyService, OnnxAnomalyService>();
 
-        // Tuning Optimizer Service - genetic algorithm-based ECU tuning
-        containerRegistry.RegisterSingleton<ITuningOptimizerService, TuningOptimizerService>();
-
-        // AI & Report Services for Phase 4.3
+        // AI & Report Services for Analytics & Diagnosis
         containerRegistry.RegisterSingleton<ILlmService, MockLlmService>();
         containerRegistry.RegisterSingleton<IReportService, GenerativeReportService>();
         containerRegistry.RegisterSingleton<DiagnosticNarrativeService>();
         containerRegistry.RegisterSingleton<ExplainableAnomalyService>();
-        containerRegistry.RegisterSingleton<ITuningCopilotService, TuningCopilotService>();
-        
-        // Offline-First Sync Service for Phase 5.4
-        containerRegistry.RegisterSingleton<ISyncService, SyncService>();
-
-        // Cryptographic Audit Service for Phase 5.5
-        containerRegistry.RegisterSingleton<IAuditService, AuditService>();
-        containerRegistry.RegisterSingleton<ICalibrationLedgerService, CalibrationLedgerService>();
 
         // RUL Predictor Service - remaining useful life prediction
         containerRegistry.RegisterSingleton<IRULPredictorService, RULPredictorService>();
         
-        // Export Services
-        containerRegistry.RegisterSingleton<IExportService, ExportService>();
-        
-        // Community & Wiki-Fix for Phase 5.6
+        // Community & Wiki-Fix
         containerRegistry.RegisterSingleton<IWikiFixService, WikiFixService>();
 
-        // For development/demo, we use the Mock service by default.
-        // To use REAL HARDWARE:
-        // 1. Comment out: containerRegistry.RegisterSingleton<IOBD2Service, MockOBD2Service>();
-        // 2. Uncomment: containerRegistry.RegisterSingleton<IOBD2Service, OBD2Service>();
-        // 3. Ensure a J2534 or ELM327 device is connected.
-        // containerRegistry.RegisterSingleton<IOBD2Service, OBD2Service>();
-        containerRegistry.RegisterSingleton<IOBD2Service, MockOBD2Service>();
-
-        // Register Calibration Backup
-        var repoPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "HOPE", "CalibrationRepo");
-        containerRegistry.RegisterSingleton<IBackupService>(() => new BackupService(repoPath));
+        // Real OBD2 Hardware Interface (Generic ELM327)
+        containerRegistry.RegisterSingleton<IOBD2Service, OBD2Service>();
 
         // Register Views for Navigation
         containerRegistry.RegisterForNavigation<DashboardView>();
-        containerRegistry.RegisterForNavigation<MapVisualizationView>();
-        containerRegistry.RegisterForNavigation<MapDiffViewer>();
         containerRegistry.RegisterForNavigation<DTCView>();
         containerRegistry.RegisterForNavigation<SettingsView>();
         containerRegistry.RegisterForNavigation<SessionHistoryView>();
@@ -172,9 +124,6 @@ public partial class App : PrismApplication
         containerRegistry.Register<WikiFixViewModel>();
         containerRegistry.RegisterForNavigation<WikiFixView, WikiFixViewModel>();
         containerRegistry.RegisterForNavigation<LoginView, LoginViewModel>();
-        containerRegistry.RegisterForNavigation<MarketplaceView, MarketplaceViewModel>();
-        containerRegistry.RegisterForNavigation<HiLSimulationView, HiLSimulationViewModel>();
-        containerRegistry.RegisterForNavigation<CopilotView, CopilotViewModel>();
     }
 
     protected override async void OnInitialized()

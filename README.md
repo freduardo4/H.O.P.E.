@@ -4,7 +4,7 @@
 
 ## Overview
 
-H.O.P.E. is an advanced, AI-powered vehicle diagnostics and ECU calibration platform. It bridges the gap between traditional tuning tools and modern predictive maintenance using machine learning.
+H.O.P.E. is an advanced, AI-powered vehicle diagnostics and analytics platform. It bridges the gap between traditional tuning tools and modern predictive maintenance using machine learning, providing deep insights into engine performance and health.
 
 ## Quick Start
 
@@ -21,11 +21,11 @@ To run the full stack, you need to configure the backend environment.
 1.  **Backend Setup**:
     - Navigate to `src/backend`.
     - Copy `.env.example` to `.env`.
-    - Update the values with your database credentials and OAuth keys (GitHub/Google).
+    - Update the values with your database credentials and Google OAuth keys.
 
 2.  **Hardware Setup**:
-    - The Desktop Client defaults to **Simulation Mode** (Mock OBD) for easy testing without hardware.
-    - To use real hardware (J2534/ELM327), modify `src/desktop/HOPE.Desktop/App.xaml.cs` (search for `IOBD2Service`).
+    - Connect your generic ELM327 or compatible serial OBD2 adapter.
+    - The desktop app will automatically attempt to connect to the configured COM port.
 
 ## 🚀 Onboarding Journey
 
@@ -33,11 +33,10 @@ To run the full stack, you need to configure the backend environment.
 graph LR
     A["⚙️ Setup"] --> B["🔌 Connect"]
     B --> C["🔍 Diagnose"]
-    C --> D["📈 Optimize"]
-    D --> E["⚡ Flash"]
+    C --> D["📈 Analyze"]
     
     style A fill:#4a90e2,stroke:#333,stroke-width:2px
-    style E fill:#e94e77,stroke:#333,stroke-width:2px
+    style D fill:#e94e77,stroke:#333,stroke-width:2px
 ```
 
 > [!TIP]
@@ -48,29 +47,24 @@ graph LR
 | Module | Status | Health | Integration |
 | :--- | :--- | :--- | :--- |
 | **Backend API** | ✅ Stable | ⚡ 24ms latency | RDS/S3 Connected |
-| **Desktop Client** | ✅ Stable | 🛠️ Scanmatik 2 PRO Ready | Local DB Ready |
+| **Desktop Client** | ✅ Stable | 🛠️ Generic OBD2 Ready | Local DB Ready |
 | **AI Forecaster** | ✅ Trained | 🎯 94% Accuracy | ONNX Verified |
 | **Infrastructure** | ✅ Secure | 🛡️ tfsec Passed | Multi-Zone |
 
 ## Project Status
 
 - [x] **Status**: ✅ All 7 Phases of engineering and cloud infrastructure matured and verified.
-- **Diagnostics**: UDS/KWP2000 protocol handlers, Real-time DTC Filtering, and "Lead Mechanic" AI insights.
-- **Tuning**: Graphical map diff tool and "Hit Tracing" Overlay Comparison for calibration analysis.
-- **Safety**: Voltage-aware HAL with specific support for Scanmatik 2 PRO quantized reporting.
+- **Diagnostics**: High-frequency OBD2 data ingestion, Real-time DTC Filtering, and "Lead Mechanic" AI insights.
 - **AI Analytics**:
-  - LSTM Anomaly Detection pipeline functional with 96% test coverage.
+  - LSTM Anomaly Detection pipeline functional with high test coverage.
   - Physics-Informed Neural Networks (PINNs) for virtual sensors (EGT estimation).
   - Remaining Useful Life (RUL) forecasting for predictive maintenance.
-- **Simulation**: Virtual pre-flight validation and Hardware-in-the-Loop (HiL) Testing Tier via BeamNG.drive digital twin.
 - **Community**: Wiki-Fix database for collaborative repair patterns with knowledge graph indexing.
-- **Security**: Mandatory S3 encryption, public access blocks, ECR scanning, and hash-chained calibration ledger.
-- **Marketplace**: Secure calibration file exchange with hardware-locked license generation.
-- **Tests**: 549+ automated tests passing across Desktop (220), Backend (220+), and AI (109+).
+- **Tests**: 627+ automated tests passing across Backend (272), Desktop (241), and AI (114).
 
 ## Documentation & Recipes
 
-- **[Developer Recipes](recipes/README.md)**: Living examples for common tasks (OBD sessions, tuning, AI).
+- **[Developer Recipes](recipes/README.md)**: Living examples for common tasks (OBD sessions, AI diagnosis).
 - **[Full Documentation](docs/README_full.md)**: Detailed architecture and deep dives.
 - **[Documentation Index](docs/index.md)**: Navigation for all project docs.
 - **[Contributing](CONTRIBUTING.md)**: How to get involved.

@@ -13,7 +13,6 @@ namespace HOPE.Core.Services.Cloud
     public interface ISsoService
     {
         Task<AuthResponse?> LoginWithGoogleAsync();
-        Task<AuthResponse?> LoginWithGithubAsync();
     }
 
     public class SsoService : ISsoService
@@ -31,10 +30,7 @@ namespace HOPE.Core.Services.Cloud
             return await InitiateOAuthFlow("google");
         }
 
-        public async Task<AuthResponse?> LoginWithGithubAsync()
-        {
-            return await InitiateOAuthFlow("github");
-        }
+
 
         private async Task<AuthResponse?> InitiateOAuthFlow(string provider)
         {
