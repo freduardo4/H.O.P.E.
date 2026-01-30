@@ -148,7 +148,11 @@ public partial class App : PrismApplication
         // Community & Wiki-Fix for Phase 5.6
         containerRegistry.RegisterSingleton<IWikiFixService, WikiFixService>();
 
-        // For development, we'll use the Mock service
+        // For development/demo, we use the Mock service by default.
+        // To use REAL HARDWARE:
+        // 1. Comment out: containerRegistry.RegisterSingleton<IOBD2Service, MockOBD2Service>();
+        // 2. Uncomment: containerRegistry.RegisterSingleton<IOBD2Service, OBD2Service>();
+        // 3. Ensure a J2534 or ELM327 device is connected.
         // containerRegistry.RegisterSingleton<IOBD2Service, OBD2Service>();
         containerRegistry.RegisterSingleton<IOBD2Service, MockOBD2Service>();
 

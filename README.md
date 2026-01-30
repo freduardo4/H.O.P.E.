@@ -14,6 +14,19 @@ H.O.P.E. is an advanced, AI-powered vehicle diagnostics and ECU calibration plat
 - Python 3.10+
 - PostgreSQL
 
+## 🛠️ Configuration
+
+To run the full stack, you need to configure the backend environment.
+
+1.  **Backend Setup**:
+    - Navigate to `src/backend`.
+    - Copy `.env.example` to `.env`.
+    - Update the values with your database credentials and OAuth keys (GitHub/Google).
+
+2.  **Hardware Setup**:
+    - The Desktop Client defaults to **Simulation Mode** (Mock OBD) for easy testing without hardware.
+    - To use real hardware (J2534/ELM327), modify `src/desktop/HOPE.Desktop/App.xaml.cs` (search for `IOBD2Service`).
+
 ## 🚀 Onboarding Journey
 
 ```mermaid
