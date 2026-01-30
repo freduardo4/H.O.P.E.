@@ -27,7 +27,7 @@ public class DTCViewModelTests
         _mockRegionManager = new Mock<IRegionManager>();
         _mockLogger = new Mock<ILogger<DTCViewModel>>();
         
-        _viewModel = new DTCViewModel(_mockObdService.Object, _mockRegionManager.Object, _mockLogger.Object, _mockWikiFixService.Object);
+        _viewModel = new DTCViewModel(_mockObdService.Object, _mockRegionManager.Object, _mockWikiFixService.Object);
     }
 
     [Fact]

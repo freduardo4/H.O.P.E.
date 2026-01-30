@@ -58,7 +58,7 @@ namespace HOPE.Desktop.Tests.ViewModels
         public async Task PurchaseCommand_ShouldCallService_WhenExecuted()
         {
             // Arrange
-            var item = new ListingItem { Id = "1", Title = "Tune" };
+            var item = new ListingItem { Id = "1", Title = "Tune", Version = "1.0", Description = "Test Description", Price = 50 };
             _mockService.Setup(s => s.PurchaseAndDownloadAsync("1"))
                 .ReturnsAsync(true);
 

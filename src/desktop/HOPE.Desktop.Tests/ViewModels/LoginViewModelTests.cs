@@ -4,6 +4,8 @@ using HOPE.Core.Services.Cloud;
 using HOPE.Desktop.ViewModels;
 using Moq;
 using Prism.Regions;
+using Prism.Events;
+using HOPE.Desktop.Events;
 using Xunit;
 
 namespace HOPE.Desktop.Tests.ViewModels
@@ -12,13 +14,19 @@ namespace HOPE.Desktop.Tests.ViewModels
     {
         private readonly Mock<ISsoService> _mockSsoService;
         private readonly Mock<IRegionManager> _mockRegionManager;
+        private readonly Mock<IEventAggregator> _mockEventAggregator;
         private readonly LoginViewModel _viewModel;
 
         public LoginViewModelTests()
         {
             _mockSsoService = new Mock<ISsoService>();
             _mockRegionManager = new Mock<IRegionManager>();
-            _viewModel = new LoginViewModel(_mockSsoService.Object, _mockRegionManager.Object);
+            _mockEventAggregator = new Mock<IEventAggregator>();
+
+            var mockEvent = new Mock<UserLoggedInEvent>();
+            _mockEventAggregator.Setup(ea => ea.GetEvent<UserLoggedInEvent>()).Returns(mockEvent.Object);
+
+            _viewModel = new LoginViewModel(_mockSsoService.Object, _mockRegionManager.Object, _mockEventAggregator.Object);
         }
 
         [Fact]
