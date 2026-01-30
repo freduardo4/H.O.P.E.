@@ -95,10 +95,10 @@ namespace HOPE.Desktop.ViewModels
 
     public class ListingItem
     {
-        public string Id { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
+        public required string Id { get; set; }
+        public required string Title { get; set; }
+        public required string Description { get; set; }
         public double Price { get; set; }
-        public string Version { get; set; }
+        public required string Version { get; set; }
     }
 }

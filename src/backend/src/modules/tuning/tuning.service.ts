@@ -15,9 +15,11 @@ export class TuningService {
             // Use venv python if possible, relative to this service file
             // Service is in src/modules/tuning, venv is in src/ai-training/venv
             const venvPython = path.resolve(__dirname, '../../../../ai-training/venv/Scripts/python.exe');
+            this.logger.log(`Resolved venv path: ${venvPython}`);
             const pythonCommand = require('fs').existsSync(venvPython) ? venvPython : 'python';
 
             this.logger.log(`Using python: ${pythonCommand} for script: ${this.pythonScriptPath}`);
+            this.logger.log(`Current working directory: ${process.cwd()}`);
 
             const pythonProcess = spawn(pythonCommand, [this.pythonScriptPath]);
 

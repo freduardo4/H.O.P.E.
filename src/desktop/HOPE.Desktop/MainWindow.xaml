@@ -6,6 +6,7 @@
         xmlns:prism="http://prismlibrary.com/"
         mc:Ignorable="d"
         Title="H.O.P.E - High-Output Performance Engineering" Height="700" Width="1000"
+        prism:ViewModelLocator.AutoWireViewModel="True"
         Background="#121212" WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.ColumnDefinitions>
@@ -14,33 +15,29 @@
         </Grid.ColumnDefinitions>
 
         <!-- Sidebar -->
-        <Border Grid.Column="0" Background="#1E1E1E" BorderBrush="#333333" BorderThickness="0,0,1,0">
+        <Border Grid.Column="0" Background="#1E1E1E" BorderBrush="#333333" BorderThickness="0,0,1,0"
+                Visibility="{Binding IsSidebarVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
             <StackPanel Margin="10,40,10,10">
                 <TextBlock Text="H.O.P.E" Foreground="White" FontSize="28" FontWeight="Bold" Margin="0,0,0,30" HorizontalAlignment="Center"/>
                 
                 <RadioButton Content="Dashboard" 
-                             Style="{StaticResource {x:Type ToggleButton}}"
                              Command="{Binding NavigateCommand}" CommandParameter="DashboardView"
                              IsChecked="True"
                              Padding="15,10" Margin="0,5" Background="Transparent" Foreground="#AAAAAA" BorderThickness="0"/>
                 
                 <RadioButton Content="ECU Tuning" 
-                             Style="{StaticResource {x:Type ToggleButton}}"
                              Command="{Binding NavigateCommand}" CommandParameter="MapVisualizationView"
                              Padding="15,10" Margin="0,5" Background="Transparent" Foreground="#AAAAAA" BorderThickness="0"/>
 
                 <RadioButton Content="3D Map Tool" 
-                             Style="{StaticResource {x:Type ToggleButton}}"
                              Command="{Binding NavigateCommand}" CommandParameter="MapDiffViewer"
                              Padding="15,10" Margin="0,5" Background="Transparent" Foreground="#AAAAAA" BorderThickness="0"/>
                 
                 <RadioButton Content="Trouble Codes" 
-                             Style="{StaticResource {x:Type ToggleButton}}"
                              Command="{Binding NavigateCommand}" CommandParameter="DTCView"
                              Padding="15,10" Margin="0,5" Background="Transparent" Foreground="#AAAAAA" BorderThickness="0"/>
                 
                 <RadioButton Content="Session History" 
-                             Style="{StaticResource {x:Type ToggleButton}}"
                              Command="{Binding NavigateCommand}" CommandParameter="SessionHistoryView"
                              Padding="15,10" Margin="0,5" Background="Transparent" Foreground="#AAAAAA" BorderThickness="0"/>
                 
@@ -48,7 +45,6 @@
                 
                 <TextBlock Text="SETTINGS" Foreground="#555555" FontSize="11" FontWeight="Bold" Margin="10,0,0,10"/>
                 <RadioButton Content="Settings" 
-                             Style="{StaticResource {x:Type ToggleButton}}"
                              Command="{Binding NavigateCommand}" CommandParameter="SettingsView"
                              Padding="15,10" Margin="0,5" Background="Transparent" Foreground="#AAAAAA" BorderThickness="0"/>
             </StackPanel>

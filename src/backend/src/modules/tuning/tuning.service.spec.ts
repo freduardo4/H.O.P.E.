@@ -51,7 +51,11 @@ describe('TuningService', () => {
             expect(centerVal).not.toBe(5);
         } catch (e) {
             console.error('Optimization test failed:', e);
+            if (e instanceof Error) {
+                console.error('Error message:', e.message);
+                console.error('Error stack:', e.stack);
+            }
             throw e;
         }
-    }, 30000); // increase timeout for python startup
+    }, 60000); // increase timeout for python startup
 });

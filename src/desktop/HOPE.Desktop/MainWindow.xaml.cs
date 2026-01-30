@@ -9,6 +9,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using HOPE.Desktop.ViewModels;
+
 namespace HOPE.Desktop;
 
 /// <summary>
@@ -16,8 +18,9 @@ namespace HOPE.Desktop;
 /// </summary>
 public partial class MainWindow : Window
 {
-    public MainWindow()
+    public MainWindow(MainWindowViewModel viewModel)
     {
         InitializeComponent();
+        DataContext = viewModel;
     }
 }

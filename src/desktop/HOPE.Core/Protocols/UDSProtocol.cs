@@ -1,16 +1,19 @@
 using HOPE.Core.Services.OBD;
+using HOPE.Core.Security;
 
 namespace HOPE.Core.Protocols;
 
 public class UDSProtocol : IDiagnosticProtocol
 {
     private readonly IOBD2Service _obdService;
+    private readonly SecurityAccessService _securityService;
     
     public string Name => "UDS (ISO 14229)";
 
-    public UDSProtocol(IOBD2Service obdService)
+    public UDSProtocol(IOBD2Service obdService, SecurityAccessService securityService)
     {
         _obdService = obdService;
+        _securityService = securityService;
     }
 
     public async Task<bool> StartSessionAsync(byte sessionType)
@@ -32,9 +35,37 @@ public class UDSProtocol : IDiagnosticProtocol
         
         if (seedResponse.Length < 2 || seedResponse[0] != 0x67) return false;
 
-        // In a real implementation, we'd calculate the key from the seed here.
-        // For now, we'll assume success if a response is received.
-        return true;
+        // Extract seed (skip service ID + subfunction)
+        // Response format: [0x67] [SecurityLevel] [Seed...]
+        // Actually usually [0x67] [AccessType] [Seed...]
+        byte[] seed = seedResponse.Skip(2).ToArray();
+
+        // Step 2: Calculate Key
+        byte[] key;
+        if (keyOverride != null)
+        {
+            key = keyOverride;
+        }
+        else
+        {
+            try 
+            {
+                // We don't have ECU name context here yet, defaulting to "Generic" or passed via constructor later
+                key = _securityService.GenerateKey("Generic", accessType, seed);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        // Step 3: Send Key
+        byte[] keyRequest = new byte[key.Length + 1];
+        keyRequest[0] = (byte)(accessType + 1); // SendKey subfunction
+        Array.Copy(key, 0, keyRequest, 1, key.Length);
+        
+        var unlockResponse = await SendRequestAsync(0x27, keyRequest);
+        return unlockResponse.Length > 0 && unlockResponse[0] == 0x67;
     }
 
     public async Task<byte[]> ReadMemoryAsync(long address, int length)

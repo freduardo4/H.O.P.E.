@@ -37,3 +37,13 @@ dvc==3.42.0
 shap==0.44.1
 lime==0.2.0.1
 
+# Anomaly Detection & Analysis
+pyod==1.1.2
+logai==0.3.0
+alibi-detect==0.11.4
+
+# Simulation & Data Transport
+beamngpy==1.27.0
+pyarrow==15.0.0
+
+

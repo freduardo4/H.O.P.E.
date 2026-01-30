@@ -73,6 +73,11 @@ jobs:
       run: |
         pip install pytest
         pytest
+    - name: Lint Scripts
+      working-directory: .
+      run: |
+        pip install flake8
+        flake8 scripts/
 
   next-build:
     runs-on: ubuntu-latest

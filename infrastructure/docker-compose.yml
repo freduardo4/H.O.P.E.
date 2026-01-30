@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  timescale:
+    image: timescaledb/timescaledb:latest-pg14
+    container_name: hope_timescaledb
+    environment:
+      - POSTGRES_PASSWORD=hope_password
+      - POSTGRES_USER=hope_user
+      - POSTGRES_DB=hope_telemetry
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: hope_grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=hope_admin
+    depends_on:
+      - timescale
+    volumes:
+      - grafana_data:/var/lib/grafana
+    restart: always
+
+volumes:
+  timescale_data:
+  grafana_data:

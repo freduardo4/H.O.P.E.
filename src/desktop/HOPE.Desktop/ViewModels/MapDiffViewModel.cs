@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Prism.Regions;
 using HOPE.Core.Services.ECU;
 using HOPE.Core.Models;
 using System.Collections.ObjectModel;
@@ -11,9 +12,22 @@ using HOPE.Core.Services.Export;
 using HOPE.Core.Interfaces;
 using HOPE.Desktop.ViewModels;
 
-public partial class MapDiffViewModel : ObservableObject
+namespace HOPE.Desktop.ViewModels;
+
+public partial class MapDiffViewModel : ObservableObject, INavigationAware
 {
     private readonly ICalibrationRepository? _calibrationRepository;
+
+    public void OnNavigatedTo(NavigationContext navigationContext)
+    {
+        LoadHistoryCommand.Execute(null);
+        // Generate mock surfaces immediately so the view isn't empty
+        GenerateMockSurfaces();
+    }
+
+    public bool IsNavigationTarget(NavigationContext navigationContext) => true;
+
+    public void OnNavigatedFrom(NavigationContext navigationContext) { }
 
     [ObservableProperty]
     private Point3DCollection _baseSurfacePoints = new();

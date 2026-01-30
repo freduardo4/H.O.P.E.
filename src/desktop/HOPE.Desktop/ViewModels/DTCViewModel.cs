@@ -12,13 +12,20 @@ using Prism.Regions;
 
 namespace HOPE.Desktop.ViewModels;
 
-
-public partial class DTCViewModel : ObservableObject
+public partial class DTCViewModel : ObservableObject, INavigationAware
 {
     private readonly IOBD2Service _obdService;
     private readonly IRegionManager _regionManager;
-    private readonly ILogger<DTCViewModel> _logger;
     private readonly IWikiFixService _wikiFixService;
+
+    public void OnNavigatedTo(NavigationContext navigationContext)
+    {
+        ReadDTCsCommand.Execute(null);
+    }
+
+    public bool IsNavigationTarget(NavigationContext navigationContext) => true;
+
+    public void OnNavigatedFrom(NavigationContext navigationContext) { }
 
     [ObservableProperty]
     private ObservableCollection<DTCItem> _diagnosticCodes = new();
@@ -29,11 +36,10 @@ public partial class DTCViewModel : ObservableObject
     [ObservableProperty]
     private string _statusMessage = "Click 'Read DTCs' to scan for codes";
 
-    public DTCViewModel(IOBD2Service obdService, IRegionManager regionManager, ILogger<DTCViewModel> logger, IWikiFixService wikiFixService)
+    public DTCViewModel(IOBD2Service obdService, IRegionManager regionManager, IWikiFixService wikiFixService)
     {
         _obdService = obdService;
         _regionManager = regionManager;
-        _logger = logger;
         _wikiFixService = wikiFixService;
 
         // Initialize CollectionView for filtering

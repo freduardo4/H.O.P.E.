@@ -755,6 +755,17 @@ public class UdsProtocolService : IUdsProtocolService, IDisposable
             };
         }
 
+        // Check for potential corruption (e.g. all null bytes)
+        if (data.All(b => b == 0x00))
+        {
+            return new UdsResponse
+            {
+                IsPositive = false,
+                NegativeResponseCode = UdsNrc.GeneralReject,
+                ErrorMessage = "Response data corrupted (all null bytes)"
+            };
+        }
+
         // Negative response format: 7F [ServiceId] [NRC]
         if (data[0] == 0x7F && data.Length >= 3)
         {

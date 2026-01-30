@@ -30,7 +30,8 @@ const MOCK_GRAPH: KnowledgeNode[] = [
     { id: 'n3', name: 'Rough Idle', type: 'SYMPTOM', description: 'Uneven engine RPM at standstill.' },
 ];
 
-export default async function WikiFixPage({ searchParams }: { searchParams: { q?: string } }) {
+export default async function WikiFixPage(props: { searchParams: Promise<{ q?: string }> }) {
+    const searchParams = await props.searchParams;
     const query = searchParams.q || "";
     const apiPosts = await fetchWikiPosts(query);
     const posts = (apiPosts && apiPosts.length > 0 ? apiPosts : MOCK_POSTS) as WikiPost[];

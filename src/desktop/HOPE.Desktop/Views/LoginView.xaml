@@ -13,6 +13,21 @@
             <TextBlock Text="H.O.P.E." FontSize="48" FontWeight="Bold" Foreground="White" Margin="0,0,0,40" HorizontalAlignment="Center"/>
             <TextBlock Text="Welcome back, please sign in" Foreground="#888" Margin="0,0,0,20" HorizontalAlignment="Center"/>
             
+            <!-- Email/Password Login -->
+            <TextBox Width="200" Height="30" Margin="0,5" Padding="5" 
+                     Text="{Binding Email}" 
+                     Tag="Email" />
+            <PasswordBox Width="200" Height="30" Margin="0,5" Padding="5"
+                         x:Name="PasswordBox" />
+                         
+            <Button Content="Login" 
+                    Command="{Binding LoginWithEmailCommand}"
+                    CommandParameter="{Binding ElementName=PasswordBox}"
+                    Background="#007ACC" Foreground="White" 
+                    Padding="20,10" Margin="0,15,0,25" Width="200"/>
+
+            <TextBlock Text="Or sign in with" Foreground="#666" Margin="0,0,0,10" HorizontalAlignment="Center" FontSize="10"/>
+
             <Button Content="Login with Google" 
                     Command="{Binding LoginWithGoogleCommand}"
                     Background="#DB4437" Foreground="White" 

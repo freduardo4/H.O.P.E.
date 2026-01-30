@@ -9,9 +9,15 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "ag-grid-community": "^31.0.0",
+    "ag-grid-react": "^31.0.0",
+    "echarts": "^5.5.0",
+    "echarts-for-react": "^3.0.2",
+    "echarts-gl": "^2.0.9",
     "next": "16.1.6",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "uplot": "^1.6.30"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

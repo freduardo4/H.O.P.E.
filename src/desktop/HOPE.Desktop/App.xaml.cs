@@ -36,37 +36,58 @@ public partial class App : PrismApplication
 {
     protected override void OnStartup(StartupEventArgs e)
     {
-        // Initialize Sentry
-        SentrySdk.Init(options =>
+        try 
         {
-            options.TracesSampleRate = 1.0;
-        });
+            // Initialize Sentry
+            // SentrySdk.Init(options =>
+            // {
+            //     options.Dsn = ""; // Disable Sentry
+            //     options.TracesSampleRate = 1.0;
+            // });
 
-        // Handle Squirrel Installation Events
-        SquirrelAwareApp.HandleEvents(
-            onInitialInstall: (v, t) => t.CreateShortcutForThisExe(),
-            onAppUpdate: (v, t) => t.CreateShortcutForThisExe(),
-            onAppUninstall: (v, t) => t.RemoveShortcutForThisExe()
-        );
+            // Handle Squirrel Installation Events
+            // SquirrelAwareApp.HandleEvents(
+            //     onInitialInstall: (v, t) => t.CreateShortcutForThisExe(),
+            //     onAppUpdate: (v, t) => t.CreateShortcutForThisExe(),
+            //     onAppUninstall: (v, t) => t.RemoveShortcutForThisExe()
+            // );
 
-        // Check for updates in background
-        Task.Run(async () => await CheckForUpdatesAsync());
+            // Check for updates in background
+            Task.Run(async () => await CheckForUpdatesAsync());
 
-        // Global Exception Handling
-        DispatcherUnhandledException += OnDispatcherUnhandledException;
-        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
-        AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+            // Global Exception Handling
+            DispatcherUnhandledException += OnDispatcherUnhandledException;
+            TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
-        base.OnStartup(e);
+            base.OnStartup(e);
+        }
+        catch (Exception ex)
+        {
+             File.WriteAllText(@"c:\Users\Test\Documents\H.O.P.E\desktop_startup_error.txt", ex.ToString());
+             MessageBox.Show($"Startup failed: {ex.Message}", "Fatal Error");
+             Shutdown();
+        }
     }
 
     protected override Window CreateShell()
     {
-        return Container.Resolve<MainWindow>();
+        try
+        {
+            return Container.Resolve<MainWindow>();
+        }
+        catch (Exception ex)
+        {
+            File.AppendAllText(@"c:\Users\Test\Documents\H.O.P.E\desktop_startup_error.txt", $"CreateShell Error: {ex}\n");
+            throw;
+        }
     }
 
     protected override void RegisterTypes(IContainerRegistry containerRegistry)
     {
+        // Security Access (UnlockECU integration)
+        containerRegistry.RegisterSingleton<SecurityAccessService>();
+        
         // Register Logging First
         containerRegistry.RegisterSingleton<ILoggingService, SerilogLoggingService>();
         
@@ -154,25 +175,33 @@ public partial class App : PrismApplication
 
     protected override async void OnInitialized()
     {
-        base.OnInitialized();
-
-        // Initialize Database
-        var dbService = Container.Resolve<IDatabaseService>();
-        await dbService.InitializeAsync();
-
-        // Load ONNX anomaly detection model
-        var anomalyService = Container.Resolve<IAnomalyService>();
-        if (anomalyService is OnnxAnomalyService onnxService)
+        try
         {
-            var modelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Models", "anomaly_detector.onnx");
-            if (File.Exists(modelPath))
-            {
-                await onnxService.LoadModelAsync(modelPath);
-            }
-        }
+            base.OnInitialized();
 
-        var regionManager = Container.Resolve<Prism.Regions.IRegionManager>();
-        regionManager.RequestNavigate("MainRegion", "LoginView");
+            // Initialize Database
+            var dbService = Container.Resolve<IDatabaseService>();
+            await dbService.InitializeAsync();
+
+            // Load ONNX anomaly detection model
+            var anomalyService = Container.Resolve<IAnomalyService>();
+            if (anomalyService is OnnxAnomalyService onnxService)
+            {
+                var modelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Models", "anomaly_detector.onnx");
+                if (File.Exists(modelPath))
+                {
+                    await onnxService.LoadModelAsync(modelPath);
+                }
+            }
+
+            var regionManager = Container.Resolve<Prism.Regions.IRegionManager>();
+            regionManager.RequestNavigate("MainRegion", "LoginView");
+        }
+        catch (Exception ex)
+        {
+            File.AppendAllText(@"c:\Users\Test\Documents\H.O.P.E\desktop_startup_error.txt", $"OnInitialized Error: {ex}\n");
+            MessageBox.Show($"Initialization failed: {ex.Message}", "Fatal Error");
+        }
     }
     private void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
     {

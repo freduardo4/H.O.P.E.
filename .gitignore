@@ -61,3 +61,8 @@
 **/__pycache__/
 **/.pytest_cache/
 **/*.pyc
+
+# Local & Temporary
+*_errors_*.txt
+*.log
+find_null_bytes.py
