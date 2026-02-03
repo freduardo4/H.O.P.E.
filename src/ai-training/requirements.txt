@@ -25,7 +25,7 @@ joblib==1.5.3
 
 # Testing and Quality
 pytest==8.0.0
-pytest-cov==4.1.0
+pytest-cov==7.0.0
 black==24.1.1
 flake8==7.0.0
 
