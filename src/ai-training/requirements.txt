@@ -40,7 +40,7 @@ lime==0.2.0.1
 # Anomaly Detection & Analysis
 pyod==1.1.2
 logai==0.3.0
-alibi-detect==0.11.4
+alibi-detect==0.13.0
 
 # Simulation & Data Transport
 beamngpy==1.27.0
