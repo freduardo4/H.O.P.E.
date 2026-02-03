@@ -18,7 +18,7 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.0" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.17.0" />
     <PackageReference Include="Prism.DryIoc" Version="8.1.97" />
-    <PackageReference Include="QuestPDF" Version="2024.3.0" />
+    <PackageReference Include="QuestPDF" Version="2025.12.3" />
     <PackageReference Include="Sentry" Version="6.0.0" />
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
