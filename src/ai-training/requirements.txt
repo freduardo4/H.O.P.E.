@@ -38,7 +38,7 @@ shap==0.44.1
 lime==0.2.0.1
 
 # Anomaly Detection & Analysis
-pyod==1.1.2
+pyod==2.0.6
 logai==0.3.0
 alibi-detect==0.11.4
 
