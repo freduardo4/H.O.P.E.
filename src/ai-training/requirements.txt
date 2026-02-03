@@ -7,7 +7,7 @@ torchvision==0.25.0
 
 # ONNX Export and Inference
 onnx==1.20.1
-onnxruntime==1.20.1
+onnxruntime==1.23.2
 
 # Data Processing
 pandas==3.0.0
