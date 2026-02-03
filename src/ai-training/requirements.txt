@@ -34,7 +34,7 @@ mlflow==2.10.2
 dvc==3.42.0
 
 # Advanced Explainability
-shap==0.44.1
+shap==0.50.0
 lime==0.2.0.1
 
 # Anomaly Detection & Analysis
