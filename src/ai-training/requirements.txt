@@ -30,7 +30,7 @@ black==24.1.1
 flake8==7.0.0
 
 # MLOps and Traceability
-mlflow==2.10.2
+mlflow==3.9.0
 dvc==3.42.0
 
 # Advanced Explainability
